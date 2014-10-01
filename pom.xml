@@ -35,10 +35,10 @@
         <artifactId>maven-release-plugin</artifactId>
         <version>2.5.1</version>
 	<configuration>
-	<!-- enablee release during release:perform --> 
+	<!-- enablee release during release:perform 
 	  <releaseProfiles>
      	   release
-          </releaseProfiles>
+          </releaseProfiles> -->
         </configuration>
       </plugin>
     </plugins>
