@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.sdb.app</groupId>
   <artifactId>SDB</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <packaging>jar</packaging>
 
   <name>SDB</name>
@@ -27,6 +26,7 @@
     <connection>scm:git:https://github.com/qboy40408657/SDB-maven.git</connection>
     <url>scm:git:https://github.com/qboy40408657/SDB-maven.git</url>
     <developerConnection>scm:git:https://github.com/qboy40408657/SDB-maven.git</developerConnection>
+    <tag>SDB-1.0</tag>
   </scm>
  <build>
     <plugins>
