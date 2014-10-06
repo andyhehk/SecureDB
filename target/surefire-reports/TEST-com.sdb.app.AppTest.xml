@@ -29,7 +29,6 @@
     <property name="os.name" value="Mac OS X"/>
     <property name="classworlds.conf" value="/Users/Yifan/Applications/apache-maven-3.2.3/bin/m2.conf"/>
     <property name="sun.jnu.encoding" value="MacRoman"/>
-    <property name="altDeploymentRepository" value="snapshot-repo::default::file:./snapshots"/>
     <property name="java.library.path" value=".:/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.class.version" value="50.0"/>
@@ -46,7 +45,7 @@
     <property name="java.vm.specification.version" value="1.0"/>
     <property name="sun.arch.data.model" value="64"/>
     <property name="java.home" value="/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home"/>
-    <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher -DaltDeploymentRepository=snapshot-repo::default::file:./snapshots clean deploy"/>
+    <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher test"/>
     <property name="java.specification.vendor" value="Sun Microsystems Inc."/>
     <property name="user.language" value="en"/>
     <property name="awt.toolkit" value="apple.awt.CToolkit"/>
