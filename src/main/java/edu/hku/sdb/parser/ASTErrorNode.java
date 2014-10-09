@@ -15,48 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package edu.hku.sdb.parser;
 
-
-import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
+import org.antlr.runtime.TokenStream;
+import org.antlr.runtime.tree.CommonErrorNode;
 
-/*
- * SemanticException.java
- *
- * Created on April 1, 2008, 1:20 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+public class ASTErrorNode extends ASTNode {
 
-/**
- *
- */
-public class ParseError {
-  private final BaseRecognizer br;
-  private final RecognitionException re;
-  private final String[] tokenNames;
+  /**
+   *
+   */
+  private static final long serialVersionUID = 1L;
+  CommonErrorNode delegate;
 
-  ParseError(BaseRecognizer br, RecognitionException re, String[] tokenNames) {
-    this.br = br;
-    this.re = re;
-    this.tokenNames = tokenNames;
+  public ASTErrorNode(TokenStream input, Token start, Token stop,
+      RecognitionException e){
+    delegate = new CommonErrorNode(input,start,stop,e);
   }
 
-  BaseRecognizer getBaseRecognizer() {
-    return br;
-  }
+  @Override
+  public boolean isNil() { return delegate.isNil(); }
 
-  RecognitionException getRecognitionException() {
-    return re;
-  }
+  @Override
+  public int getType() { return delegate.getType(); }
 
-  String[] getTokenNames() {
-    return tokenNames;
-  }
-
-  String getMessage() {
-    return br.getErrorHeader(re) + " " + br.getErrorMessage(re, tokenNames);
-  }
-
+  @Override
+  public String getText() { return delegate.getText(); }
+  @Override
+  public String toString() { return delegate.toString(); }
 }

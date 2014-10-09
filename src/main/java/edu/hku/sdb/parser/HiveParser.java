@@ -1,7 +1,7 @@
-// $ANTLR 3.4 HiveParser.g 2014-10-06 21:41:23
+// $ANTLR 3.4 HiveParser.g 2014-10-09 18:00:57
 
 //package org.apache.hadoop.hive.ql.parse;
-
+package edu.hku.sdb.parser;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -1159,7 +1159,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_execStatement.add(execStatement6.getTree());
 
             // AST REWRITE
-            // elements: execStatement, explainOptions
+            // elements: explainOptions, execStatement
             // token labels: explainOptions
             // rule labels: retval
             // token list labels: 
@@ -1536,7 +1536,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: path, islocal, isoverwrite, tab
+            // elements: tab, isoverwrite, islocal, path
             // token labels: islocal, isoverwrite, path
             // rule labels: retval, tab
             // token list labels: 
@@ -1681,7 +1681,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: tab, path
+            // elements: path, tab
             // token labels: path
             // rule labels: retval, tab
             // token list labels: 
@@ -1878,7 +1878,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: path, ext, tableLocation, tab
+            // elements: tableLocation, tab, ext, path
             // token labels: path, ext
             // rule labels: retval, tab
             // token list labels: 
@@ -3297,7 +3297,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: name, databaseComment, dbprops, ifNotExists, dbLocation
+            // elements: dbLocation, databaseComment, dbprops, name, ifNotExists
             // token labels: 
             // rule labels: retval, name, dbprops
             // token list labels: 
@@ -3933,7 +3933,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: ifExists, restrictOrCascade, identifier
+            // elements: restrictOrCascade, identifier, ifExists
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4579,17 +4579,17 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: ext, tableComment, selectStatement, tableRowFormat, tableLocation, tableBuckets, likeName, tablePropertiesPrefixed, tableSkewed, tablePartition, columnNameTypeList, ifNotExists, tableFileFormat, name
+            // elements: name, columnNameTypeList, selectStatement, tablePropertiesPrefixed, tableSkewed, tableFileFormat, tablePartition, ifNotExists, tableBuckets, tableLocation, tableComment, likeName, ext, tableRowFormat
             // token labels: ext
-            // rule labels: retval, name, likeName
+            // rule labels: retval, likeName, name
             // token list labels: 
             // rule list labels: 
             // wildcard labels: 
             retval.tree = root_0;
             RewriteRuleTokenStream stream_ext=new RewriteRuleTokenStream(adaptor,"token ext",ext);
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
-            RewriteRuleSubtreeStream stream_name=new RewriteRuleSubtreeStream(adaptor,"rule name",name!=null?name.tree:null);
             RewriteRuleSubtreeStream stream_likeName=new RewriteRuleSubtreeStream(adaptor,"rule likeName",likeName!=null?likeName.tree:null);
+            RewriteRuleSubtreeStream stream_name=new RewriteRuleSubtreeStream(adaptor,"rule name",name!=null?name.tree:null);
 
             root_0 = (CommonTree)adaptor.nil();
             // 813:5: -> ^( TOK_CREATETABLE $name ( $ext)? ( ifNotExists )? ^( TOK_LIKETABLE ( $likeName)? ) ( columnNameTypeList )? ( tableComment )? ( tablePartition )? ( tableBuckets )? ( tableSkewed )? ( tableRowFormat )? ( tableFileFormat )? ( tableLocation )? ( tablePropertiesPrefixed )? ( selectStatement )? )
@@ -4830,7 +4830,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: columnNameList, tablePartitionPrefix
+            // elements: tablePartitionPrefix, columnNameList
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -5214,7 +5214,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: indexComment, typeName, tableFileFormat, tablePropertiesPrefixed, indexedCols, indexTblName, indexPropertiesPrefixed, indexName, tableLocation, autoRebuild, tableRowFormat, tab
+            // elements: tablePropertiesPrefixed, indexName, indexComment, tableRowFormat, tableLocation, tab, indexPropertiesPrefixed, autoRebuild, tableFileFormat, indexedCols, indexTblName, typeName
             // token labels: typeName
             // rule labels: indexedCols, retval, indexName, tab
             // token list labels: 
@@ -6002,7 +6002,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_tableName.add(tab.getTree());
 
             // AST REWRITE
-            // elements: indexName, ifExists, tab
+            // elements: ifExists, tab, indexName
             // token labels: 
             // rule labels: retval, indexName, tab
             // token list labels: 
@@ -6900,7 +6900,7 @@ public TreeAdaptor getTreeAdaptor() {
                     stream_selectStatement.add(selectStatement179.getTree());
 
                     // AST REWRITE
-                    // elements: name, selectStatement
+                    // elements: selectStatement, name
                     // token labels: 
                     // rule labels: retval, name
                     // token list labels: 
@@ -7076,7 +7076,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: partitionSpec, tableNameId, indexName
+                    // elements: partitionSpec, indexName, tableNameId
                     // token labels: 
                     // rule labels: retval, tableNameId, indexName
                     // token list labels: 
@@ -7137,7 +7137,7 @@ public TreeAdaptor getTreeAdaptor() {
                     stream_indexProperties.add(indexProperties185.getTree());
 
                     // AST REWRITE
-                    // elements: indexName, indexProperties, tableNameId
+                    // elements: indexProperties, tableNameId, indexName
                     // token labels: 
                     // rule labels: retval, tableNameId, indexName
                     // token list labels: 
@@ -7316,7 +7316,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_dbProperties.add(dbProperties189.getTree());
 
             // AST REWRITE
-            // elements: name, dbProperties
+            // elements: dbProperties, name
             // token labels: 
             // rule labels: retval, name
             // token list labels: 
@@ -7593,7 +7593,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: columnNameTypeList, identifier, columnNameTypeList, identifier
+            // elements: identifier, columnNameTypeList, columnNameTypeList, identifier
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -7815,7 +7815,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: alterStatementChangeColPosition, comment, oldName, identifier, colType, newName
+            // elements: comment, colType, identifier, newName, oldName, alterStatementChangeColPosition
             // token labels: comment
             // rule labels: retval, newName, oldName
             // token list labels: 
@@ -8195,7 +8195,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: identifier, partitionSpec, ifNotExists, partitionLocation
+            // elements: ifNotExists, identifier, partitionLocation, partitionSpec
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -8344,7 +8344,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: partitionSpec, identifier
+            // elements: identifier, partitionSpec
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -8477,7 +8477,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: partitionSpec, identifier
+            // elements: identifier, partitionSpec
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -8610,7 +8610,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: partitionSpec, identifier
+            // elements: identifier, partitionSpec
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -8904,7 +8904,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: dropPartitionSpec, ifExists, ignoreProtection, identifier
+            // elements: identifier, dropPartitionSpec, ignoreProtection, ifExists
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -9176,7 +9176,7 @@ public TreeAdaptor getTreeAdaptor() {
                     stream_tableProperties.add(tableProperties234.getTree());
 
                     // AST REWRITE
-                    // elements: name, ifExists, tableProperties
+                    // elements: ifExists, tableProperties, name
                     // token labels: 
                     // rule labels: retval, name
                     // token list labels: 
@@ -9437,7 +9437,7 @@ public TreeAdaptor getTreeAdaptor() {
                     stream_tableProperties.add(tableProperties241.getTree());
 
                     // AST REWRITE
-                    // elements: name, tableProperties, ifExists
+                    // elements: name, ifExists, tableProperties
                     // token labels: 
                     // rule labels: retval, name
                     // token list labels: 
@@ -10024,7 +10024,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: Identifier, columnNameType
+                    // elements: columnNameType, Identifier
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -11336,7 +11336,7 @@ public TreeAdaptor getTreeAdaptor() {
                     stream_tableSkewed.add(tableSkewed289.getTree());
 
                     // AST REWRITE
-                    // elements: name, tableSkewed
+                    // elements: tableSkewed, name
                     // token labels: 
                     // rule labels: retval, name
                     // token list labels: 
@@ -11573,7 +11573,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_tableName.add(exchangename.getTree());
 
             // AST REWRITE
-            // elements: partitionSpec, name, exchangename
+            // elements: name, exchangename, partitionSpec
             // token labels: 
             // rule labels: exchangename, retval, name
             // token list labels: 
@@ -12886,7 +12886,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: inFmt, outDriver, inDriver, outFmt
+                    // elements: inDriver, outDriver, outFmt, inFmt
                     // token labels: outDriver, outFmt, inDriver, inFmt
                     // rule labels: retval
                     // token list labels: 
@@ -15090,7 +15090,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: parttype, descOptions
+                    // elements: descOptions, parttype
                     // token labels: descOptions
                     // rule labels: retval, parttype
                     // token list labels: 
@@ -15212,7 +15212,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: KW_EXTENDED, name
+                    // elements: name, KW_EXTENDED
                     // token labels: 
                     // rule labels: retval, name
                     // token list labels: 
@@ -15335,7 +15335,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: KW_EXTENDED, dbName
+                    // elements: dbName, KW_EXTENDED
                     // token labels: 
                     // rule labels: retval, dbName
                     // token list labels: 
@@ -15562,7 +15562,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: statsColumnName, noscan, parttype, partialscan
+            // elements: partialscan, statsColumnName, parttype, noscan
             // token labels: partialscan, noscan
             // rule labels: retval, parttype, statsColumnName
             // token list labels: 
@@ -16291,7 +16291,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: db_name, tabname
+                    // elements: tabname, db_name
                     // token labels: 
                     // rule labels: retval, db_name, tabname
                     // token list labels: 
@@ -16446,7 +16446,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: partitionSpec, identifier
+                    // elements: identifier, partitionSpec
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -16654,7 +16654,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: db_name, partitionSpec, showStmtIdentifier
+                    // elements: showStmtIdentifier, db_name, partitionSpec
                     // token labels: 
                     // rule labels: retval, db_name
                     // token list labels: 
@@ -16748,7 +16748,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: prptyName, tblName
+                    // elements: tblName, prptyName
                     // token labels: prptyName
                     // rule labels: retval, tblName
                     // token list labels: 
@@ -16845,7 +16845,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: isExtended, parttype
+                    // elements: parttype, isExtended
                     // token labels: isExtended
                     // rule labels: retval, parttype
                     // token list labels: 
@@ -17034,7 +17034,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: showOptions, showStmtIdentifier, db_name
+                    // elements: db_name, showStmtIdentifier, showOptions
                     // token labels: showOptions
                     // rule labels: retval, db_name
                     // token list labels: 
@@ -17188,7 +17188,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_lockMode.add(lockMode407.getTree());
 
             // AST REWRITE
-            // elements: lockMode, tableName, partitionSpec
+            // elements: partitionSpec, tableName, lockMode
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -17389,7 +17389,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: tableName, partitionSpec
+            // elements: partitionSpec, tableName
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -17766,7 +17766,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: privList, principalSpecification, withOption, privilegeObject
+            // elements: privList, withOption, privilegeObject, principalSpecification
             // token labels: 
             // rule labels: retval, privList
             // token list labels: 
@@ -17919,7 +17919,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_principalSpecification.add(principalSpecification427.getTree());
 
             // AST REWRITE
-            // elements: principalSpecification, privilegeList, privilegeObject
+            // elements: privilegeList, privilegeObject, principalSpecification
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -18248,7 +18248,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_principalSpecification.add(principalSpecification441.getTree());
 
             // AST REWRITE
-            // elements: identifier, principalSpecification
+            // elements: principalSpecification, identifier
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -18489,7 +18489,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: privilegeIncludeColObject, principalName
+            // elements: principalName, privilegeIncludeColObject
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -18702,7 +18702,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: cols, table, identifier, partitionSpec
+            // elements: table, identifier, partitionSpec, cols
             // token labels: table
             // rule labels: retval, cols
             // token list labels: 
@@ -18890,7 +18890,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: identifier, partitionSpec, table
+            // elements: table, identifier, partitionSpec
             // token labels: table
             // rule labels: retval
             // token list labels: 
@@ -20721,7 +20721,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_expression.add(expression509.getTree());
 
             // AST REWRITE
-            // elements: columnNameTypeList, expression, Identifier
+            // elements: Identifier, columnNameTypeList, expression
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -20862,7 +20862,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: ifExists, Identifier
+            // elements: Identifier, ifExists
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -21165,7 +21165,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_selectStatement.add(selectStatement526.getTree());
 
             // AST REWRITE
-            // elements: tablePropertiesPrefixed, viewPartition, tableComment, ifNotExists, orReplace, name, columnNameCommentList, selectStatement
+            // elements: viewPartition, tableComment, columnNameCommentList, orReplace, name, selectStatement, ifNotExists, tablePropertiesPrefixed
             // token labels: 
             // rule labels: retval, name
             // token list labels: 
@@ -21449,7 +21449,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_viewName.add(viewName535.getTree());
 
             // AST REWRITE
-            // elements: viewName, ifExists
+            // elements: ifExists, viewName
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -21941,7 +21941,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: bucketCols, num, sortCols
+            // elements: num, sortCols, bucketCols
             // token labels: num
             // rule labels: sortCols, retval, bucketCols
             // token list labels: 
@@ -22136,7 +22136,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: skewedCols, skewedValues, storedAsDirs
+            // elements: skewedCols, storedAsDirs, skewedValues
             // token labels: 
             // rule labels: retval, skewedValues, skewedCols
             // token list labels: 
@@ -22998,7 +22998,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: tableRowFormatMapKeysIdentifier, tableRowFormatCollItemsIdentifier, tableRowFormatFieldIdentifier, tableRowFormatLinesIdentifier
+            // elements: tableRowFormatCollItemsIdentifier, tableRowFormatFieldIdentifier, tableRowFormatLinesIdentifier, tableRowFormatMapKeysIdentifier
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -23939,7 +23939,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: fldEscape, fldIdnt
+            // elements: fldIdnt, fldEscape
             // token labels: fldEscape, fldIdnt
             // rule labels: retval
             // token list labels: 
@@ -24904,7 +24904,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: outFmt, outDriver, inFmt, inDriver
+                    // elements: outDriver, inFmt, inDriver, outFmt
                     // token labels: outDriver, outFmt, inDriver, inFmt
                     // rule labels: retval
                     // token list labels: 
@@ -25003,7 +25003,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: storageHandler, serdeprops
+                    // elements: serdeprops, storageHandler
                     // token labels: storageHandler
                     // rule labels: serdeprops, retval
                     // token list labels: 
@@ -27032,7 +27032,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: colName, colName, colType, colType, comment
+                    // elements: colType, colName, colName, comment, colType
                     // token labels: comment
                     // rule labels: retval, colName
                     // token list labels: 
@@ -27134,7 +27134,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: comment, colName, colType, colType, colName
+                    // elements: colType, colType, colName, colName, comment
                     // token labels: comment
                     // rule labels: retval, colName
                     // token list labels: 
@@ -27301,7 +27301,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: comment, colType, colName, colType, colName
+            // elements: colType, colName, colName, colType, comment
             // token labels: comment
             // rule labels: retval, colName
             // token list labels: 
@@ -29028,7 +29028,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: fromClause, body
+                    // elements: body, fromClause
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -29420,7 +29420,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: orderByClause, havingClause, sortByClause, whereClause, clusterByClause, insertClause, limitClause, window_clause, groupByClause, distributeByClause, selectClause, fromClause
+                    // elements: havingClause, groupByClause, distributeByClause, selectClause, limitClause, orderByClause, fromClause, window_clause, sortByClause, whereClause, clusterByClause, insertClause
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -29850,7 +29850,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: limitClause, selectClause, window_clause, sortByClause, whereClause, fromClause, clusterByClause, distributeByClause, havingClause, orderByClause, groupByClause
+            // elements: limitClause, window_clause, fromClause, sortByClause, distributeByClause, selectClause, orderByClause, clusterByClause, groupByClause, havingClause, whereClause
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -30352,7 +30352,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: orderByClause, selectClause, lateralView, distributeByClause, window_clause, insertClause, whereClause, limitClause, clusterByClause, havingClause, sortByClause, groupByClause
+                    // elements: havingClause, insertClause, selectClause, limitClause, clusterByClause, sortByClause, lateralView, window_clause, orderByClause, groupByClause, distributeByClause, whereClause
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -30706,7 +30706,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: havingClause, orderByClause, groupByClause, distributeByClause, lateralView, window_clause, limitClause, sortByClause, selectClause, clusterByClause, whereClause
+                    // elements: groupByClause, havingClause, whereClause, limitClause, clusterByClause, selectClause, sortByClause, window_clause, distributeByClause, orderByClause, lateralView
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -30967,7 +30967,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: destination, ifNotExists
+                    // elements: ifNotExists, destination
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -31217,7 +31217,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: tableRowFormat, tableFileFormat, StringLiteral
+                    // elements: StringLiteral, tableFileFormat, tableRowFormat
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -31460,243 +31460,243 @@ public TreeAdaptor getTreeAdaptor() {
     // $ANTLR end "limitClause"
 
     // Delegated rules
-    public HiveParser_FromClauseParser.uniqueJoinSource_return uniqueJoinSource() throws RecognitionException { return gFromClauseParser.uniqueJoinSource(); }
-
-    public HiveParser_IdentifiersParser.intervalConstant_return intervalConstant() throws RecognitionException { return gIdentifiersParser.intervalConstant(); }
-
-    public HiveParser_IdentifiersParser.sysFuncNames_return sysFuncNames() throws RecognitionException { return gIdentifiersParser.sysFuncNames(); }
-
-    public HiveParser_SelectClauseParser.hintItem_return hintItem() throws RecognitionException { return gSelectClauseParser.hintItem(); }
-
-    public HiveParser_IdentifiersParser.precedenceBitwiseOrExpression_return precedenceBitwiseOrExpression() throws RecognitionException { return gIdentifiersParser.precedenceBitwiseOrExpression(); }
-
-    public HiveParser_IdentifiersParser.precedenceAndOperator_return precedenceAndOperator() throws RecognitionException { return gIdentifiersParser.precedenceAndOperator(); }
-
-    public HiveParser_SelectClauseParser.hintArgs_return hintArgs() throws RecognitionException { return gSelectClauseParser.hintArgs(); }
-
-    public HiveParser_IdentifiersParser.intervalDistance_return intervalDistance() throws RecognitionException { return gIdentifiersParser.intervalDistance(); }
-
-    public HiveParser_FromClauseParser.coalesceSource_return coalesceSource() throws RecognitionException { return gFromClauseParser.coalesceSource(); }
-
-    public HiveParser_IdentifiersParser.function_return function() throws RecognitionException { return gIdentifiersParser.function(); }
-
-    public HiveParser_FromClauseParser.tableName_return tableName() throws RecognitionException { return gFromClauseParser.tableName(); }
-
-    public HiveParser_FromClauseParser.expressionList_return expressionList() throws RecognitionException { return gFromClauseParser.expressionList(); }
-
-    public HiveParser_IdentifiersParser.functionName_return functionName() throws RecognitionException { return gIdentifiersParser.functionName(); }
-
-    public HiveParser_FromClauseParser.uniqueJoinExpr_return uniqueJoinExpr() throws RecognitionException { return gFromClauseParser.uniqueJoinExpr(); }
-
-    public HiveParser_FromClauseParser.aggregation_return aggregation() throws RecognitionException { return gFromClauseParser.aggregation(); }
-
-    public HiveParser_SelectClauseParser.window_frame_start_boundary_return window_frame_start_boundary() throws RecognitionException { return gSelectClauseParser.window_frame_start_boundary(); }
-
-    public HiveParser_IdentifiersParser.distributeByClause_return distributeByClause() throws RecognitionException { return gIdentifiersParser.distributeByClause(); }
-
-    public HiveParser_SelectClauseParser.hintClause_return hintClause() throws RecognitionException { return gSelectClauseParser.hintClause(); }
-
-    public HiveParser_FromClauseParser.multipleTrack_return multipleTrack() throws RecognitionException { return gFromClauseParser.multipleTrack(); }
-
-    public HiveParser_FromClauseParser.tableAllColumns_return tableAllColumns() throws RecognitionException { return gFromClauseParser.tableAllColumns(); }
-
-    public HiveParser_SelectClauseParser.window_range_expression_return window_range_expression() throws RecognitionException { return gSelectClauseParser.window_range_expression(); }
-
-    public HiveParser_SelectClauseParser.window_frame_return window_frame() throws RecognitionException { return gSelectClauseParser.window_frame(); }
-
-    public HiveParser_IdentifiersParser.precedenceOrExpression_return precedenceOrExpression() throws RecognitionException { return gIdentifiersParser.precedenceOrExpression(); }
-
-    public HiveParser_IdentifiersParser.precedenceBitwiseOrOperator_return precedenceBitwiseOrOperator() throws RecognitionException { return gIdentifiersParser.precedenceBitwiseOrOperator(); }
-
-    public HiveParser_SelectClauseParser.selectClause_return selectClause() throws RecognitionException { return gSelectClauseParser.selectClause(); }
-
-    public HiveParser_SelectClauseParser.window_clause_return window_clause() throws RecognitionException { return gSelectClauseParser.window_clause(); }
-
-    public HiveParser_IdentifiersParser.precedenceStarOperator_return precedenceStarOperator() throws RecognitionException { return gIdentifiersParser.precedenceStarOperator(); }
-
-    public HiveParser_FromClauseParser.projectSource_return projectSource() throws RecognitionException { return gFromClauseParser.projectSource(); }
-
-    public HiveParser_SelectClauseParser.window_defn_return window_defn() throws RecognitionException { return gSelectClauseParser.window_defn(); }
-
-    public HiveParser_IdentifiersParser.constant_return constant() throws RecognitionException { return gIdentifiersParser.constant(); }
-
-    public HiveParser_FromClauseParser.viewName_return viewName() throws RecognitionException { return gFromClauseParser.viewName(); }
-
-    public HiveParser_IdentifiersParser.nullCondition_return nullCondition() throws RecognitionException { return gIdentifiersParser.nullCondition(); }
-
-    public HiveParser_IdentifiersParser.precedenceNotOperator_return precedenceNotOperator() throws RecognitionException { return gIdentifiersParser.precedenceNotOperator(); }
-
-    public HiveParser_FromClauseParser.partitionTableFunctionSource_return partitionTableFunctionSource() throws RecognitionException { return gFromClauseParser.partitionTableFunctionSource(); }
-
-    public HiveParser_IdentifiersParser.whenExpression_return whenExpression() throws RecognitionException { return gIdentifiersParser.whenExpression(); }
-
-    public HiveParser_IdentifiersParser.groupingSetExpression_return groupingSetExpression() throws RecognitionException { return gIdentifiersParser.groupingSetExpression(); }
-
-    public HiveParser_SelectClauseParser.hintList_return hintList() throws RecognitionException { return gSelectClauseParser.hintList(); }
-
-    public HiveParser_SelectClauseParser.window_value_expression_return window_value_expression() throws RecognitionException { return gSelectClauseParser.window_value_expression(); }
-
-    public HiveParser_IdentifiersParser.havingClause_return havingClause() throws RecognitionException { return gIdentifiersParser.havingClause(); }
-
-    public HiveParser_FromClauseParser.intersectJoinSource_return intersectJoinSource() throws RecognitionException { return gFromClauseParser.intersectJoinSource(); }
-
-    public HiveParser_IdentifiersParser.descFuncNames_return descFuncNames() throws RecognitionException { return gIdentifiersParser.descFuncNames(); }
-
-    public HiveParser_IdentifiersParser.precedenceNotExpression_return precedenceNotExpression() throws RecognitionException { return gIdentifiersParser.precedenceNotExpression(); }
-
-    public HiveParser_FromClauseParser.tableSample_return tableSample() throws RecognitionException { return gFromClauseParser.tableSample(); }
-
-    public HiveParser_IdentifiersParser.booleanValue_return booleanValue() throws RecognitionException { return gIdentifiersParser.booleanValue(); }
-
-    public HiveParser_IdentifiersParser.orderByClause_return orderByClause() throws RecognitionException { return gIdentifiersParser.orderByClause(); }
-
-    public HiveParser_IdentifiersParser.precedenceStarExpression_return precedenceStarExpression() throws RecognitionException { return gIdentifiersParser.precedenceStarExpression(); }
-
-    public HiveParser_IdentifiersParser.groupByExpression_return groupByExpression() throws RecognitionException { return gIdentifiersParser.groupByExpression(); }
-
-    public HiveParser_IdentifiersParser.precedenceUnaryPrefixExpression_return precedenceUnaryPrefixExpression() throws RecognitionException { return gIdentifiersParser.precedenceUnaryPrefixExpression(); }
-
-    public HiveParser_IdentifiersParser.caseExpression_return caseExpression() throws RecognitionException { return gIdentifiersParser.caseExpression(); }
-
-    public HiveParser_IdentifiersParser.nonReserved_return nonReserved() throws RecognitionException { return gIdentifiersParser.nonReserved(); }
-
-    public HiveParser_IdentifiersParser.castExpression_return castExpression() throws RecognitionException { return gIdentifiersParser.castExpression(); }
-
-    public HiveParser_IdentifiersParser.stringLiteralSequence_return stringLiteralSequence() throws RecognitionException { return gIdentifiersParser.stringLiteralSequence(); }
-
-    public HiveParser_SelectClauseParser.trfmClause_return trfmClause() throws RecognitionException { return gSelectClauseParser.trfmClause(); }
-
-    public HiveParser_FromClauseParser.intervalLength_return intervalLength() throws RecognitionException { return gFromClauseParser.intervalLength(); }
-
-    public HiveParser_FromClauseParser.partitionedTableFunction_return partitionedTableFunction() throws RecognitionException { return gFromClauseParser.partitionedTableFunction(); }
-
-    public HiveParser_IdentifiersParser.precedenceBitwiseXorOperator_return precedenceBitwiseXorOperator() throws RecognitionException { return gIdentifiersParser.precedenceBitwiseXorOperator(); }
-
-    public HiveParser_IdentifiersParser.groupByClause_return groupByClause() throws RecognitionException { return gIdentifiersParser.groupByClause(); }
-
-    public HiveParser_FromClauseParser.splitSample_return splitSample() throws RecognitionException { return gFromClauseParser.splitSample(); }
-
-    public HiveParser_IdentifiersParser.dropPartitionVal_return dropPartitionVal() throws RecognitionException { return gIdentifiersParser.dropPartitionVal(); }
-
-    public HiveParser_FromClauseParser.lateralView_return lateralView() throws RecognitionException { return gFromClauseParser.lateralView(); }
-
-    public HiveParser_IdentifiersParser.precedenceFieldExpression_return precedenceFieldExpression() throws RecognitionException { return gIdentifiersParser.precedenceFieldExpression(); }
-
-    public HiveParser_IdentifiersParser.dropPartitionOperator_return dropPartitionOperator() throws RecognitionException { return gIdentifiersParser.dropPartitionOperator(); }
-
-    public HiveParser_FromClauseParser.subQuerySource_return subQuerySource() throws RecognitionException { return gFromClauseParser.subQuerySource(); }
-
-    public HiveParser_IdentifiersParser.precedenceEqualNegatableOperator_return precedenceEqualNegatableOperator() throws RecognitionException { return gIdentifiersParser.precedenceEqualNegatableOperator(); }
-
-    public HiveParser_FromClauseParser.partitioningSpec_return partitioningSpec() throws RecognitionException { return gFromClauseParser.partitioningSpec(); }
-
-    public HiveParser_SelectClauseParser.selectItem_return selectItem() throws RecognitionException { return gSelectClauseParser.selectItem(); }
-
-    public HiveParser_FromClauseParser.exclusivenessJoinSource_return exclusivenessJoinSource() throws RecognitionException { return gFromClauseParser.exclusivenessJoinSource(); }
-
-    public HiveParser_FromClauseParser.fromClause_return fromClause() throws RecognitionException { return gFromClauseParser.fromClause(); }
+    public HiveParser_SelectClauseParser.window_specification_return window_specification() throws RecognitionException { return gSelectClauseParser.window_specification(); }
 
     public HiveParser_FromClauseParser.multipleSource_return multipleSource() throws RecognitionException { return gFromClauseParser.multipleSource(); }
 
-    public HiveParser_IdentifiersParser.intervalOrIntervalProp_return intervalOrIntervalProp() throws RecognitionException { return gIdentifiersParser.intervalOrIntervalProp(); }
-
-    public HiveParser_FromClauseParser.tableOrColumn_return tableOrColumn() throws RecognitionException { return gFromClauseParser.tableOrColumn(); }
-
-    public HiveParser_IdentifiersParser.precedenceOrOperator_return precedenceOrOperator() throws RecognitionException { return gIdentifiersParser.precedenceOrOperator(); }
-
-    public HiveParser_IdentifiersParser.intervalEnd_return intervalEnd() throws RecognitionException { return gIdentifiersParser.intervalEnd(); }
-
-    public HiveParser_FromClauseParser.whereClause_return whereClause() throws RecognitionException { return gFromClauseParser.whereClause(); }
-
-    public HiveParser_FromClauseParser.fromSource_return fromSource() throws RecognitionException { return gFromClauseParser.fromSource(); }
-
-    public HiveParser_IdentifiersParser.precedenceUnarySuffixExpression_return precedenceUnarySuffixExpression() throws RecognitionException { return gIdentifiersParser.precedenceUnarySuffixExpression(); }
-
-    public HiveParser_IdentifiersParser.intervalSta_return intervalSta() throws RecognitionException { return gIdentifiersParser.intervalSta(); }
-
-    public HiveParser_IdentifiersParser.atomExpression_return atomExpression() throws RecognitionException { return gIdentifiersParser.atomExpression(); }
-
-    public HiveParser_IdentifiersParser.partitionByClause_return partitionByClause() throws RecognitionException { return gIdentifiersParser.partitionByClause(); }
-
-    public HiveParser_SelectClauseParser.selectList_return selectList() throws RecognitionException { return gSelectClauseParser.selectList(); }
-
-    public HiveParser_IdentifiersParser.expressions_return expressions() throws RecognitionException { return gIdentifiersParser.expressions(); }
-
-    public HiveParser_IdentifiersParser.sortByClause_return sortByClause() throws RecognitionException { return gIdentifiersParser.sortByClause(); }
-
-    public HiveParser_IdentifiersParser.tableOrPartition_return tableOrPartition() throws RecognitionException { return gIdentifiersParser.tableOrPartition(); }
-
-    public HiveParser_SelectClauseParser.window_specification_return window_specification() throws RecognitionException { return gSelectClauseParser.window_specification(); }
-
-    public HiveParser_SelectClauseParser.selectExpression_return selectExpression() throws RecognitionException { return gSelectClauseParser.selectExpression(); }
-
-    public HiveParser_IdentifiersParser.expression_return expression() throws RecognitionException { return gIdentifiersParser.expression(); }
-
-    public HiveParser_FromClauseParser.searchCondition_return searchCondition() throws RecognitionException { return gFromClauseParser.searchCondition(); }
-
-    public HiveParser_FromClauseParser.tableSource_return tableSource() throws RecognitionException { return gFromClauseParser.tableSource(); }
-
-    public HiveParser_FromClauseParser.tableBucketSample_return tableBucketSample() throws RecognitionException { return gFromClauseParser.tableBucketSample(); }
+    public HiveParser_IdentifiersParser.precedenceUnaryPrefixExpression_return precedenceUnaryPrefixExpression() throws RecognitionException { return gIdentifiersParser.precedenceUnaryPrefixExpression(); }
 
     public HiveParser_IdentifiersParser.precedenceAndExpression_return precedenceAndExpression() throws RecognitionException { return gIdentifiersParser.precedenceAndExpression(); }
 
-    public HiveParser_IdentifiersParser.havingCondition_return havingCondition() throws RecognitionException { return gIdentifiersParser.havingCondition(); }
+    public HiveParser_FromClauseParser.splitSample_return splitSample() throws RecognitionException { return gFromClauseParser.splitSample(); }
 
-    public HiveParser_IdentifiersParser.intervalCoor_return intervalCoor() throws RecognitionException { return gIdentifiersParser.intervalCoor(); }
+    public HiveParser_SelectClauseParser.hintClause_return hintClause() throws RecognitionException { return gSelectClauseParser.hintClause(); }
 
-    public HiveParser_IdentifiersParser.precedenceEqualExpression_return precedenceEqualExpression() throws RecognitionException { return gIdentifiersParser.precedenceEqualExpression(); }
+    public HiveParser_IdentifiersParser.intervalEnd_return intervalEnd() throws RecognitionException { return gIdentifiersParser.intervalEnd(); }
 
-    public HiveParser_SelectClauseParser.hintName_return hintName() throws RecognitionException { return gSelectClauseParser.hintName(); }
+    public HiveParser_FromClauseParser.searchCondition_return searchCondition() throws RecognitionException { return gFromClauseParser.searchCondition(); }
 
-    public HiveParser_IdentifiersParser.partitionSpec_return partitionSpec() throws RecognitionException { return gIdentifiersParser.partitionSpec(); }
+    public HiveParser_SelectClauseParser.trfmClause_return trfmClause() throws RecognitionException { return gSelectClauseParser.trfmClause(); }
 
-    public HiveParser_SelectClauseParser.selectTrfmClause_return selectTrfmClause() throws RecognitionException { return gSelectClauseParser.selectTrfmClause(); }
-
-    public HiveParser_IdentifiersParser.precedencePlusExpression_return precedencePlusExpression() throws RecognitionException { return gIdentifiersParser.precedencePlusExpression(); }
+    public HiveParser_IdentifiersParser.partitionByClause_return partitionByClause() throws RecognitionException { return gIdentifiersParser.partitionByClause(); }
 
     public HiveParser_IdentifiersParser.precedenceEqualOperator_return precedenceEqualOperator() throws RecognitionException { return gIdentifiersParser.precedenceEqualOperator(); }
 
-    public HiveParser_IdentifiersParser.locationComparator_return locationComparator() throws RecognitionException { return gIdentifiersParser.locationComparator(); }
-
-    public HiveParser_IdentifiersParser.precedenceUnaryOperator_return precedenceUnaryOperator() throws RecognitionException { return gIdentifiersParser.precedenceUnaryOperator(); }
-
-    public HiveParser_IdentifiersParser.precedencePlusOperator_return precedencePlusOperator() throws RecognitionException { return gIdentifiersParser.precedencePlusOperator(); }
-
-    public HiveParser_FromClauseParser.tableAlias_return tableAlias() throws RecognitionException { return gFromClauseParser.tableAlias(); }
-
-    public HiveParser_IdentifiersParser.partitionVal_return partitionVal() throws RecognitionException { return gIdentifiersParser.partitionVal(); }
-
-    public HiveParser_IdentifiersParser.precedenceAmpersandExpression_return precedenceAmpersandExpression() throws RecognitionException { return gIdentifiersParser.precedenceAmpersandExpression(); }
-
-    public HiveParser_IdentifiersParser.intervalStr_return intervalStr() throws RecognitionException { return gIdentifiersParser.intervalStr(); }
-
-    public HiveParser_FromClauseParser.uniqueJoinToken_return uniqueJoinToken() throws RecognitionException { return gFromClauseParser.uniqueJoinToken(); }
-
-    public HiveParser_IdentifiersParser.precedenceBitwiseXorExpression_return precedenceBitwiseXorExpression() throws RecognitionException { return gIdentifiersParser.precedenceBitwiseXorExpression(); }
-
-    public HiveParser_IdentifiersParser.precedenceAmpersandOperator_return precedenceAmpersandOperator() throws RecognitionException { return gIdentifiersParser.precedenceAmpersandOperator(); }
-
-    public HiveParser_IdentifiersParser.dropPartitionSpec_return dropPartitionSpec() throws RecognitionException { return gIdentifiersParser.dropPartitionSpec(); }
-
-    public HiveParser_IdentifiersParser.dateLiteral_return dateLiteral() throws RecognitionException { return gIdentifiersParser.dateLiteral(); }
-
-    public HiveParser_SelectClauseParser.window_frame_boundary_return window_frame_boundary() throws RecognitionException { return gSelectClauseParser.window_frame_boundary(); }
-
-    public HiveParser_IdentifiersParser.clusterByClause_return clusterByClause() throws RecognitionException { return gIdentifiersParser.clusterByClause(); }
-
-    public HiveParser_FromClauseParser.aliasList_return aliasList() throws RecognitionException { return gFromClauseParser.aliasList(); }
-
     public HiveParser_IdentifiersParser.charSetStringLiteral_return charSetStringLiteral() throws RecognitionException { return gIdentifiersParser.charSetStringLiteral(); }
 
-    public HiveParser_SelectClauseParser.hintArgName_return hintArgName() throws RecognitionException { return gSelectClauseParser.hintArgName(); }
+    public HiveParser_FromClauseParser.expressionList_return expressionList() throws RecognitionException { return gFromClauseParser.expressionList(); }
 
-    public HiveParser_IdentifiersParser.identifier_return identifier() throws RecognitionException { return gIdentifiersParser.identifier(); }
+    public HiveParser_FromClauseParser.aggregation_return aggregation() throws RecognitionException { return gFromClauseParser.aggregation(); }
+
+    public HiveParser_IdentifiersParser.castExpression_return castExpression() throws RecognitionException { return gIdentifiersParser.castExpression(); }
+
+    public HiveParser_IdentifiersParser.dropPartitionVal_return dropPartitionVal() throws RecognitionException { return gIdentifiersParser.dropPartitionVal(); }
+
+    public HiveParser_FromClauseParser.projectSource_return projectSource() throws RecognitionException { return gFromClauseParser.projectSource(); }
 
     public HiveParser_FromClauseParser.joinSource_return joinSource() throws RecognitionException { return gFromClauseParser.joinSource(); }
 
+    public HiveParser_IdentifiersParser.precedenceUnarySuffixExpression_return precedenceUnarySuffixExpression() throws RecognitionException { return gIdentifiersParser.precedenceUnarySuffixExpression(); }
+
+    public HiveParser_SelectClauseParser.hintItem_return hintItem() throws RecognitionException { return gSelectClauseParser.hintItem(); }
+
+    public HiveParser_SelectClauseParser.window_frame_boundary_return window_frame_boundary() throws RecognitionException { return gSelectClauseParser.window_frame_boundary(); }
+
+    public HiveParser_FromClauseParser.uniqueJoinExpr_return uniqueJoinExpr() throws RecognitionException { return gFromClauseParser.uniqueJoinExpr(); }
+
+    public HiveParser_IdentifiersParser.sysFuncNames_return sysFuncNames() throws RecognitionException { return gIdentifiersParser.sysFuncNames(); }
+
+    public HiveParser_SelectClauseParser.hintName_return hintName() throws RecognitionException { return gSelectClauseParser.hintName(); }
+
+    public HiveParser_IdentifiersParser.expression_return expression() throws RecognitionException { return gIdentifiersParser.expression(); }
+
+    public HiveParser_IdentifiersParser.dateLiteral_return dateLiteral() throws RecognitionException { return gIdentifiersParser.dateLiteral(); }
+
+    public HiveParser_IdentifiersParser.precedenceAmpersandOperator_return precedenceAmpersandOperator() throws RecognitionException { return gIdentifiersParser.precedenceAmpersandOperator(); }
+
+    public HiveParser_IdentifiersParser.precedenceFieldExpression_return precedenceFieldExpression() throws RecognitionException { return gIdentifiersParser.precedenceFieldExpression(); }
+
+    public HiveParser_IdentifiersParser.precedenceOrExpression_return precedenceOrExpression() throws RecognitionException { return gIdentifiersParser.precedenceOrExpression(); }
+
+    public HiveParser_IdentifiersParser.partitionSpec_return partitionSpec() throws RecognitionException { return gIdentifiersParser.partitionSpec(); }
+
+    public HiveParser_SelectClauseParser.hintList_return hintList() throws RecognitionException { return gSelectClauseParser.hintList(); }
+
+    public HiveParser_SelectClauseParser.window_frame_return window_frame() throws RecognitionException { return gSelectClauseParser.window_frame(); }
+
+    public HiveParser_FromClauseParser.viewName_return viewName() throws RecognitionException { return gFromClauseParser.viewName(); }
+
+    public HiveParser_IdentifiersParser.locationComparator_return locationComparator() throws RecognitionException { return gIdentifiersParser.locationComparator(); }
+
+    public HiveParser_IdentifiersParser.intervalOrIntervalProp_return intervalOrIntervalProp() throws RecognitionException { return gIdentifiersParser.intervalOrIntervalProp(); }
+
+    public HiveParser_IdentifiersParser.groupByExpression_return groupByExpression() throws RecognitionException { return gIdentifiersParser.groupByExpression(); }
+
+    public HiveParser_FromClauseParser.lateralView_return lateralView() throws RecognitionException { return gFromClauseParser.lateralView(); }
+
+    public HiveParser_SelectClauseParser.selectClause_return selectClause() throws RecognitionException { return gSelectClauseParser.selectClause(); }
+
+    public HiveParser_IdentifiersParser.precedenceBitwiseXorExpression_return precedenceBitwiseXorExpression() throws RecognitionException { return gIdentifiersParser.precedenceBitwiseXorExpression(); }
+
+    public HiveParser_IdentifiersParser.precedenceNotExpression_return precedenceNotExpression() throws RecognitionException { return gIdentifiersParser.precedenceNotExpression(); }
+
+    public HiveParser_FromClauseParser.partitionTableFunctionSource_return partitionTableFunctionSource() throws RecognitionException { return gFromClauseParser.partitionTableFunctionSource(); }
+
+    public HiveParser_FromClauseParser.subQuerySource_return subQuerySource() throws RecognitionException { return gFromClauseParser.subQuerySource(); }
+
+    public HiveParser_FromClauseParser.whereClause_return whereClause() throws RecognitionException { return gFromClauseParser.whereClause(); }
+
+    public HiveParser_FromClauseParser.partitioningSpec_return partitioningSpec() throws RecognitionException { return gFromClauseParser.partitioningSpec(); }
+
+    public HiveParser_SelectClauseParser.selectList_return selectList() throws RecognitionException { return gSelectClauseParser.selectList(); }
+
+    public HiveParser_IdentifiersParser.precedenceBitwiseXorOperator_return precedenceBitwiseXorOperator() throws RecognitionException { return gIdentifiersParser.precedenceBitwiseXorOperator(); }
+
     public HiveParser_SelectClauseParser.selectExpressionList_return selectExpressionList() throws RecognitionException { return gSelectClauseParser.selectExpressionList(); }
 
+    public HiveParser_FromClauseParser.uniqueJoinSource_return uniqueJoinSource() throws RecognitionException { return gFromClauseParser.uniqueJoinSource(); }
+
+    public HiveParser_IdentifiersParser.tableOrPartition_return tableOrPartition() throws RecognitionException { return gIdentifiersParser.tableOrPartition(); }
+
+    public HiveParser_IdentifiersParser.precedenceAndOperator_return precedenceAndOperator() throws RecognitionException { return gIdentifiersParser.precedenceAndOperator(); }
+
+    public HiveParser_IdentifiersParser.sortByClause_return sortByClause() throws RecognitionException { return gIdentifiersParser.sortByClause(); }
+
+    public HiveParser_FromClauseParser.intersectJoinSource_return intersectJoinSource() throws RecognitionException { return gFromClauseParser.intersectJoinSource(); }
+
+    public HiveParser_IdentifiersParser.partitionVal_return partitionVal() throws RecognitionException { return gIdentifiersParser.partitionVal(); }
+
+    public HiveParser_IdentifiersParser.intervalConstant_return intervalConstant() throws RecognitionException { return gIdentifiersParser.intervalConstant(); }
+
+    public HiveParser_IdentifiersParser.dropPartitionSpec_return dropPartitionSpec() throws RecognitionException { return gIdentifiersParser.dropPartitionSpec(); }
+
+    public HiveParser_FromClauseParser.tableSource_return tableSource() throws RecognitionException { return gFromClauseParser.tableSource(); }
+
+    public HiveParser_SelectClauseParser.window_range_expression_return window_range_expression() throws RecognitionException { return gSelectClauseParser.window_range_expression(); }
+
+    public HiveParser_FromClauseParser.fromClause_return fromClause() throws RecognitionException { return gFromClauseParser.fromClause(); }
+
+    public HiveParser_IdentifiersParser.functionName_return functionName() throws RecognitionException { return gIdentifiersParser.functionName(); }
+
+    public HiveParser_IdentifiersParser.descFuncNames_return descFuncNames() throws RecognitionException { return gIdentifiersParser.descFuncNames(); }
+
+    public HiveParser_IdentifiersParser.precedenceUnaryOperator_return precedenceUnaryOperator() throws RecognitionException { return gIdentifiersParser.precedenceUnaryOperator(); }
+
+    public HiveParser_IdentifiersParser.dropPartitionOperator_return dropPartitionOperator() throws RecognitionException { return gIdentifiersParser.dropPartitionOperator(); }
+
+    public HiveParser_IdentifiersParser.groupByClause_return groupByClause() throws RecognitionException { return gIdentifiersParser.groupByClause(); }
+
+    public HiveParser_IdentifiersParser.nullCondition_return nullCondition() throws RecognitionException { return gIdentifiersParser.nullCondition(); }
+
+    public HiveParser_FromClauseParser.tableOrColumn_return tableOrColumn() throws RecognitionException { return gFromClauseParser.tableOrColumn(); }
+
+    public HiveParser_IdentifiersParser.constant_return constant() throws RecognitionException { return gIdentifiersParser.constant(); }
+
+    public HiveParser_SelectClauseParser.hintArgs_return hintArgs() throws RecognitionException { return gSelectClauseParser.hintArgs(); }
+
+    public HiveParser_IdentifiersParser.clusterByClause_return clusterByClause() throws RecognitionException { return gIdentifiersParser.clusterByClause(); }
+
+    public HiveParser_IdentifiersParser.precedenceBitwiseOrOperator_return precedenceBitwiseOrOperator() throws RecognitionException { return gIdentifiersParser.precedenceBitwiseOrOperator(); }
+
+    public HiveParser_IdentifiersParser.orderByClause_return orderByClause() throws RecognitionException { return gIdentifiersParser.orderByClause(); }
+
+    public HiveParser_IdentifiersParser.groupingSetExpression_return groupingSetExpression() throws RecognitionException { return gIdentifiersParser.groupingSetExpression(); }
+
+    public HiveParser_SelectClauseParser.window_frame_start_boundary_return window_frame_start_boundary() throws RecognitionException { return gSelectClauseParser.window_frame_start_boundary(); }
+
+    public HiveParser_IdentifiersParser.intervalCoor_return intervalCoor() throws RecognitionException { return gIdentifiersParser.intervalCoor(); }
+
     public HiveParser_FromClauseParser.joinToken_return joinToken() throws RecognitionException { return gFromClauseParser.joinToken(); }
+
+    public HiveParser_SelectClauseParser.hintArgName_return hintArgName() throws RecognitionException { return gSelectClauseParser.hintArgName(); }
+
+    public HiveParser_FromClauseParser.intervalLength_return intervalLength() throws RecognitionException { return gFromClauseParser.intervalLength(); }
+
+    public HiveParser_IdentifiersParser.caseExpression_return caseExpression() throws RecognitionException { return gIdentifiersParser.caseExpression(); }
+
+    public HiveParser_SelectClauseParser.window_defn_return window_defn() throws RecognitionException { return gSelectClauseParser.window_defn(); }
+
+    public HiveParser_IdentifiersParser.havingCondition_return havingCondition() throws RecognitionException { return gIdentifiersParser.havingCondition(); }
+
+    public HiveParser_SelectClauseParser.selectItem_return selectItem() throws RecognitionException { return gSelectClauseParser.selectItem(); }
+
+    public HiveParser_FromClauseParser.tableAllColumns_return tableAllColumns() throws RecognitionException { return gFromClauseParser.tableAllColumns(); }
+
+    public HiveParser_IdentifiersParser.precedenceStarExpression_return precedenceStarExpression() throws RecognitionException { return gIdentifiersParser.precedenceStarExpression(); }
+
+    public HiveParser_IdentifiersParser.havingClause_return havingClause() throws RecognitionException { return gIdentifiersParser.havingClause(); }
+
+    public HiveParser_IdentifiersParser.expressions_return expressions() throws RecognitionException { return gIdentifiersParser.expressions(); }
+
+    public HiveParser_FromClauseParser.multipleTrack_return multipleTrack() throws RecognitionException { return gFromClauseParser.multipleTrack(); }
+
+    public HiveParser_IdentifiersParser.precedenceNotOperator_return precedenceNotOperator() throws RecognitionException { return gIdentifiersParser.precedenceNotOperator(); }
+
+    public HiveParser_FromClauseParser.tableAlias_return tableAlias() throws RecognitionException { return gFromClauseParser.tableAlias(); }
+
+    public HiveParser_IdentifiersParser.precedenceEqualExpression_return precedenceEqualExpression() throws RecognitionException { return gIdentifiersParser.precedenceEqualExpression(); }
+
+    public HiveParser_FromClauseParser.uniqueJoinToken_return uniqueJoinToken() throws RecognitionException { return gFromClauseParser.uniqueJoinToken(); }
+
+    public HiveParser_SelectClauseParser.selectExpression_return selectExpression() throws RecognitionException { return gSelectClauseParser.selectExpression(); }
+
+    public HiveParser_IdentifiersParser.precedenceEqualNegatableOperator_return precedenceEqualNegatableOperator() throws RecognitionException { return gIdentifiersParser.precedenceEqualNegatableOperator(); }
+
+    public HiveParser_IdentifiersParser.precedenceAmpersandExpression_return precedenceAmpersandExpression() throws RecognitionException { return gIdentifiersParser.precedenceAmpersandExpression(); }
+
+    public HiveParser_IdentifiersParser.precedencePlusExpression_return precedencePlusExpression() throws RecognitionException { return gIdentifiersParser.precedencePlusExpression(); }
+
+    public HiveParser_SelectClauseParser.window_value_expression_return window_value_expression() throws RecognitionException { return gSelectClauseParser.window_value_expression(); }
+
+    public HiveParser_IdentifiersParser.identifier_return identifier() throws RecognitionException { return gIdentifiersParser.identifier(); }
+
+    public HiveParser_IdentifiersParser.intervalDistance_return intervalDistance() throws RecognitionException { return gIdentifiersParser.intervalDistance(); }
+
+    public HiveParser_FromClauseParser.partitionedTableFunction_return partitionedTableFunction() throws RecognitionException { return gFromClauseParser.partitionedTableFunction(); }
+
+    public HiveParser_IdentifiersParser.precedencePlusOperator_return precedencePlusOperator() throws RecognitionException { return gIdentifiersParser.precedencePlusOperator(); }
+
+    public HiveParser_IdentifiersParser.atomExpression_return atomExpression() throws RecognitionException { return gIdentifiersParser.atomExpression(); }
+
+    public HiveParser_IdentifiersParser.whenExpression_return whenExpression() throws RecognitionException { return gIdentifiersParser.whenExpression(); }
+
+    public HiveParser_FromClauseParser.coalesceSource_return coalesceSource() throws RecognitionException { return gFromClauseParser.coalesceSource(); }
+
+    public HiveParser_FromClauseParser.tableName_return tableName() throws RecognitionException { return gFromClauseParser.tableName(); }
+
+    public HiveParser_IdentifiersParser.stringLiteralSequence_return stringLiteralSequence() throws RecognitionException { return gIdentifiersParser.stringLiteralSequence(); }
+
+    public HiveParser_IdentifiersParser.precedenceBitwiseOrExpression_return precedenceBitwiseOrExpression() throws RecognitionException { return gIdentifiersParser.precedenceBitwiseOrExpression(); }
+
+    public HiveParser_FromClauseParser.tableSample_return tableSample() throws RecognitionException { return gFromClauseParser.tableSample(); }
+
+    public HiveParser_SelectClauseParser.selectTrfmClause_return selectTrfmClause() throws RecognitionException { return gSelectClauseParser.selectTrfmClause(); }
+
+    public HiveParser_IdentifiersParser.intervalSta_return intervalSta() throws RecognitionException { return gIdentifiersParser.intervalSta(); }
+
+    public HiveParser_IdentifiersParser.booleanValue_return booleanValue() throws RecognitionException { return gIdentifiersParser.booleanValue(); }
+
+    public HiveParser_FromClauseParser.tableBucketSample_return tableBucketSample() throws RecognitionException { return gFromClauseParser.tableBucketSample(); }
+
+    public HiveParser_SelectClauseParser.window_clause_return window_clause() throws RecognitionException { return gSelectClauseParser.window_clause(); }
+
+    public HiveParser_FromClauseParser.exclusivenessJoinSource_return exclusivenessJoinSource() throws RecognitionException { return gFromClauseParser.exclusivenessJoinSource(); }
+
+    public HiveParser_IdentifiersParser.precedenceOrOperator_return precedenceOrOperator() throws RecognitionException { return gIdentifiersParser.precedenceOrOperator(); }
+
+    public HiveParser_IdentifiersParser.function_return function() throws RecognitionException { return gIdentifiersParser.function(); }
+
+    public HiveParser_FromClauseParser.aliasList_return aliasList() throws RecognitionException { return gFromClauseParser.aliasList(); }
+
+    public HiveParser_IdentifiersParser.nonReserved_return nonReserved() throws RecognitionException { return gIdentifiersParser.nonReserved(); }
+
+    public HiveParser_FromClauseParser.fromSource_return fromSource() throws RecognitionException { return gFromClauseParser.fromSource(); }
+
+    public HiveParser_IdentifiersParser.intervalStr_return intervalStr() throws RecognitionException { return gIdentifiersParser.intervalStr(); }
+
+    public HiveParser_IdentifiersParser.precedenceStarOperator_return precedenceStarOperator() throws RecognitionException { return gIdentifiersParser.precedenceStarOperator(); }
+
+    public HiveParser_IdentifiersParser.distributeByClause_return distributeByClause() throws RecognitionException { return gIdentifiersParser.distributeByClause(); }
 
 
     protected DFA9 dfa9 = new DFA9(this);

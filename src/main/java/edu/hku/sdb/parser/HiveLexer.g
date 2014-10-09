@@ -16,7 +16,7 @@
 */
 lexer grammar HiveLexer;
 
-//@lexer::header {package org.apache.hadoop.hive.ql.parse;}
+@lexer::header {package edu.hku.sdb.parser;}
 
 // Keywords
 KW_ENC : 'ENC';

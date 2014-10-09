@@ -16,33 +16,28 @@
  * limitations under the License.
  */
 
+package edu.hku.sdb.parser;
 
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.Token;
-import org.antlr.runtime.TokenStream;
-import org.antlr.runtime.tree.CommonErrorNode;
+import java.util.List;
 
-public class ASTErrorNode extends ASTNode {
+/**
+ * This interface defines the functions needed by the walkers and dispatchers.
+ * These are implemented by the node of the graph that needs to be walked.
+ */
+public interface Node {
 
   /**
-   *
+   * Gets the vector of children nodes. This is used in the graph walker
+   * algorithms.
+   * 
+   * @return List<? extends Node>
    */
-  private static final long serialVersionUID = 1L;
-  CommonErrorNode delegate;
+  List<? extends Node> getChildren();
 
-  public ASTErrorNode(TokenStream input, Token start, Token stop,
-      RecognitionException e){
-    delegate = new CommonErrorNode(input,start,stop,e);
-  }
-
-  @Override
-  public boolean isNil() { return delegate.isNil(); }
-
-  @Override
-  public int getType() { return delegate.getType(); }
-
-  @Override
-  public String getText() { return delegate.getText(); }
-  @Override
-  public String toString() { return delegate.toString(); }
+  /**
+   * Gets the name of the node. This is used in the rule dispatchers.
+   * 
+   * @return String
+   */
+  String getName();
 }

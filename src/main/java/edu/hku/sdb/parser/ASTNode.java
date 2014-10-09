@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+package edu.hku.sdb.parser;
 
 import java.io.Serializable;
 import java.util.ArrayList;

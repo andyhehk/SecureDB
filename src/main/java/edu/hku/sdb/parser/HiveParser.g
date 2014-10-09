@@ -337,7 +337,7 @@ TOK_DISTANCE;
 // Package headers
 @header {
 //package org.apache.hadoop.hive.ql.parse;
-
+package edu.hku.sdb.parser;
 import java.util.Collection;
 import java.util.HashMap;
 }

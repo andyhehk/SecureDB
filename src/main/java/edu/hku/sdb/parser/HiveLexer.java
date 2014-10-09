@@ -1,4 +1,5 @@
-// $ANTLR 3.4 HiveLexer.g 2014-10-06 21:41:16
+// $ANTLR 3.4 HiveLexer.g 2014-10-09 18:00:51
+package edu.hku.sdb.parser;
 
 import org.antlr.runtime.*;
 import java.util.Stack;

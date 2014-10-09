@@ -1,7 +1,7 @@
-// $ANTLR 3.4 FromClauseParser.g 2014-10-06 21:41:25
+// $ANTLR 3.4 FromClauseParser.g 2014-10-09 18:00:58
 
 //package org.apache.hadoop.hive.ql.parse;
-
+package edu.hku.sdb.parser;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -2744,7 +2744,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: tableAlias, identifier, function
+                    // elements: identifier, tableAlias, function
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -2890,7 +2890,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: identifier, function, tableAlias
+                    // elements: function, tableAlias, identifier
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -3368,8 +3368,8 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: numerator, expr, denominator
-            // token labels: denominator, numerator
+            // elements: expr, denominator, numerator
+            // token labels: numerator, denominator
             // rule labels: retval
             // token list labels: 
             // rule list labels: expr
@@ -3377,8 +3377,8 @@ public TreeAdaptor getTreeAdaptor() {
             if ( state.backtracking==0 ) {
 
             retval.tree = root_0;
-            RewriteRuleTokenStream stream_denominator=new RewriteRuleTokenStream(adaptor,"token denominator",denominator);
             RewriteRuleTokenStream stream_numerator=new RewriteRuleTokenStream(adaptor,"token numerator",numerator);
+            RewriteRuleTokenStream stream_denominator=new RewriteRuleTokenStream(adaptor,"token denominator",denominator);
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
             RewriteRuleSubtreeStream stream_expr=new RewriteRuleSubtreeStream(adaptor,"token expr",list_expr);
             root_0 = (CommonTree)adaptor.nil();
@@ -3986,7 +3986,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: tabname, ts, alias, props
+            // elements: alias, props, ts, tabname
             // token labels: alias
             // rule labels: retval, ts, tabname, props
             // token list labels: 
@@ -4604,7 +4604,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: aggregation, fromSource, fromSource
+            // elements: fromSource, aggregation, fromSource
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -4835,7 +4835,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( state.backtracking==0 ) stream_fromSource.add(fromSource121.getTree());
 
                     // AST REWRITE
-                    // elements: intervalLength, fromSource
+                    // elements: fromSource, intervalLength
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -5099,7 +5099,7 @@ public TreeAdaptor getTreeAdaptor() {
                     if ( state.backtracking==0 ) stream_identifier.add(tab.getTree());
 
                     // AST REWRITE
-                    // elements: db, tab
+                    // elements: tab, db
                     // token labels: 
                     // rule labels: db, retval, tab
                     // token list labels: 
@@ -5696,7 +5696,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: distributeByClause, sortByClause
+                    // elements: sortByClause, distributeByClause
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -6412,7 +6412,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: partitionTableFunctionSource, partitioningSpec, alias, expression, name
+            // elements: alias, partitionTableFunctionSource, name, expression, partitioningSpec
             // token labels: alias, name
             // rule labels: retval
             // token list labels: 

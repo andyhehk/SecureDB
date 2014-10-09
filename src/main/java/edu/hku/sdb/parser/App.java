@@ -1,4 +1,4 @@
-package com.sdb.app;
+package edu.hku.sdb.parser;
 
 /**
  * Hello world!

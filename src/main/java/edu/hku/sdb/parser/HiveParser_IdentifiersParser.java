@@ -1,7 +1,7 @@
-// $ANTLR 3.4 IdentifiersParser.g 2014-10-06 21:41:25
+// $ANTLR 3.4 IdentifiersParser.g 2014-10-09 18:00:59
 
 //package org.apache.hadoop.hive.ql.parse;
-
+package edu.hku.sdb.parser;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -928,7 +928,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: groupByExpression, groupingSetExpression, groupByExpression, groupByExpression, groupByExpression
+            // elements: groupingSetExpression, groupByExpression, groupByExpression, groupByExpression, groupByExpression
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3288,7 +3288,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: functionName, functionName, selectExpression, selectExpression, functionName
+            // elements: selectExpression, functionName, selectExpression, functionName, functionName
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -5503,7 +5503,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: identifier, tableOrColumn, tableOrColumn
+                    // elements: tableOrColumn, tableOrColumn, identifier
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -5902,7 +5902,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: intervalCoor, intervalEnd, intervalStr, intervalSta
+            // elements: intervalStr, intervalSta, intervalEnd, intervalCoor
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -6714,7 +6714,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: nullCondition, precedenceUnaryPrefixExpression, precedenceUnaryPrefixExpression
+            // elements: precedenceUnaryPrefixExpression, nullCondition, precedenceUnaryPrefixExpression
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -8702,7 +8702,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             	    // AST REWRITE
-            	    // elements: precedenceEqualNegatableOperator, KW_NOT, precedenceEqualExpression, notExpr
+            	    // elements: KW_NOT, notExpr, precedenceEqualNegatableOperator, precedenceEqualExpression
             	    // token labels: 
             	    // rule labels: retval, notExpr
             	    // token list labels: 
@@ -8771,7 +8771,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             	    // AST REWRITE
-            	    // elements: equalExpr, precedenceEqualOperator, precedenceEqualExpression
+            	    // elements: equalExpr, precedenceEqualExpression, precedenceEqualOperator
             	    // token labels: 
             	    // rule labels: equalExpr, retval
             	    // token list labels: 
@@ -8831,7 +8831,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             	    // AST REWRITE
-            	    // elements: KW_IN, KW_NOT, precedenceEqualExpression, expressions
+            	    // elements: KW_NOT, expressions, KW_IN, precedenceEqualExpression
             	    // token labels: 
             	    // rule labels: retval
             	    // token list labels: 
@@ -8902,7 +8902,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             	    // AST REWRITE
-            	    // elements: KW_IN, expressions, precedenceEqualExpression
+            	    // elements: precedenceEqualExpression, KW_IN, expressions
             	    // token labels: 
             	    // rule labels: retval
             	    // token list labels: 
@@ -8990,7 +8990,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             	    // AST REWRITE
-            	    // elements: min, left, max
+            	    // elements: left, max, min
             	    // token labels: 
             	    // rule labels: min, retval, max, left
             	    // token list labels: 
@@ -9083,7 +9083,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             	    // AST REWRITE
-            	    // elements: max, left, min
+            	    // elements: min, left, max
             	    // token labels: 
             	    // rule labels: min, retval, max, left
             	    // token list labels: 
@@ -9916,7 +9916,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: partitionSpec, tableName
+            // elements: tableName, partitionSpec
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -10468,7 +10468,7 @@ public TreeAdaptor getTreeAdaptor() {
             if ( state.backtracking==0 ) stream_constant.add(constant303.getTree());
 
             // AST REWRITE
-            // elements: dropPartitionOperator, constant, identifier
+            // elements: identifier, dropPartitionOperator, constant
             // token labels: 
             // rule labels: retval
             // token list labels: 

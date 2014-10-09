@@ -34,6 +34,9 @@
  * we tag each ASTNode with a reference to an ASTNodeOrign describing v and its
  * usage within the query.
  */
+
+package edu.hku.sdb.parser;
+
 public class ASTNodeOrigin {
   private final String objectType;
   private final String objectName;

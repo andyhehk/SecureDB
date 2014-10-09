@@ -1,7 +1,7 @@
-// $ANTLR 3.4 SelectClauseParser.g 2014-10-06 21:41:24
+// $ANTLR 3.4 SelectClauseParser.g 2014-10-09 18:00:58
 
 //package org.apache.hadoop.hive.ql.parse;
-
+package edu.hku.sdb.parser;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -869,7 +869,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: selectList, selectTrfmClause, selectList, hintClause, hintClause, hintClause
+                    // elements: hintClause, hintClause, hintClause, selectTrfmClause, selectList, selectList
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -1448,7 +1448,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_recordReader.add(outRec.getTree());
 
             // AST REWRITE
-            // elements: selectExpressionList, outSerde, inSerde, aliasList, columnNameTypeList, inRec, outRec, StringLiteral
+            // elements: StringLiteral, selectExpressionList, outRec, aliasList, inSerde, columnNameTypeList, outSerde, inRec
             // token labels: 
             // rule labels: retval, inRec, inSerde, outRec, outSerde
             // token list labels: 
@@ -1841,7 +1841,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: hintArgs, hintName
+            // elements: hintName, hintArgs
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -2460,7 +2460,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: identifier, selectExpression, ws
+            // elements: selectExpression, identifier, ws
             // token labels: 
             // rule labels: retval, ws
             // token list labels: 
@@ -2859,7 +2859,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_recordReader.add(outRec.getTree());
 
             // AST REWRITE
-            // elements: aliasList, outSerde, selectExpressionList, outRec, StringLiteral, columnNameTypeList, inRec, inSerde
+            // elements: outRec, StringLiteral, outSerde, columnNameTypeList, inRec, aliasList, inSerde, selectExpressionList
             // token labels: 
             // rule labels: retval, inSerde, inRec, outRec, outSerde
             // token list labels: 
@@ -3231,7 +3231,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: KW_WINDOW, window_defn
+            // elements: window_defn, KW_WINDOW
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3550,7 +3550,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
             // AST REWRITE
-            // elements: window_frame, partitioningSpec, Identifier
+            // elements: partitioningSpec, Identifier, window_frame
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -3858,7 +3858,7 @@ public TreeAdaptor getTreeAdaptor() {
                     stream_window_frame_boundary.add(end.getTree());
 
                     // AST REWRITE
-                    // elements: s, end
+                    // elements: end, s
                     // token labels: 
                     // rule labels: retval, s, end
                     // token list labels: 
@@ -4059,7 +4059,7 @@ public TreeAdaptor getTreeAdaptor() {
                     stream_window_frame_boundary.add(end.getTree());
 
                     // AST REWRITE
-                    // elements: s, end
+                    // elements: end, s
                     // token labels: 
                     // rule labels: retval, s, end
                     // token list labels: 
@@ -4192,7 +4192,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: KW_UNBOUNDED, KW_PRECEDING
+                    // elements: KW_PRECEDING, KW_UNBOUNDED
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -4278,7 +4278,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: Number, KW_PRECEDING
+                    // elements: KW_PRECEDING, Number
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -4446,7 +4446,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: r, KW_UNBOUNDED
+                    // elements: KW_UNBOUNDED, r
                     // token labels: r
                     // rule labels: retval
                     // token list labels: 
