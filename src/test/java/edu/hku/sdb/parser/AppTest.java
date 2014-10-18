@@ -37,7 +37,7 @@ public class AppTest
     public void testApp()
     
     {
-        ParseDriver pd = new ParseDriver();
+        ParseDriver parseDriver = new ParseDriver();
         //        String stmtArray = "  SELECT COUNT(*) FROM wgEncodeBroadHistone.wgEncodeBroadHistoneGm12878ControlStdSig  ; SELECT COUNT(*" +
         //                ") FROM wgEncodeBroadHistone.wgEncodeBroadHistoneGm12878ControlStdSig  ;";
         String stmtArray = "CREATE TABLE employee (\n" +
@@ -64,12 +64,13 @@ public class AppTest
         String[] stmts = stmtArray.split(";");
         for (String stmt : stmts)
             try {
-                ASTNode tree = pd.parse(stmt.trim());
+                ASTNode tree = parseDriver.parse(stmt.trim());
                 DOTTreeGenerator gen = new DOTTreeGenerator();
                 StringTemplate st = gen.toDOT(tree);
                 System.out.println(st);
                 System.out.println(stmt);
-                System.out.println(tree.toStringTree());
+                System.out.println(tree.prettyPrint());
+
             } catch (ParseException e) {
                 System.out.println(e.getMessage());
             }

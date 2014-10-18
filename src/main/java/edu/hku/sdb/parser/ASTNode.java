@@ -288,4 +288,9 @@ public class ASTNode extends CommonTree implements Node,Serializable {
         else return token.getText();
     }
 
+    public String prettyPrint(){
+        String result = this.toStringTree();
+        result = result.replaceAll("\\s+", " ");
+        return result;
+    }
 }
