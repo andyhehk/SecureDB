@@ -126,7 +126,8 @@ public class ASTNode extends CommonTree implements Node,Serializable {
         }
         StringBuffer buf = new StringBuffer();
         if ( !isNil() ) {
-            if (token.getText().equals("TOK_QUERY")){
+            String tokenText = token.getText();
+            if (tokenText.equals("TOK_QUERY")){
                 ASTNode insertTree = (ASTNode)children.get(findChild("TOK_INSERT"));
                 int groupByIndex = insertTree.findChild("TOK_GROUPBY");
                 if (groupByIndex != 0){
@@ -152,7 +153,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
                 }
             }
             
-            else if (token.getText().equals("TOK_SUBQUERY")){
+            else if (tokenText.equals("TOK_SUBQUERY")){
                 buf.append("(");
                 Tree first = (Tree)children.get(0);
                 buf.append(first.toStringTree());
@@ -164,12 +165,12 @@ public class ASTNode extends CommonTree implements Node,Serializable {
                 return buf.toString();
             }
             
-            else if (token.getText().equals("TOK_DESTINATION")){
+            else if (tokenText.equals("TOK_DESTINATION")){
                 return "";
             }
             
             
-            else if (token.getText().equals("TOK_SELECT")){
+            else if (tokenText.equals("TOK_SELECT")){
                 buf.append(this.toString());
                 childToStringTree(buf);
                 buf.deleteCharAt(buf.indexOf(","));
@@ -177,7 +178,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
                 return buf.toString();
                 
             }
-            else if (token.getText().equals("TOK_TABCOLLIST")){
+            else if (tokenText.equals("TOK_TABCOLLIST")){
                 buf.append("(");
                 childToStringTree(buf);
                 buf.deleteCharAt(buf.length()-1);
@@ -185,21 +186,34 @@ public class ASTNode extends CommonTree implements Node,Serializable {
                 buf.append(" ");
                 return buf.toString();
             }
-            else if (token.getText().equals("TOK_TABCOL")){
+            else if (tokenText.equals("TOK_TABCOL")){
                 childToStringTree(buf);
                 buf.append(",");
                 return buf.toString();
             }
-            else if (token.getText().equals("*")){
+
+            else if (tokenText.equals("*") || tokenText.equals("/")){
                 Tree first = (Tree)children.get(0);
                 buf.append(first.toStringTree());
-                buf.append(" * ");
+                buf.append(" "+tokenText+" ");
                 Tree second = (Tree)children.get(1);
                 buf.append(second.toStringTree());
                 buf.append(" ");
                 return buf.toString();
             }
-            else if (token.getText().equals("TOK_JOIN")){
+
+            else if (tokenText.equals("sdb_mul")){
+                Tree first = (Tree)children.get(0);
+                buf.append(tokenText+"(");
+                buf.append(first.toStringTree());
+                Tree second = (Tree)children.get(1);
+                buf.append(", ");
+                buf.append(second.toStringTree());
+                buf.append(") ");
+                return buf.toString();
+            }
+
+            else if (tokenText.equals("TOK_JOIN")){
                 Tree first = (Tree)children.get(0);
                 buf.append(first.toStringTree());
                 buf.append(" JOIN ");
@@ -209,7 +223,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
                 return buf.toString();
             }
             
-            if (token.getText().equals("TOK_FUNCTION")){
+            if (tokenText.equals("TOK_FUNCTION")){
                 if (getChildCount() > 1){
                     ASTNode functionTree = (ASTNode) children.get(0);
                     buf.append(functionTree.toString());

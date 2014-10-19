@@ -18,22 +18,51 @@
 package edu.hku.sdb.rewriter;
 
 import edu.hku.sdb.parser.ASTNode;
+import edu.hku.sdb.parser.HiveParser;
+import edu.hku.sdb.parser.Node;
+import org.antlr.runtime.tree.Tree;
+import org.antlr.runtime.Token;
+
+import javax.print.DocFlavor;
+import java.util.ArrayList;
 
 public class HiveRewriter extends AbstractRewriter{
 
-    ASTNode ast;
+    private ASTNode tree;
 
-    public HiveRewriter(ASTNode ast){
-        this.ast = ast;
+    public HiveRewriter(ASTNode tree){
+        this.tree = tree;
     }
 
-    public String rewrite(ASTNode tree){
-        return "Not implemented yet";
-    };
+    public void rewrite(){
+        rewrite(this.tree);
+    }
+
+    public void rewrite(ASTNode tree){
+        ArrayList<Node> children = tree.getChildren();
+        Token token = tree.getToken();
+
+        if (token != null){
+            if (token.getText().equals("*")) {
+                token.setText("sdb_mul");
+            }
+        }
+
+        rewriteChildren(children);
+
+        return;
+    }
+
+    private void rewriteChildren(ArrayList<Node> children){
+        for (int i = 0; children!=null && i < children.size(); i++) {
+            ASTNode t = (ASTNode) children.get(i);
+            rewrite(t);
+        }
+    }
 
 
-    public String prettyPrint(ASTNode tree){
-        return tree.prettyPrint();
+    public String prettyPrint(){
+        return this.tree.prettyPrint();
     }
 
 }

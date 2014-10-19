@@ -25,6 +25,6 @@ public abstract class AbstractRewriter {
 
 
 
-    public abstract String rewrite(ASTNode tree);
+    public abstract void rewrite(ASTNode tree);
 
 }

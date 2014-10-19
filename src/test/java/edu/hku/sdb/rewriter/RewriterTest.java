@@ -34,12 +34,11 @@ public class RewriterTest extends TestCase
      */
     public static Test suite()
     {
-        return new TestSuite( ParserTest.class );
+        return new TestSuite( RewriterTest.class );
     }
 
     public void setUp(){
         this.parseDriver = new ParseDriver();
-
         this.stmtArraySimple = "CREATE TABLE employee (id int, age int, salary int ENC);";
         this.stmtArrayOneLevel = "select id, sum(price*quantity) from (select id, price, quantity from A JOIN B ) t group by id;";
     }
@@ -47,23 +46,23 @@ public class RewriterTest extends TestCase
     /**
      * Rigourous Test :-)
      */
-    public void testParserSimple()
+    public void testRewriterSimple()
     {
         String[] stmts = stmtArraySimple.split(";");
         for (String stmt : stmts)
             try {
-                doPrettyPrint(stmt);
+                doRewrite(stmt);
             } catch (ParseException e) {
                 System.out.println(e.getMessage());
             }
         assertTrue( true );
     }
 
-    public void testParserOneLevel(){
+    public void testRewriterOneLevel(){
         String[] stmts = stmtArrayOneLevel.split(";");
         for (String stmt : stmts)
             try {
-                doPrettyPrint(stmt);
+                doRewrite(stmt);
             } catch (ParseException e) {
                 System.out.println(e.getMessage());
             }
@@ -75,10 +74,12 @@ public class RewriterTest extends TestCase
         System.out.println(testUtility.visualize());
     }
 
-    private void doPrettyPrint(String stmt) throws ParseException{
+    private void doRewrite(String stmt) throws ParseException{
         ASTNode tree = parseDriver.parse(stmt.trim());
+        HiveRewriter hiveRewriter = new HiveRewriter(tree);
+        hiveRewriter.rewrite();
         System.out.println("Input SQL: " + stmt);
-        System.out.println("Output SQL: " + tree.prettyPrint());
+        System.out.println("Output SQL: " + hiveRewriter.prettyPrint());
     }
 
 }
