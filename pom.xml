@@ -51,27 +51,11 @@
 
  <build>
     <plugins>
-<!--      <plugin>-->
-<!--        <groupId>org.codehaus.mojo</groupId>-->
-<!--        <artifactId>antlr3-maven-plugin</artifactId>-->
-<!--        <version>1.0</version>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <goals>-->
-<!--              <goal>antlr</goal>-->
-<!--            </goals>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
-
+      
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
         <version>2.5.1</version>
-	<configuration>
-	<!-- enable "release" profile during release:perform
-	  <releaseProfiles>release</releaseProfiles> -->
-        </configuration>
       </plugin>
     </plugins>
   </build>
