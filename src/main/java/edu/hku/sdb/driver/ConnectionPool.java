@@ -17,6 +17,7 @@
 
 package edu.hku.sdb.driver;
 
+import edu.hku.sdb.conf.SdbConf;
 import edu.hku.sdb.connect.Connection;
 import edu.hku.sdb.connect.ConnectionService;
 
@@ -29,6 +30,10 @@ public class ConnectionPool extends UnicastRemoteObject implements ConnectionSer
    * Default serialversion ID
    */
   private static final long serialVersionUID = 1L;
+  private static final String serviceName = "ConnectionService";
+  private Integer maxConnectionNumber;
+  private Integer availableConnectionNumber;
+  private SdbConf SDBConf;
 
   /**
    * @throws RemoteException
@@ -51,7 +56,29 @@ public class ConnectionPool extends UnicastRemoteObject implements ConnectionSer
    */
   public void closeConnection() {
     // TODO Auto-generated method stub
-    
   }
 
+  public Integer getMaxConnectionNumber() {
+    return maxConnectionNumber;
+  }
+
+  public void setMaxConnectionNumber(Integer maxConnectionNumber) {
+    this.maxConnectionNumber = maxConnectionNumber;
+  }
+
+  public Integer getAvailableConnectionNumber() {
+    return availableConnectionNumber;
+  }
+
+  public void setAvailableConnectionNumber(Integer availableConnectionNumber){
+    this.availableConnectionNumber = availableConnectionNumber;
+  }
+
+  public SdbConf getSDBConf() {
+    return SDBConf;
+  }
+
+  public void setSDBConf(SdbConf SDBConf) {
+    this.SDBConf = SDBConf;
+  }
 }

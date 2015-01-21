@@ -17,6 +17,23 @@
 
 package edu.hku.sdb.connect;
 
-public class ConnectionManager {
+public class ConnectionManager implements ConnectionService{
 
+    @Override
+    public Connection getConnection() {
+        return null;
+    }
+
+    @Override
+    public void closeConnection() {
+
+    }
+
+    public Connection getConnection(String databaseUrl, String userName, String password) {
+        return null;
+    }
+
+    public Connection getConnection(String databaseUrl){
+        return null;
+    }
 }

@@ -19,4 +19,13 @@ package edu.hku.sdb.connect;
 
 public class SdbStatement implements Statement {
 
+    @Override
+    public ResultSet executeQuery() {
+        return null;
+    }
+
+    @Override
+    public void close() {
+
+    }
 }

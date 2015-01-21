@@ -21,4 +21,7 @@ import java.rmi.Remote;
 
 public interface Connection extends Remote {
 
+    public Statement createStatement();
+    public void close();
+
 }

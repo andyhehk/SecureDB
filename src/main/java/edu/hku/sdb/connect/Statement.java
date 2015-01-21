@@ -21,4 +21,7 @@ import java.rmi.Remote;
 
 public interface Statement extends Remote {
 
+    public ResultSet executeQuery();
+    public void close();
+
 }

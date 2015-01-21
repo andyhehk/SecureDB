@@ -19,4 +19,14 @@ package edu.hku.sdb.connect;
 
 public class SdbConnection implements Connection {
 
+    @Override
+    public Statement createStatement() {
+        return null;
+    }
+
+    @Override
+    public void close() {
+        
+    }
+
 }
