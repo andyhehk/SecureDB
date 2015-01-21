@@ -29,7 +29,4 @@ public class SdbConf {
         this.connectionConf = connectionConf;
     }
 
-
-
-
 }
