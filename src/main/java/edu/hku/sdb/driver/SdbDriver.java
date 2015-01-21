@@ -19,6 +19,8 @@ package edu.hku.sdb.driver;
 
 public class SdbDriver {
 
+  private final String HELP = "help";
+
   /**
    * @param args
    */
@@ -26,5 +28,7 @@ public class SdbDriver {
     // TODO Auto-generated method stub
 
   }
+
+
 
 }

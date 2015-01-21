@@ -19,4 +19,17 @@ package edu.hku.sdb.conf;
 
 public class SdbConf {
 
+    private ConnectionConf connectionConf;
+
+    public ConnectionConf getConnectionConf() {
+        return connectionConf;
+    }
+
+    public void setConnectionConf(ConnectionConf connectionConf) {
+        this.connectionConf = connectionConf;
+    }
+
+
+
+
 }
