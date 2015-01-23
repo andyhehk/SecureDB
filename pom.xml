@@ -58,11 +58,29 @@
 			<email>hochion@gmail.com</email>
 			<url>http://www4.comp.polyu.edu.hk/~cszahe</url>
 		</developer>
+
+		<developer>
+			<id>eric-haibin-lin</id>
+			<name>Eric Haibin Lin</name>
+			<email>linhaibin.eric@gmail.com</email>
+		</developer>
+
 	</developers>
 
 	<build>
 		<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
 		<testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+
+	    <pluginManagement>
+	      <plugins>
+	        <plugin>
+	          <groupId>org.codehaus.mojo</groupId>
+	          <artifactId>rmic-maven-plugin</artifactId>
+	          <version>1.2.1</version>
+	        </plugin>
+	      </plugins>
+	    </pluginManagement>		
+
 		<plugins>
 			<!-- plugins are always listed in sorted order by groupId, artifectId -->
 			<plugin>
@@ -89,6 +107,34 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<version>2.5.1</version>
 			</plugin>
+
+			<plugin>
+		        <groupId>org.codehaus.mojo</groupId>
+		        <artifactId>rmic-maven-plugin</artifactId>
+		        <version>1.2.1</version>
+
+		       <executions>
+		          <execution>
+		            <id>rmi compilation</id>
+		            <goals>
+		              <goal>rmic</goal>
+		            </goals>
+		            <configuration>
+		              <sources>
+		                <source>
+		                  <includes>
+		                    <include>**/SdbConnection.class</include>
+		                    <include>**/ConnectionPool.class</include>
+		                  </includes>
+		                  <iiop>true</iiop>
+		                </source>
+		              </sources>
+		            </configuration>
+		          </execution>
+		        </executions>
+
+		    </plugin>
+
 		</plugins>
 	</build>
 
