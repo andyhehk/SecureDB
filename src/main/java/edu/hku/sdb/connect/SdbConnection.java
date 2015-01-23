@@ -17,16 +17,27 @@
 
 package edu.hku.sdb.connect;
 
-public class SdbConnection implements Connection {
+import java.io.Serializable;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+public class SdbConnection extends UnicastRemoteObject implements Connection, Serializable {
+
+    private static final long serialVersionUID = 227L;
+
+    public SdbConnection() throws RemoteException {
+        super();
+        //TODO auto generated code
+    }
 
     @Override
-    public Statement createStatement() {
+    public Statement createStatement() throws RemoteException{
         return null;
     }
 
     @Override
-    public void close() {
-        
+    public void close() throws RemoteException {
+
     }
 
 }

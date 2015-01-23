@@ -123,8 +123,6 @@
 		              <sources>
 		                <source>
 		                  <includes>
-		                    <include>**/SdbConnection.class</include>
-		                    <include>**/ConnectionPool.class</include>
 		                  </includes>
 		                  <iiop>true</iiop>
 		                </source>

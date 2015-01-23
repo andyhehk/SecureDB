@@ -17,23 +17,33 @@
 
 package edu.hku.sdb.connect;
 
-public class ConnectionManager implements ConnectionService{
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 
-    @Override
-    public Connection getConnection() {
+public class ConnectionManager {
+
+    public static Connection getConnection(String databaseUrl, String userName, String password) {
+        ConnectionService connectionService = null;
+        try {
+            connectionService = (ConnectionService) Naming.lookup(databaseUrl);
+        } catch (NotBoundException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        try {
+            return connectionService.getConnection();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
-    @Override
-    public void closeConnection() {
-
-    }
-
-    public Connection getConnection(String databaseUrl, String userName, String password) {
-        return null;
-    }
-
-    public Connection getConnection(String databaseUrl){
+    public Connection getConnection(String databaseUrl) {
         return null;
     }
 }

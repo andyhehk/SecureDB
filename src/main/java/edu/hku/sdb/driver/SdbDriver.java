@@ -17,18 +17,41 @@
 
 package edu.hku.sdb.driver;
 
+import edu.hku.sdb.conf.SdbConf;
+import edu.hku.sdb.connect.Connection;
+import edu.hku.sdb.connect.ConnectionService;
+
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+
 public class SdbDriver {
 
-  private final String HELP = "help";
+    private final String HELP = "help";
 
-  /**
-   * @param args
-   */
-  public static void main(String[] args) {
-    // TODO Auto-generated method stub
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        // TODO Auto-generated method stub
+        startDriver();
 
-  }
+    }
 
+    private static void startDriver() {
+        try {
+            ConnectionPool connectionPool = new ConnectionPool(new SdbConf());
+            Registry registry = LocateRegistry.getRegistry();
+            Naming.rebind("//localhost/ConnectionService", connectionPool);
 
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

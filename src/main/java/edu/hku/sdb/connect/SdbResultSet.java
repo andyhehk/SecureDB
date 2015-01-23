@@ -17,6 +17,17 @@
 
 package edu.hku.sdb.connect;
 
-public class SdbResultSet implements ResultSet {
+import java.io.Serializable;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+public class SdbResultSet extends UnicastRemoteObject implements ResultSet, Serializable {
+
+    private static final long serialVersionUID = 127L;
+
+    public SdbResultSet() throws RemoteException {
+        super();
+        //TODO auto generated code
+    }
 
 }

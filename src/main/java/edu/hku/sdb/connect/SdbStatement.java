@@ -17,7 +17,18 @@
 
 package edu.hku.sdb.connect;
 
-public class SdbStatement implements Statement {
+import java.io.Serializable;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+public class SdbStatement extends UnicastRemoteObject implements Statement, Serializable {
+
+    private static final long serialVersionUID = 427L;
+
+    public SdbStatement() throws RemoteException {
+        super();
+        //TODO auto generated code
+    }
 
     @Override
     public ResultSet executeQuery() {

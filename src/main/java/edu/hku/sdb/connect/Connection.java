@@ -23,6 +23,7 @@ import java.rmi.RemoteException;
 public interface Connection extends Remote {
 
     public Statement createStatement() throws RemoteException;
+
     public void close() throws RemoteException;
 
 }

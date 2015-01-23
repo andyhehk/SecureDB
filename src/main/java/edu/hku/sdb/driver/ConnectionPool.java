@@ -20,65 +20,103 @@ package edu.hku.sdb.driver;
 import edu.hku.sdb.conf.SdbConf;
 import edu.hku.sdb.connect.Connection;
 import edu.hku.sdb.connect.ConnectionService;
+import edu.hku.sdb.connect.SdbConnection;
 
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 
-public class ConnectionPool extends UnicastRemoteObject implements ConnectionService {
+public class ConnectionPool extends UnicastRemoteObject implements ConnectionService, Serializable {
 
-  /**
-   * Default serialversion ID
-   */
-  private static final long serialVersionUID = 1L;
-  private static final String serviceName = "ConnectionService";
-  private Integer maxConnectionNumber;
-  private Integer availableConnectionNumber;
-  private SdbConf SDBConf;
+    /**
+     * Default serialversion ID
+     */
+    private static final long serialVersionUID = 1L;
+    private static final String serviceName = "ConnectionService";
+    private Integer maxConnectionNumber;
+    // TODO handle synchronized method for availableConnectionNumber
+    private Integer availableConnectionNumber;
+    private SdbConf SDBConf;
 
-  /**
-   * @throws RemoteException
-   */
-  protected ConnectionPool() throws RemoteException {
-    super();
-    // TODO Auto-generated constructor stub
-  }
 
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.connect.ConnectionService#getConnection()
-   */
-  public Connection getConnection() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+    /**
+     * @throws RemoteException
+     */
+    protected ConnectionPool() throws RemoteException {
+        super();
+        // TODO Auto-generated constructor stub
+    }
 
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.connect.ConnectionService#closeConnection()
-   */
-  public void closeConnection() {
-    // TODO Auto-generated method stub
-  }
+    public ConnectionPool(SdbConf sdbConf) throws RemoteException {
+        super(0);
+        setSDBConf(sdbConf);
+        setAvailableConnectionNumber(10);
+    }
 
-  public Integer getMaxConnectionNumber() {
-    return maxConnectionNumber;
-  }
+    private void createConnection() {
+        try {
+            SdbConnection sdbConnection = new SdbConnection();
+            Naming.rebind("//localhost/Connection", sdbConnection);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
 
-  public void setMaxConnectionNumber(Integer maxConnectionNumber) {
-    this.maxConnectionNumber = maxConnectionNumber;
-  }
+    /* (non-Javadoc)
+     * @see edu.hku.sdb.connect.ConnectionService#getConnection()
+     */
+    public Connection getConnection() {
+        Connection connection = null;
+        if (availableConnectionNumber > 0) {
+            createConnection();
+            try {
+                connection = (Connection) Naming.lookup("//localhost/Connection");
+            } catch (NotBoundException e) {
+                e.printStackTrace();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+            availableConnectionNumber--;
+            return connection;
+        } else return null;
+    }
 
-  public Integer getAvailableConnectionNumber() {
-    return availableConnectionNumber;
-  }
+    /* (non-Javadoc)
+     * @see edu.hku.sdb.connect.ConnectionService#closeConnection()
+     */
+    public void closeConnection() {
+        // TODO Auto-generated method stub
+    }
 
-  public void setAvailableConnectionNumber(Integer availableConnectionNumber){
-    this.availableConnectionNumber = availableConnectionNumber;
-  }
+    public Integer getMaxConnectionNumber() {
+        return maxConnectionNumber;
+    }
 
-  public SdbConf getSDBConf() {
-    return SDBConf;
-  }
+    public void setMaxConnectionNumber(Integer maxConnectionNumber) {
+        this.maxConnectionNumber = maxConnectionNumber;
+    }
 
-  public void setSDBConf(SdbConf SDBConf) {
-    this.SDBConf = SDBConf;
-  }
+    public Integer getAvailableConnectionNumber() {
+        return availableConnectionNumber;
+    }
+
+    public void setAvailableConnectionNumber(Integer availableConnectionNumber) {
+        this.availableConnectionNumber = availableConnectionNumber;
+    }
+
+    public SdbConf getSDBConf() {
+        return SDBConf;
+    }
+
+    public void setSDBConf(SdbConf SDBConf) {
+        this.SDBConf = SDBConf;
+    }
 }

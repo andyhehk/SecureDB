@@ -22,15 +22,16 @@ import java.rmi.RemoteException;
 
 public interface ConnectionService extends Remote {
 
-  /**
-   * Obtain a connection from SDB Driver.
-   * @return
-   */
-  public Connection getConnection() throws RemoteException;
-  
-  /**
-   * Close the connection. It is also responsible for close all 
-   * the underlining resources.
-   */
-  public void closeConnection() throws RemoteException;
+    /**
+     * Obtain a connection from SDB Driver.
+     *
+     * @return
+     */
+    public Connection getConnection() throws RemoteException;
+
+    /**
+     * Close the connection. It is also responsible for close all
+     * the underlining resources.
+     */
+    public void closeConnection() throws RemoteException;
 }
