@@ -44,8 +44,29 @@ public class ConnectionManagerTest extends TestCase {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-        assertNotNull(connectionService.getConnection());
+
+        Connection connection = connectionService.getConnection();
+        assertNotNull(connection);
     }
-    
+
+    public void testGetStatement() throws Exception {
+        ConnectionService connectionService = null;
+        try {
+            connectionService = (ConnectionService) Naming.lookup("//localhost/ConnectionService");
+        } catch (NotBoundException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+        Statement statement = connectionService.getConnection().createStatement();
+        assertNotNull(statement);
+    }
+
+
+
+
 
 }
