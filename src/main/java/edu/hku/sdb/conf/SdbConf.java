@@ -20,6 +20,33 @@ package edu.hku.sdb.conf;
 public class SdbConf {
 
     private ConnectionConf connectionConf;
+    private DbConf metaDbConf;
+    private DbConf serverDbConf;
+    private DbConf clientDbConf;
+
+    public DbConf getMetadbConf() {
+        return metaDbConf;
+    }
+
+    public void setMetadbConf(DbConf metadbConf) {
+        this.metaDbConf = metadbConf;
+    }
+
+    public DbConf getServerdbConf() {
+        return serverDbConf;
+    }
+
+    public void setServerdbConf(DbConf serverdbConf) {
+        this.serverDbConf = serverdbConf;
+    }
+
+    public DbConf getClientdbConf() {
+        return clientDbConf;
+    }
+
+    public void setClientdbConf(DbConf clientdbConf) {
+        this.clientDbConf = clientdbConf;
+    }
 
     public ConnectionConf getConnectionConf() {
         return connectionConf;
@@ -27,6 +54,26 @@ public class SdbConf {
 
     public void setConnectionConf(ConnectionConf connectionConf) {
         this.connectionConf = connectionConf;
+    }
+
+    private void init(){
+
+    }
+
+    private void initClientDbConf(String filename){
+
+    }
+
+    private void initServerDbConf(String filename){
+
+    }
+
+    private void initMetaDbConf(String filename){
+
+    }
+
+    private void initConnectionConf(String filename){
+
     }
 
 }

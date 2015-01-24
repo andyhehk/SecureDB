@@ -20,6 +20,8 @@ package edu.hku.sdb.driver;
 import edu.hku.sdb.conf.SdbConf;
 import edu.hku.sdb.connect.Connection;
 import edu.hku.sdb.connect.ConnectionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -32,12 +34,12 @@ import java.rmi.server.UnicastRemoteObject;
 public class SdbDriver {
 
     private final String HELP = "help";
+    private static final Logger LOG = LoggerFactory.getLogger(SdbDriver.class);
 
     /**
      * @param args
      */
     public static void main(String[] args) {
-        // TODO Auto-generated method stub
         startDriver();
 
     }

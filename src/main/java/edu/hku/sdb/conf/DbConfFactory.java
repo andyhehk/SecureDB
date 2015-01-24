@@ -17,6 +17,15 @@
 
 package edu.hku.sdb.conf;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DbConfFactory {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DbConfFactory.class);
+
+    public DbConf getDbConf(String filename){
+        return null;
+    }
 
 }
