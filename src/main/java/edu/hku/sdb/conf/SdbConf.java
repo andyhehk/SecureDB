@@ -29,12 +29,7 @@ public class SdbConf {
     private DbConf metaDbConf;
     private DbConf serverDbConf;
     private DbConf clientDbConf;
-
-    private final String CONNECTION_CONFIG = "[connection]";
-    private final String MAX_CONNECTION_NUMBER = "max_connection_number";
-    private final String SDB_ADDRESS = "sdb_address";
-    private final String SDB_PORT = "sdb_port";
-
+    private String sdbPath;
 
     public DbConf getMetadbConf() {
         return metaDbConf;
@@ -69,79 +64,28 @@ public class SdbConf {
     }
 
     private void init(){
-
+        sdbPath = "/Users/Yifan/sdb/dev/securedb/target/conf";
+        initClientDbConf(sdbPath +  "/sdb-client.xml");
+        initServerDbConf(sdbPath + "/sdb-server.xml");
+        initMetaDbConf(sdbPath + "/sdb-metastore.xml");
+        initConnectionConf(sdbPath + "/sdb-connection.xml");
     }
 
     private void initClientDbConf(String filename){
-
+        clientDbConf = DbConfFactory.getDbConf(filename);
     }
 
     private void initServerDbConf(String filename){
-
+        serverDbConf = DbConfFactory.getDbConf(sdbPath +  "/sdb-server.xml");
     }
 
     private void initMetaDbConf(String filename){
-
+        metaDbConf = DbConfFactory.getDbConf(sdbPath +  "/sdb-metastore.xml");
     }
 
-    public void test(){
-        initConnectionConf("daf");
-    }
-
+    //TODO: Change to XML format reader
     private void initConnectionConf(String filename){
-
-        if (filename == null){
-            filename = "/Users/Yifan/sdb/dev/securedb/target/conf/sdb.conf";
-        }
-        Scanner scanner = getScanner(filename, CONNECTION_CONFIG);
-        Map<String, String> configMap = getConfigMap(scanner);
-
-        Integer maxConnectionNumber = Integer.parseInt(configMap.get(MAX_CONNECTION_NUMBER));
-        String sdbAddress = configMap.get(SDB_ADDRESS);
-        Integer sdbPort = Integer.parseInt(configMap.get(SDB_PORT));
-
-        connectionConf = new ConnectionConf();
-        connectionConf.setMaxConnectionNumber(maxConnectionNumber);
-        connectionConf.setSdbAddress(sdbAddress);
-        connectionConf.setSdbPort(sdbPort);
         return;
-    }
-
-    private Map<String, String> getConfigMap(Scanner scanner) {
-        Map<String, String> configMap = new HashMap<String, String>();
-        while (scanner.hasNextLine()){
-            String nextLine = scanner.nextLine();
-            //Stop reading next line in case of a blank line
-            if (nextLine.trim().equals("")){
-                break;
-            }
-            Scanner configParser = new Scanner(nextLine);
-            configParser.useDelimiter("=");
-            if (configParser.hasNext()){
-                String name = configParser.next().toLowerCase();
-                String value = configParser.next();
-                configMap.put(name.trim(), value.trim());
-            }
-        }
-        return configMap;
-    }
-
-    private Scanner getScanner(String filename, String target) {
-        Scanner scanner = null;
-        File configFile = new File(filename);
-        try {
-
-            scanner = new Scanner(configFile);
-            while (scanner.hasNextLine()) {
-                String nextLine =  scanner.nextLine();
-                if (nextLine.trim().toLowerCase().equals(target)){
-                    break;
-                }
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return scanner;
     }
 
 }
