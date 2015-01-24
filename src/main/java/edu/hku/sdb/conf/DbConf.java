@@ -27,7 +27,12 @@ public abstract class DbConf extends Configuration {
     protected String jdbcUrl;
 
     public void printConfig(){
-
+        String config = "username: " + username + "\n" +
+                "password: " + password + "\n" +
+                "jdbcDriverName: " + jdbcDriverName + "\n" +
+                "databaseName: " + databaseName + "\n" +
+                "jdbcUrl: " + jdbcUrl + "\n";
+        System.out.println(config);
     }
 
     abstract public Connection getConnection();

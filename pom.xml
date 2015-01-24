@@ -44,13 +44,6 @@
 		</snapshotRepository>
 	</distributionManagement>
 
-	<scm>
-		<connection>scm:git:https://github.com/qboy40408657/SDB-maven.git</connection>
-		<url>scm:git:https://github.com/qboy40408657/SDB-maven.git</url>
-		<developerConnection>scm:git:https://github.com/qboy40408657/SDB-maven.git</developerConnection>
-		<tag>SDB-0.1</tag>
-	</scm>
-
 	<developers>
 		<developer>
 			<id>andyhehk</id>
