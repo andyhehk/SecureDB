@@ -47,4 +47,12 @@ public class ConnectionConf extends Configuration {
         this.maxConnectionNumber = maxConnectionNumber;
     }
 
+    public void printConfig(){
+        String config = "Sdb address is " + sdbAddress + ".\t" +
+                "Sdb port number is " + sdbPort + ".\t" +
+                "Maximum number of connection is " + maxConnectionNumber + ".\n";
+        return;
+    }
+
 }
+

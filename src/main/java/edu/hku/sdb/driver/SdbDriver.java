@@ -21,6 +21,7 @@ import edu.hku.sdb.conf.SdbConf;
 import edu.hku.sdb.connect.Connection;
 import edu.hku.sdb.connect.ConnectionService;
 
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
@@ -39,6 +40,10 @@ public class SdbDriver {
         // TODO Auto-generated method stub
         startDriver();
 
+    }
+
+    private void printUsage(OutputStream outputStream){
+        return;
     }
 
     private static void startDriver() {

@@ -17,6 +17,50 @@
 
 package edu.hku.sdb.conf;
 
+import java.sql.Connection;
+
 public abstract class DbConf extends Configuration {
+    protected String username;
+    protected String password;
+    protected String jdbcDriverName;
+    protected String databaseName;
+
+    public void printConfig(){
+
+    }
+
+    abstract public Connection getConnection();
+
+    public String getJdbcDriverName() {
+        return jdbcDriverName;
+    }
+
+    public void setJdbcDriverName(String jdbcDriverName) {
+        this.jdbcDriverName = jdbcDriverName;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
 
 }
