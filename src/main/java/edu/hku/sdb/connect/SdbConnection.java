@@ -18,6 +18,9 @@
 package edu.hku.sdb.connect;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -32,7 +35,19 @@ public class SdbConnection extends UnicastRemoteObject implements Connection, Se
 
     @Override
     public Statement createStatement() throws RemoteException{
-        return null;
+        Statement statement = null;
+        try {
+            SdbStatement sdbStatement= new SdbStatement();
+            Naming.rebind("//localhost/Statement", sdbStatement);
+            statement= (Statement) Naming.lookup("//localhost/Statement");
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (NotBoundException e) {
+            e.printStackTrace();
+        }
+        return statement;
     }
 
     @Override
