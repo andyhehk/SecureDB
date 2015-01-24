@@ -19,7 +19,7 @@ package edu.hku.sdb.conf;
 
 public class ConnectionConf extends Configuration {
     private String sdbAddress;
-    private String sdbPort;
+    private Integer sdbPort;
     private Integer maxConnectionNumber;
 
 
@@ -31,11 +31,11 @@ public class ConnectionConf extends Configuration {
         this.sdbAddress = sdbAddress;
     }
 
-    public String getSdbPort() {
+    public Integer getSdbPort() {
         return sdbPort;
     }
 
-    public void setSdbPort(String sdbPort) {
+    public void setSdbPort(Integer sdbPort) {
         this.sdbPort = sdbPort;
     }
 

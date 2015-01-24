@@ -24,12 +24,21 @@ public abstract class DbConf extends Configuration {
     protected String password;
     protected String jdbcDriverName;
     protected String databaseName;
+    protected String jdbcUrl;
 
     public void printConfig(){
 
     }
 
     abstract public Connection getConnection();
+
+    public String getJdbcUrl() {
+        return jdbcUrl;
+    }
+
+    public void setJdbcUrl(String jdbcUrl) {
+        this.jdbcUrl = jdbcUrl;
+    }
 
     public String getJdbcDriverName() {
         return jdbcDriverName;
