@@ -22,7 +22,6 @@ public class ConnectionConf extends Configuration {
     private Integer sdbPort;
     private Integer maxConnectionNumber;
 
-
     public String getSdbAddress() {
         return sdbAddress;
     }

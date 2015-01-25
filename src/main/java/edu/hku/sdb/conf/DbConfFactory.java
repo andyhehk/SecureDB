@@ -41,7 +41,6 @@ public class DbConfFactory {
     private static final String DRIVER = "edu.hku.sdb.conf.jdbc.drivername";
     private static final String URL = "edu.hku.sdb.conf.jdbc.url";
 
-
     static public DbConf getDbConf(String filename){
         DbConf dbConf = null;
         try {

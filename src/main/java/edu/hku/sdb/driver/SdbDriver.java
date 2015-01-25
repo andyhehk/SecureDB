@@ -39,15 +39,11 @@ public class SdbDriver {
     /**
      * @param args
      */
+    //TODO: to be implemented
     public static void main(String[] args) {
         startDriver();
 
     }
-
-    private void printUsage(OutputStream outputStream){
-        return;
-    }
-
     private static void startDriver() {
         try {
             ConnectionPool connectionPool = new ConnectionPool(new SdbConf());
@@ -60,5 +56,22 @@ public class SdbDriver {
             e.printStackTrace();
         }
     }
+
+
+    //TODO: to be implemented
+    private void printUsage(OutputStream outputStream){
+        return;
+    }
+
+    //TODO: to be implemented
+    private void failAndExit(String message){
+        return;
+    }
+
+    //TODO: to be implemented
+    private void parseAndValidateInput(String[] argsList){
+        return;
+    }
+
 
 }
