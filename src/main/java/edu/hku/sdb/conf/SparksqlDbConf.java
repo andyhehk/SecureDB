@@ -36,8 +36,7 @@ public class SparksqlDbConf extends DbConf {
         Connection connection = null;
         try {
             Class.forName(jdbcDriverName);
-            //TODO: "jdbc:hive2://localhost:10000/default"
-            connection = DriverManager.getConnection(jdbcUrl, username, password);
+            connection = DriverManager.getConnection(jdbcUrl  + "/" + databaseName, username, password);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (SQLException e) {

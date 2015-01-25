@@ -6,13 +6,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-public class MysqlDbConfTest extends TestCase {
+public class SparksqlDbConfTest extends TestCase {
 
-    DbConf clientDbConf;
+    DbConf serverDbConf;
     public void setUp() throws Exception {
         super.setUp();
         DbConfFactory dbConfFactory = new DbConfFactory();
-        clientDbConf = dbConfFactory.getDbConf("/Users/Yifan/sdb/dev/securedb/target/conf/sdb-client.xml");
+        serverDbConf = dbConfFactory.getDbConf("/Users/Yifan/sdb/dev/securedb/target/conf/sdb-server.xml");
     }
 
     public void tearDown() throws Exception {
@@ -20,14 +20,14 @@ public class MysqlDbConfTest extends TestCase {
     }
 
     public void testGetConnection() throws Exception {
-        Connection connection = clientDbConf.getConnection();
+        Connection connection = serverDbConf.getConnection();
         assertNotNull(connection);
         Statement statement = connection.createStatement();
         assertNotNull(statement);
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM employee;");
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM employee");
         assertNotNull(resultSet);
         while (resultSet.next()){
-            int salary = resultSet.getInt("salary");
+            String salary = resultSet.getString("salary");
             assertNotNull(salary);
         }
     }
