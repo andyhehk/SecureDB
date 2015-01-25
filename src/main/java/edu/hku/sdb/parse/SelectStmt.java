@@ -13,7 +13,7 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
+ *
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
@@ -21,12 +21,12 @@ import java.util.List;
 
 public class SelectStmt extends QueryStmt {
 
-  protected SelectionList selectList;
-  protected List<TableRef> tableRefs; 
-  protected Expr whareClause;
-  protected List<Expr> groupingExprs;
-  protected Expr havingExpr;
-  
-  //havingClause with aliases and agg output resolved
-  private Expr havingPred;
+    protected SelectionList selectList;
+    protected List<TableRef> tableRefs;
+    protected Expr whareClause;
+    protected List<Expr> groupingExprs;
+    protected Expr havingExpr;
+
+    //havingClause with aliases and agg output resolved
+    private Expr havingPred;
 }

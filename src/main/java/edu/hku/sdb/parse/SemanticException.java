@@ -13,15 +13,15 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
+ *
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
 public class SemanticException extends Exception {
 
-  /**
-   * Serial ID
-   */
-  private static final long serialVersionUID = 1L;
+    /**
+     * Serial ID
+     */
+    private static final long serialVersionUID = 1L;
 
 }

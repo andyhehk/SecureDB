@@ -18,20 +18,20 @@
 package edu.hku.sdb.exec;
 
 public class ColumnDesc {
-  
-  private String name;
-  private String alias;
-  private Class clazz;
-  private Object value;
-  
-  public ColumnDesc() {
-    
-  }
-  
-  public ColumnDesc(String name, String alias, Class clazz, Object value) {
-    this.name = name;
-    this.alias = alias;
-    this.clazz = clazz;
-    this.value = value;
-  }
+
+    private String name;
+    private String alias;
+    private Class clazz;
+    private Object value;
+
+    public ColumnDesc() {
+
+    }
+
+    public ColumnDesc(String name, String alias, Class clazz, Object value) {
+        this.name = name;
+        this.alias = alias;
+        this.clazz = clazz;
+        this.value = value;
+    }
 }

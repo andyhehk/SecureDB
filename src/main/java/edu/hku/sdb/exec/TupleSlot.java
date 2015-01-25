@@ -22,13 +22,13 @@ import java.util.List;
 
 public class TupleSlot extends BasicTupleSlot {
 
-  private ArrayList<Object> row;
+    private ArrayList<Object> row;
 
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.exec.BasicTupleSlot#nextTuple()
-   */
-  @Override
-  public List<Object> nextTuple() {
-    return row;
-  }
+    /* (non-Javadoc)
+     * @see edu.hku.sdb.exec.BasicTupleSlot#nextTuple()
+     */
+    @Override
+    public List<Object> nextTuple() {
+        return row;
+    }
 }

@@ -13,7 +13,7 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
+ *
  *******************************************************************************/
 
 package edu.hku.sdb.rewrite;
@@ -22,6 +22,6 @@ import edu.hku.sdb.parse.QueryStmt;
 
 public abstract class AbstractRewriter {
 
-  public abstract QueryStmt rewrite(QueryStmt query);
+    public abstract QueryStmt rewrite(QueryStmt query);
 
 }

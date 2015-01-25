@@ -13,7 +13,7 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
+ *
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
@@ -24,34 +24,34 @@ import org.antlr.runtime.tree.CommonErrorNode;
 
 public class ASTErrorNode extends ASTNode {
 
-  /**
-   *
-   */
-  private static final long serialVersionUID = 1L;
-  CommonErrorNode delegate;
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    CommonErrorNode delegate;
 
-  public ASTErrorNode(TokenStream input, Token start, Token stop,
-      RecognitionException e) {
-    delegate = new CommonErrorNode(input, start, stop, e);
-  }
+    public ASTErrorNode(TokenStream input, Token start, Token stop,
+                        RecognitionException e) {
+        delegate = new CommonErrorNode(input, start, stop, e);
+    }
 
-  @Override
-  public boolean isNil() {
-    return delegate.isNil();
-  }
+    @Override
+    public boolean isNil() {
+        return delegate.isNil();
+    }
 
-  @Override
-  public int getType() {
-    return delegate.getType();
-  }
+    @Override
+    public int getType() {
+        return delegate.getType();
+    }
 
-  @Override
-  public String getText() {
-    return delegate.getText();
-  }
+    @Override
+    public String getText() {
+        return delegate.getText();
+    }
 
-  @Override
-  public String toString() {
-    return delegate.toString();
-  }
+    @Override
+    public String toString() {
+        return delegate.toString();
+    }
 }
