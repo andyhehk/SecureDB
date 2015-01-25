@@ -30,11 +30,13 @@ public class SdbStatement extends UnicastRemoteObject implements Statement, Seri
         //TODO auto generated code
     }
 
+    //TODO to be implemented
     @Override
     public ResultSet executeQuery() {
         return null;
     }
 
+    //TODO to be implemented
     @Override
     public void close() {
 

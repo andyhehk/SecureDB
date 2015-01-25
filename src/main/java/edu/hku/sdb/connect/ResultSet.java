@@ -18,7 +18,11 @@
 package edu.hku.sdb.connect;
 
 import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 public interface ResultSet extends Remote {
+
+    public void next() throws RemoteException;
+    public void close() throws RemoteException;
 
 }
