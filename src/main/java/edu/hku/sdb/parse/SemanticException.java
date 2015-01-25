@@ -19,9 +19,9 @@ package edu.hku.sdb.parse;
 
 public class SemanticException extends Exception {
 
-    /**
-     * Serial ID
-     */
-    private static final long serialVersionUID = 1L;
+  /**
+   * Serial ID
+   */
+  private static final long serialVersionUID = 1L;
 
 }

@@ -22,6 +22,6 @@ import edu.hku.sdb.parse.QueryStmt;
 
 public abstract class AbstractRewriter {
 
-    public abstract QueryStmt rewrite(QueryStmt query);
+  public abstract QueryStmt rewrite(QueryStmt query);
 
 }

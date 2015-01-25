@@ -23,6 +23,6 @@ import java.util.List;
 public class QueryDesc {
 
   // only names of physical tables are stored.
-  protected List<String> tblNames; 
+  protected List<String> tblNames;
   protected HashMap<String, List<String>> tblToCols;
 }

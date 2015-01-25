@@ -19,20 +19,26 @@ package edu.hku.sdb.parse;
 
 public class LikePredicate extends Predicate {
 
-    /* (non-Javadoc)
-     * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer)
-     */
-    public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-        // TODO Auto-generated method stub
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
+   * )
+   */
+  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+    // TODO Auto-generated method stub
 
-    }
+  }
 
-    /* (non-Javadoc)
-     * @see edu.hku.sdb.parse.ParseNode#toSql()
-     */
-    public String toSql() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  /*
+   * (non-Javadoc)
+   * 
+   * @see edu.hku.sdb.parse.ParseNode#toSql()
+   */
+  public String toSql() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }

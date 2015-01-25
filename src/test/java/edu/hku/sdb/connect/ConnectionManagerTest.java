@@ -14,41 +14,41 @@ import java.rmi.RemoteException;
 
 import static org.junit.Assert.assertNotNull;
 
-public class ConnectionManagerTest{
+public class ConnectionManagerTest {
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        String[] args = new String[1];
-        args[0] = "start";
-        SdbDriver.main(args);
+  @BeforeClass
+  public static void setUpBeforeClass() throws Exception {
+    String[] args = new String[1];
+    args[0] = "start";
+    SdbDriver.main(args);
+  }
+
+  public void setUp() throws Exception {
+
+  }
+
+  public void tearDown() throws Exception {
+
+  }
+
+  @Test
+  public void testGetStatement() throws Exception {
+    ConnectionService connectionService = null;
+    try {
+      connectionService = (ConnectionService) Naming
+          .lookup("//localhost:2019/ConnectionService");
+      assertNotNull(connectionService);
+    } catch (NotBoundException e) {
+      e.printStackTrace();
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
+    } catch (RemoteException e) {
+      e.printStackTrace();
     }
-
-    public void setUp() throws Exception {
-
-    }
-
-
-    public void tearDown() throws Exception {
-
-    }
-
-    @Test
-    public void testGetStatement() throws Exception {
-        ConnectionService connectionService = null;
-        try {
-            connectionService = (ConnectionService) Naming.lookup("//localhost:2019/ConnectionService");
-            assertNotNull(connectionService);
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        Connection connection = connectionService.getConnection();
-        assertNotNull(connection);
-        Statement statement = connection.createStatement();
-        assertNotNull(statement);
-    }
+    Connection connection = connectionService.getConnection();
+    assertNotNull(connection);
+    Statement statement = connection.createStatement();
+    assertNotNull(statement);
+  }
 
 }

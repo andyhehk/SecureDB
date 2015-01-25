@@ -24,5 +24,5 @@ public class SdbUDF {
   public static final String SDB_ADDROWID = "sdb_addRowID";
   public static final String SDB_CARTESIAN = "sdb_cartesian";
   public static final String SDB_KEY_UPDATE = "sdb_keyUp";
-  
+
 }

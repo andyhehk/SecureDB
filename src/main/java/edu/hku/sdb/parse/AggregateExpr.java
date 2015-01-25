@@ -19,14 +19,14 @@ package edu.hku.sdb.parse;
 
 public class AggregateExpr extends Expr {
 
-    public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-        // TODO Auto-generated method stub
+  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+    // TODO Auto-generated method stub
 
-    }
+  }
 
-    public String toSql() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  public String toSql() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }

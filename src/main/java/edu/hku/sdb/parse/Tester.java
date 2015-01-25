@@ -22,22 +22,22 @@ import org.antlr.stringtemplate.*;
 
 public class Tester {
 
-    /**
-     * @param args
-     */
-    public static void main(String[] args) {
-        ParseDriver pd = new ParseDriver();
-        String[] stmts = args[0].split(";");
-        for (String stmt : stmts)
-            try {
-                ASTNode tree = pd.parse(stmt.trim());
-                DOTTreeGenerator gen = new DOTTreeGenerator();
-                StringTemplate st = gen.toDOT(tree);
-                System.out.println(st);
-            } catch (ParseException e) {
-                System.out.println(e.getMessage());
-            }
+  /**
+   * @param args
+   */
+  public static void main(String[] args) {
+    ParseDriver pd = new ParseDriver();
+    String[] stmts = args[0].split(";");
+    for (String stmt : stmts)
+      try {
+        ASTNode tree = pd.parse(stmt.trim());
+        DOTTreeGenerator gen = new DOTTreeGenerator();
+        StringTemplate st = gen.toDOT(tree);
+        System.out.println(st);
+      } catch (ParseException e) {
+        System.out.println(e.getMessage());
+      }
 
-    }
+  }
 
 }

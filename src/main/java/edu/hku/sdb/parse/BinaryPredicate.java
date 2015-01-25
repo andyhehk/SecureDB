@@ -19,5 +19,4 @@ package edu.hku.sdb.parse;
 
 public abstract class BinaryPredicate extends Predicate {
 
-  
 }

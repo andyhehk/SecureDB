@@ -89,10 +89,10 @@ public class RewriterTest extends TestCase {
 
   private void doRewrite(String stmt) throws ParseException {
     ASTNode tree = parseDriver.parse(stmt.trim());
-//    HiveRewriter hiveRewriter = new HiveRewriter(tree);
-//    hiveRewriter.rewrite();
-//    System.out.println("Input SQL: " + stmt);
-//    System.out.println("Output SQL: " + hiveRewriter.prettyPrint());
+    // HiveRewriter hiveRewriter = new HiveRewriter(tree);
+    // hiveRewriter.rewrite();
+    // System.out.println("Input SQL: " + stmt);
+    // System.out.println("Output SQL: " + hiveRewriter.prettyPrint());
   }
 
 }

@@ -19,18 +19,18 @@ package edu.hku.sdb.parse;
 
 public interface ParseNode {
 
-    /**
-     * Perform semantic analysis of node and all of its children. Throw exception
-     * if any errors found.
-     *
-     * @param analyzer
-     * @throws SemanticException
-     */
-    public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException;
+  /**
+   * Perform semantic analysis of node and all of its children. Throw exception
+   * if any errors found.
+   * 
+   * @param analyzer
+   * @throws SemanticException
+   */
+  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException;
 
-    /**
-     * @return SQL syntax corresponding to this node
-     */
-    public String toSql();
+  /**
+   * @return SQL syntax corresponding to this node
+   */
+  public String toSql();
 
 }

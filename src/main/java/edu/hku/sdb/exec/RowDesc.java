@@ -21,5 +21,5 @@ import java.util.ArrayList;
 
 public class RowDesc {
 
-    private ArrayList<ColumnDesc> signature;
+  private ArrayList<ColumnDesc> signature;
 }

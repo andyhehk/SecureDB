@@ -20,14 +20,24 @@ package edu.hku.sdb.parse;
 
 public class SdbECMul extends ArithmeticExpr {
 
-    public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-        // TODO Auto-generated method stub
+  /**
+   * @param op
+   * @param e1
+   * @param e2
+   */
+  public SdbECMul(String op, Expr e1, Expr e2) {
+    super(op, e1, e2);
+    // TODO Auto-generated constructor stub
+  }
 
-    }
+  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+    // TODO Auto-generated method stub
 
-    public String toSql() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  }
+
+  public String toSql() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }

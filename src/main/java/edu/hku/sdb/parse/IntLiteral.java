@@ -21,7 +21,7 @@ package edu.hku.sdb.parse;
 public class IntLiteral extends LiteralExpr {
 
   protected final int value;
-  
+
   public IntLiteral(int value) {
     this.value = value;
   }

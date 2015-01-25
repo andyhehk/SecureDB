@@ -19,14 +19,14 @@ package edu.hku.sdb.parse;
 
 public abstract class QueryStmt implements ParseNode {
 
-    public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-        // TODO Auto-generated method stub
+  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+    // TODO Auto-generated method stub
 
-    }
+  }
 
-    public String toSql() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  public String toSql() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }

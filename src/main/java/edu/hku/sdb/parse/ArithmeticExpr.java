@@ -20,19 +20,23 @@ package edu.hku.sdb.parse;
 public class ArithmeticExpr extends Expr {
 
   private final String op;
-  
+
   public ArithmeticExpr(String op, Expr e1, Expr e2) {
     this.op = op;
     children.add(e1);
     children.add(e2);
   }
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   public String toSql() {
     // TODO Auto-generated method stub
     return null;
   }
+
   /**
    * @return the op
    */

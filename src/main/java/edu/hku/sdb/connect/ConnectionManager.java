@@ -24,26 +24,27 @@ import java.rmi.RemoteException;
 
 public class ConnectionManager {
 
-    public static Connection getConnection(String databaseUrl, String userName, String password) {
-        ConnectionService connectionService = null;
-        try {
-            connectionService = (ConnectionService) Naming.lookup(databaseUrl);
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        try {
-            return connectionService.getConnection();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        return null;
+  public static Connection getConnection(String databaseUrl, String userName,
+      String password) {
+    ConnectionService connectionService = null;
+    try {
+      connectionService = (ConnectionService) Naming.lookup(databaseUrl);
+    } catch (NotBoundException e) {
+      e.printStackTrace();
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
+    } catch (RemoteException e) {
+      e.printStackTrace();
     }
+    try {
+      return connectionService.getConnection();
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
 
-    public Connection getConnection(String databaseUrl) {
-        return null;
-    }
+  public Connection getConnection(String databaseUrl) {
+    return null;
+  }
 }

@@ -20,7 +20,7 @@ package edu.hku.sdb.parse;
 public class FloatLiteral extends LiteralExpr {
 
   private final float value;
-  
+
   public FloatLiteral(float value) {
     this.value = value;
   }

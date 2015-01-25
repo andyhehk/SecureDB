@@ -22,13 +22,13 @@ public abstract class TableRef implements ParseNode {
   // represents a table/view name.
   protected String tableName;
   protected String alias;
-  
+
   protected JoinOperator joinOp;
   protected Expr onClause;
-  
-  // the ref to the left of us, if we are part of a JOIN clause 
+
+  // the ref to the left of us, if we are part of a JOIN clause
   protected TableRef leftTblRef;
-  
+
   public TableRef(String tableName, String alias) {
     super();
     this.tableName = tableName;

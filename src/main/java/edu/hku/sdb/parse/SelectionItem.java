@@ -19,6 +19,6 @@ package edu.hku.sdb.parse;
 
 public class SelectionItem {
 
-    protected Expr expr;
-    protected String alias;
+  protected Expr expr;
+  protected String alias;
 }

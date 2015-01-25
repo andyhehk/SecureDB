@@ -22,8 +22,8 @@ import java.rmi.RemoteException;
 
 public interface Statement extends Remote {
 
-    public ResultSet executeQuery() throws RemoteException;
+  public ResultSet executeQuery() throws RemoteException;
 
-    public void close() throws RemoteException;
+  public void close() throws RemoteException;
 
 }

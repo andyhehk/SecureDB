@@ -21,7 +21,7 @@ import edu.hku.sdb.connect.ResultSet;
 
 public class Executor {
 
-    public void execute(PlanNode plan, ExecutionState eState, ResultSet resultSet) {
+  public void execute(PlanNode plan, ExecutionState eState, ResultSet resultSet) {
 
-    }
+  }
 }

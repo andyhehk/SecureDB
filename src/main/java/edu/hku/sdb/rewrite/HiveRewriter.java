@@ -22,13 +22,15 @@ import edu.hku.sdb.parse.QueryStmt;
 
 public class HiveRewriter extends AbstractRewriter {
 
-    /* (non-Javadoc)
-     * @see edu.hku.sdb.rewrite.AbstractRewriter#rewrite(edu.hku.sdb.parse.QueryStmt)
-     */
-    @Override
-    public QueryStmt rewrite(QueryStmt query) {
-        return query;
-    }
-
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * edu.hku.sdb.rewrite.AbstractRewriter#rewrite(edu.hku.sdb.parse.QueryStmt)
+   */
+  @Override
+  public QueryStmt rewrite(QueryStmt query) {
+    return query;
+  }
 
 }

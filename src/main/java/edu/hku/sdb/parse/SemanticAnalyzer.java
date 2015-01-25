@@ -19,11 +19,13 @@ package edu.hku.sdb.parse;
 
 public class SemanticAnalyzer extends BasicSemanticAnalyzer {
 
-    public SemanticAnalyzer() {
-        // TODO Auto-generated constructor stub
-    }
+  public SemanticAnalyzer() {
+    // TODO Auto-generated constructor stub
+  }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see edu.hku.sdb.parse.BasicSemanticAnalyzer#analyze()
    */
   @Override

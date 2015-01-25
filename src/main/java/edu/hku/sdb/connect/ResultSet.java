@@ -22,7 +22,8 @@ import java.rmi.RemoteException;
 
 public interface ResultSet extends Remote {
 
-    public void next() throws RemoteException;
-    public void close() throws RemoteException;
+  public void next() throws RemoteException;
+
+  public void close() throws RemoteException;
 
 }

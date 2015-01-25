@@ -28,52 +28,51 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-public class SdbConnection extends UnicastRemoteObject implements Connection, Serializable {
+public class SdbConnection extends UnicastRemoteObject implements Connection,
+    Serializable {
 
-    private static final long serialVersionUID = 227L;
-    private static final String SERVICE_NAME = "Statement";
+  private static final long serialVersionUID = 227L;
+  private static final String SERVICE_NAME = "Statement";
 
-    private ConnectionConf connectionConf;
-    private static String serviceUrl;
-    private Statement statement;
+  private ConnectionConf connectionConf;
+  private static String serviceUrl;
+  private Statement statement;
 
+  public SdbConnection(ConnectionConf connectionConf) throws RemoteException {
+    super();
+    setConnectionConf(connectionConf);
+  }
 
-    public SdbConnection(ConnectionConf connectionConf) throws RemoteException {
-        super();
-        setConnectionConf(connectionConf);
+  public Statement createStatement() throws RemoteException {
+    try {
+      if (statement == null) {
+        serviceUrl = connectionConf.getSdbAddress() + ":"
+            + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
+        SdbStatement sdbStatement = new SdbStatement(connectionConf);
+        Naming.rebind(serviceUrl, sdbStatement);
+      }
+      ;
+      statement = (Statement) Naming.lookup(serviceUrl);
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
+    } catch (NotBoundException e) {
+      e.printStackTrace();
     }
+    return statement;
+  }
 
-    @Override
-    public Statement createStatement() throws RemoteException{
-        try {
-            if (statement == null){
-                serviceUrl = connectionConf.getSdbAddress() + ":" + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
-                SdbStatement sdbStatement= new SdbStatement(connectionConf);
-                Naming.rebind(serviceUrl, sdbStatement);
-            };
-            statement= (Statement) Naming.lookup(serviceUrl);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-        }
-        return statement;
-    }
+  public void close() throws RemoteException {
 
-    @Override
-    public void close() throws RemoteException {
+  }
 
-    }
+  public ConnectionConf getConnectionConf() {
+    return connectionConf;
+  }
 
-    public ConnectionConf getConnectionConf() {
-        return connectionConf;
-    }
-
-    public void setConnectionConf(ConnectionConf connectionConf) {
-        this.connectionConf = connectionConf;
-    }
-
+  public void setConnectionConf(ConnectionConf connectionConf) {
+    this.connectionConf = connectionConf;
+  }
 
 }

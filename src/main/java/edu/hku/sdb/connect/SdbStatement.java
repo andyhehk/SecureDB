@@ -23,37 +23,34 @@ import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-public class SdbStatement extends UnicastRemoteObject implements Statement, Serializable {
+public class SdbStatement extends UnicastRemoteObject implements Statement,
+    Serializable {
 
-    private static final long serialVersionUID = 427L;
-    private static final String SERVICE_NAME = "ResultSet";
+  private static final long serialVersionUID = 427L;
+  private static final String SERVICE_NAME = "ResultSet";
 
-    private ConnectionConf connectionConf;
-    private static String serviceUrl;
-    private ResultSet resultSet;
+  private ConnectionConf connectionConf;
+  private static String serviceUrl;
+  private ResultSet resultSet;
 
-    public SdbStatement(ConnectionConf connectionConf) throws RemoteException {
-        super();
-        setConnectionConf(connectionConf);
-    }
+  public SdbStatement(ConnectionConf connectionConf) throws RemoteException {
+    super();
+    setConnectionConf(connectionConf);
+  }
 
-    //TODO to be implemented
-    @Override
-    public ResultSet executeQuery() {
-        return null;
-    }
+  public ResultSet executeQuery() {
+    return null;
+  }
 
-    //TODO to be implemented
-    @Override
-    public void close() {
-        
-    }
+  public void close() {
 
-    public ConnectionConf getConnectionConf() {
-        return connectionConf;
-    }
+  }
 
-    public void setConnectionConf(ConnectionConf connectionConf) {
-        this.connectionConf = connectionConf;
-    }
+  public ConnectionConf getConnectionConf() {
+    return connectionConf;
+  }
+
+  public void setConnectionConf(ConnectionConf connectionConf) {
+    this.connectionConf = connectionConf;
+  }
 }

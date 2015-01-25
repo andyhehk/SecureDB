@@ -18,5 +18,5 @@
 package edu.hku.sdb.conf;
 
 public abstract class Configuration {
-    abstract void printConfig();
+  abstract void printConfig();
 }

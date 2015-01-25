@@ -18,40 +18,39 @@
 package edu.hku.sdb.conf;
 
 public class ConnectionConf extends Configuration {
-    private String sdbAddress;
-    private Integer sdbPort;
-    private Integer maxConnectionNumber;
+  private String sdbAddress;
+  private Integer sdbPort;
+  private Integer maxConnectionNumber;
 
-    public String getSdbAddress() {
-        return sdbAddress;
-    }
+  public String getSdbAddress() {
+    return sdbAddress;
+  }
 
-    public void setSdbAddress(String sdbAddress) {
-        this.sdbAddress = sdbAddress;
-    }
+  public void setSdbAddress(String sdbAddress) {
+    this.sdbAddress = sdbAddress;
+  }
 
-    public Integer getSdbPort() {
-        return sdbPort;
-    }
+  public Integer getSdbPort() {
+    return sdbPort;
+  }
 
-    public void setSdbPort(Integer sdbPort) {
-        this.sdbPort = sdbPort;
-    }
+  public void setSdbPort(Integer sdbPort) {
+    this.sdbPort = sdbPort;
+  }
 
-    public Integer getMaxConnectionNumber() {
-        return maxConnectionNumber;
-    }
+  public Integer getMaxConnectionNumber() {
+    return maxConnectionNumber;
+  }
 
-    public void setMaxConnectionNumber(Integer maxConnectionNumber) {
-        this.maxConnectionNumber = maxConnectionNumber;
-    }
+  public void setMaxConnectionNumber(Integer maxConnectionNumber) {
+    this.maxConnectionNumber = maxConnectionNumber;
+  }
 
-    public void printConfig(){
-        String config = "Sdb address: " + sdbAddress + "\n" +
-                "Sdb port: " + sdbPort + "\n" +
-                "Maximum number of connection: " + maxConnectionNumber + "\n";
-        System.out.println(config);
-    }
+  public void printConfig() {
+    String config = "Sdb address: " + sdbAddress + "\n" + "Sdb port: "
+        + sdbPort + "\n" + "Maximum number of connection: "
+        + maxConnectionNumber + "\n";
+    System.out.println(config);
+  }
 
 }
-

@@ -25,23 +25,25 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class SparksqlDbConf extends DbConf {
-    private static final Logger LOG = LoggerFactory.getLogger(SparksqlDbConf.class);
+  private static final Logger LOG = LoggerFactory
+      .getLogger(SparksqlDbConf.class);
 
-    public SparksqlDbConf(){
-        super();
-    }
+  public SparksqlDbConf() {
+    super();
+  }
 
-    @Override
-    public Connection getConnection() {
-        Connection connection = null;
-        try {
-            Class.forName(jdbcDriverName);
-            connection = DriverManager.getConnection(jdbcUrl  + "/" + databaseName, username, password);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return  connection;
+  @Override
+  public Connection getConnection() {
+    Connection connection = null;
+    try {
+      Class.forName(jdbcDriverName);
+      connection = DriverManager.getConnection(jdbcUrl + "/" + databaseName,
+          username, password);
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+    } catch (SQLException e) {
+      e.printStackTrace();
     }
+    return connection;
+  }
 }

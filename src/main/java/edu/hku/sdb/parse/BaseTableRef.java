@@ -28,15 +28,21 @@ public class BaseTableRef extends TableRef {
     // TODO Auto-generated constructor stub
   }
 
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
+   * )
    */
   public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
     // TODO Auto-generated method stub
-    
+
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   public String toSql() {

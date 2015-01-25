@@ -18,9 +18,9 @@
 package edu.hku.sdb.parse;
 
 public class BoolLiteral extends LiteralExpr {
-  
+
   private final boolean value;
-  
+
   public BoolLiteral(boolean value) {
     this.value = value;
   }

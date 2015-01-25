@@ -23,12 +23,12 @@ import org.slf4j.LoggerFactory;
 
 public abstract class Expr extends TreeNode<Expr> implements ParseNode {
 
-    private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
+  private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
 
-    public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
 
-        for (Expr child : children) {
-            child.analyze(analyzer);
-        }
+    for (Expr child : children) {
+      child.analyze(analyzer);
     }
+  }
 }

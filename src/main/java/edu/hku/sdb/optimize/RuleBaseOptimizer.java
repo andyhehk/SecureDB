@@ -29,10 +29,11 @@ public class RuleBaseOptimizer extends Optimizer {
     // TODO Auto-generated constructor stub
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see edu.hku.sdb.optimize.Optimizer#optimize(edu.hku.sdb.parse.ParseNode)
    */
-  @Override
   public PlanNode optimize(ParseNode parseTree) {
     // TODO Auto-generated method stub
     return null;

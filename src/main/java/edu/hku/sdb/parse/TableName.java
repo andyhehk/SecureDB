@@ -21,31 +21,35 @@ public class TableName {
 
   protected String db;
   protected String name;
-  
+
   /**
    * @return the db
    */
   public String getDb() {
     return db;
   }
+
   /**
-   * @param db the db to set
+   * @param db
+   *          the db to set
    */
   public void setDb(String db) {
     this.db = db;
   }
+
   /**
    * @return the name
    */
   public String getName() {
     return name;
   }
+
   /**
-   * @param name the name to set
+   * @param name
+   *          the name to set
    */
   public void setName(String name) {
     this.name = name;
   }
-  
-  
+
 }

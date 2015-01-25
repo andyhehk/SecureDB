@@ -19,5 +19,4 @@ package edu.hku.sdb.optimize;
 
 public abstract class Optimizer {
 
-
 }

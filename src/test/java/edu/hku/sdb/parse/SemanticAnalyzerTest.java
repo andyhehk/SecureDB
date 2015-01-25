@@ -27,23 +27,23 @@ public class SemanticAnalyzerTest {
 
   private SemanticAnalyzer testObj;
   private ParseDriver parser;
-  
+
   @Before
   public void setUp() {
     testObj = new SemanticAnalyzer();
     parser = new ParseDriver();
   }
-  
+
   @After
   public void tearDown() {
-    
+
   }
-  
+
   @Test
   public void testAnalyze() throws ParseException {
     String command = "SELECT a + b FROM T1 JOIN T2 ON T1.id = T2.id;";
-    
+
     ASTNode tree = parser.parse(command);
   }
-  
+
 }

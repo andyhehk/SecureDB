@@ -21,12 +21,12 @@ import java.util.List;
 
 public class SelectStmt extends QueryStmt {
 
-    protected SelectionList selectList;
-    protected List<TableRef> tableRefs;
-    protected Expr whareClause;
-    protected List<Expr> groupingExprs;
-    protected Expr havingExpr;
+  protected SelectionList selectList;
+  protected List<TableRef> tableRefs;
+  protected Expr whareClause;
+  protected List<Expr> groupingExprs;
+  protected Expr havingExpr;
 
-    //havingClause with aliases and agg output resolved
-    private Expr havingPred;
+  // havingClause with aliases and agg output resolved
+  private Expr havingPred;
 }

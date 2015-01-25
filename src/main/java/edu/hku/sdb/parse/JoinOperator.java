@@ -18,7 +18,7 @@
 package edu.hku.sdb.parse;
 
 public class JoinOperator {
-  
+
   public static String NORMAL_JOIN = "";
   public static String LEFT_OUTER_JOIN = "left outer";
   public static String RIGHT_OUTER_JOIN = "right outer";
