@@ -22,9 +22,27 @@
 		</dependency>
 
 		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.26</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>antlr-runtime</artifactId>
 			<version>3.4</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-common</artifactId>
+			<version>2.4.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.hive</groupId>
+			<artifactId>hive-jdbc</artifactId>
+			<version>0.12.0</version>
 		</dependency>
 
 		<dependency>
@@ -32,6 +50,8 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.10</version>
 		</dependency>
+		
+
 
         <dependency>
             <groupId>javax.jdo</groupId>
@@ -66,13 +86,6 @@
 		</snapshotRepository>
 	</distributionManagement>
 
-	<scm>
-		<connection>scm:git:https://github.com/qboy40408657/SDB-maven.git</connection>
-		<url>scm:git:https://github.com/qboy40408657/SDB-maven.git</url>
-		<developerConnection>scm:git:https://github.com/qboy40408657/SDB-maven.git</developerConnection>
-		<tag>SDB-0.1</tag>
-	</scm>
-
 	<developers>
 		<developer>
 			<id>andyhehk</id>
@@ -80,11 +93,29 @@
 			<email>hochion@gmail.com</email>
 			<url>http://www4.comp.polyu.edu.hk/~cszahe</url>
 		</developer>
+
+		<developer>
+			<id>eric-haibin-lin</id>
+			<name>Eric Haibin Lin</name>
+			<email>linhaibin.eric@gmail.com</email>
+		</developer>
+
 	</developers>
 
 	<build>
 		<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
 		<testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+
+	    <pluginManagement>
+	      <plugins>
+	        <plugin>
+	          <groupId>org.codehaus.mojo</groupId>
+	          <artifactId>rmic-maven-plugin</artifactId>
+	          <version>1.2.1</version>
+	        </plugin>
+	      </plugins>
+	    </pluginManagement>		
+
 		<plugins>
 			<!-- plugins are always listed in sorted order by groupId, artifectId -->
 			<plugin>
@@ -111,6 +142,32 @@
 				<artifactId>maven-release-plugin</artifactId>
 				<version>2.5.1</version>
 			</plugin>
+
+			<plugin>
+		        <groupId>org.codehaus.mojo</groupId>
+		        <artifactId>rmic-maven-plugin</artifactId>
+		        <version>1.2.1</version>
+
+		       <executions>
+		          <execution>
+		            <id>rmi compilation</id>
+		            <goals>
+		              <goal>rmic</goal>
+		            </goals>
+		            <configuration>
+		              <sources>
+		                <source>
+		                  <includes>
+		                  </includes>
+		                  <iiop>true</iiop>
+		                </source>
+		              </sources>
+		            </configuration>
+		          </execution>
+		        </executions>
+
+		    </plugin>
+
 		</plugins>
 	</build>
 

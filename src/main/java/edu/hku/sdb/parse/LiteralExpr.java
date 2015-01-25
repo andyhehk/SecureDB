@@ -13,52 +13,21 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
+ *
  *******************************************************************************/
 
 package edu.hku.sdb.parse;
 
-public abstract class LiteralExpr extends Expr {
+public class LiteralExpr extends Expr {
 
-  private boolean isEncrypted;
-  private EncryptType encrytType;
-  
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    // TODO Auto-generated method stub
+    public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+        // TODO Auto-generated method stub
 
-  }
+    }
 
-  public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /**
-   * @return the isEncrypted
-   */
-  public boolean isEncrypted() {
-    return isEncrypted;
-  }
-
-  /**
-   * @param isEncrypted the isEncrypted to set
-   */
-  public void setEncrypted(boolean isEncrypted) {
-    this.isEncrypted = isEncrypted;
-  }
-
-  /**
-   * @return the encrytType
-   */
-  public EncryptType getEncrytType() {
-    return encrytType;
-  }
-
-  /**
-   * @param encrytType the encrytType to set
-   */
-  public void setEncrytType(EncryptType encrytType) {
-    this.encrytType = encrytType;
-  }
+    public String toSql() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

@@ -21,5 +21,5 @@ import java.util.List;
 
 public class SelectionList {
 
-  protected List<SelectionItem> items;
+    protected List<SelectionItem> itemList;
 }

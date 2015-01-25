@@ -17,6 +17,31 @@
 
 package edu.hku.sdb.conf;
 
-public class SparksqlDbConf extends DbConf {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class SparksqlDbConf extends DbConf {
+    private static final Logger LOG = LoggerFactory.getLogger(SparksqlDbConf.class);
+
+    public SparksqlDbConf(){
+        super();
+    }
+
+    @Override
+    public Connection getConnection() {
+        Connection connection = null;
+        try {
+            Class.forName(jdbcDriverName);
+            connection = DriverManager.getConnection(jdbcUrl  + "/" + databaseName, username, password);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return  connection;
+    }
 }

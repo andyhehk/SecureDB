@@ -19,7 +19,6 @@ package edu.hku.sdb.parse;
 
 /**
  * @author andy
- * 
  */
 public class Test {
 

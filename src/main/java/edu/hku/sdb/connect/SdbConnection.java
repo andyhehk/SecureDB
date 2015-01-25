@@ -17,6 +17,63 @@
 
 package edu.hku.sdb.connect;
 
-public class SdbConnection implements Connection {
+import edu.hku.sdb.conf.ConnectionConf;
+import edu.hku.sdb.conf.SdbConf;
+import org.apache.hadoop.fs.Stat;
+
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+public class SdbConnection extends UnicastRemoteObject implements Connection, Serializable {
+
+    private static final long serialVersionUID = 227L;
+    private static final String SERVICE_NAME = "Statement";
+
+    private ConnectionConf connectionConf;
+    private static String serviceUrl;
+    private Statement statement;
+
+
+    public SdbConnection(ConnectionConf connectionConf) throws RemoteException {
+        super();
+        setConnectionConf(connectionConf);
+    }
+
+    @Override
+    public Statement createStatement() throws RemoteException{
+        try {
+            if (statement == null){
+                serviceUrl = connectionConf.getSdbAddress() + ":" + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
+                SdbStatement sdbStatement= new SdbStatement(connectionConf);
+                Naming.rebind(serviceUrl, sdbStatement);
+            };
+            statement= (Statement) Naming.lookup(serviceUrl);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (NotBoundException e) {
+            e.printStackTrace();
+        }
+        return statement;
+    }
+
+    @Override
+    public void close() throws RemoteException {
+
+    }
+
+    public ConnectionConf getConnectionConf() {
+        return connectionConf;
+    }
+
+    public void setConnectionConf(ConnectionConf connectionConf) {
+        this.connectionConf = connectionConf;
+    }
+
 
 }

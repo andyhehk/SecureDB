@@ -13,7 +13,7 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
+ *
  *******************************************************************************/
 
 package edu.hku.sdb.parse;
@@ -34,30 +34,30 @@ import org.antlr.runtime.RecognitionException;
  *
  */
 public class ParseError {
-  private final BaseRecognizer br;
-  private final RecognitionException re;
-  private final String[] tokenNames;
+    private final BaseRecognizer br;
+    private final RecognitionException re;
+    private final String[] tokenNames;
 
-  ParseError(BaseRecognizer br, RecognitionException re, String[] tokenNames) {
-    this.br = br;
-    this.re = re;
-    this.tokenNames = tokenNames;
-  }
+    ParseError(BaseRecognizer br, RecognitionException re, String[] tokenNames) {
+        this.br = br;
+        this.re = re;
+        this.tokenNames = tokenNames;
+    }
 
-  BaseRecognizer getBaseRecognizer() {
-    return br;
-  }
+    BaseRecognizer getBaseRecognizer() {
+        return br;
+    }
 
-  RecognitionException getRecognitionException() {
-    return re;
-  }
+    RecognitionException getRecognitionException() {
+        return re;
+    }
 
-  String[] getTokenNames() {
-    return tokenNames;
-  }
+    String[] getTokenNames() {
+        return tokenNames;
+    }
 
-  String getMessage() {
-    return br.getErrorHeader(re) + " " + br.getErrorMessage(re, tokenNames);
-  }
+    String getMessage() {
+        return br.getErrorHeader(re) + " " + br.getErrorMessage(re, tokenNames);
+    }
 
 }

@@ -17,6 +17,43 @@
 
 package edu.hku.sdb.connect;
 
-public class SdbStatement implements Statement {
+import edu.hku.sdb.conf.ConnectionConf;
 
+import java.io.Serializable;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+public class SdbStatement extends UnicastRemoteObject implements Statement, Serializable {
+
+    private static final long serialVersionUID = 427L;
+    private static final String SERVICE_NAME = "ResultSet";
+
+    private ConnectionConf connectionConf;
+    private static String serviceUrl;
+    private ResultSet resultSet;
+
+    public SdbStatement(ConnectionConf connectionConf) throws RemoteException {
+        super();
+        setConnectionConf(connectionConf);
+    }
+
+    //TODO to be implemented
+    @Override
+    public ResultSet executeQuery() {
+        return null;
+    }
+
+    //TODO to be implemented
+    @Override
+    public void close() {
+        
+    }
+
+    public ConnectionConf getConnectionConf() {
+        return connectionConf;
+    }
+
+    public void setConnectionConf(ConnectionConf connectionConf) {
+        this.connectionConf = connectionConf;
+    }
 }

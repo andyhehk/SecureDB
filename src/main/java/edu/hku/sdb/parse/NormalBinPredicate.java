@@ -19,35 +19,20 @@ package edu.hku.sdb.parse;
 
 public class NormalBinPredicate extends BinaryPredicate {
 
-  private final String op;
-  
-  public NormalBinPredicate(String op, Expr e1, Expr e2) {
-    this.op = op;
-    children.add(e1);
-    children.add(e2);
-  }
-    
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer)
-   */
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    // TODO Auto-generated method stub
+    /* (non-Javadoc)
+     * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer)
+     */
+    public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+        // TODO Auto-generated method stub
 
-  }
+    }
 
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.ParseNode#toSql()
-   */
-  public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /**
-   * @return the op
-   */
-  public String getOp() {
-    return op;
-  }
+    /* (non-Javadoc)
+     * @see edu.hku.sdb.parse.ParseNode#toSql()
+     */
+    public String toSql() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

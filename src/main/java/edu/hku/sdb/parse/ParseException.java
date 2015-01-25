@@ -13,7 +13,7 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
+ *
  *******************************************************************************/
 
 package edu.hku.sdb.parse;
@@ -22,28 +22,27 @@ import java.util.ArrayList;
 
 /**
  * ParseException.
- * 
  */
 public class ParseException extends Exception {
 
-  private static final long serialVersionUID = 1L;
-  ArrayList<ParseError> errors;
+    private static final long serialVersionUID = 1L;
+    ArrayList<ParseError> errors;
 
-  public ParseException(ArrayList<ParseError> errors) {
-    super();
-    this.errors = errors;
-  }
-
-  @Override
-  public String getMessage() {
-
-    StringBuilder sb = new StringBuilder();
-    for (ParseError err : errors) {
-      sb.append(err.getMessage());
-      // sb.append("\n");
+    public ParseException(ArrayList<ParseError> errors) {
+        super();
+        this.errors = errors;
     }
 
-    return sb.toString();
-  }
+    @Override
+    public String getMessage() {
+
+        StringBuilder sb = new StringBuilder();
+        for (ParseError err : errors) {
+            sb.append(err.getMessage());
+            // sb.append("\n");
+        }
+
+        return sb.toString();
+    }
 
 }

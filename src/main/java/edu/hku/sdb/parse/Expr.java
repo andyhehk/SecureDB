@@ -13,7 +13,7 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
+ *
  *******************************************************************************/
 
 package edu.hku.sdb.parse;
@@ -23,12 +23,12 @@ import org.slf4j.LoggerFactory;
 
 public abstract class Expr extends TreeNode<Expr> implements ParseNode {
 
-  private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
+    private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
 
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    
-    for(Expr child : children) {
-      child.analyze(analyzer);
+    public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+
+        for (Expr child : children) {
+            child.analyze(analyzer);
+        }
     }
-  }
 }
