@@ -17,12 +17,14 @@
 
 package edu.hku.sdb.driver;
 
+import edu.hku.sdb.conf.ConnectionConf;
 import edu.hku.sdb.conf.SdbConf;
 import edu.hku.sdb.connect.Connection;
 import edu.hku.sdb.connect.ConnectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -33,22 +35,33 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class SdbDriver {
 
-    private final String HELP = "help";
     private static final Logger LOG = LoggerFactory.getLogger(SdbDriver.class);
+    private static final String HELP = "help";
+    private static final String START = "start";
+    private static final String STOP = "stop";
+    private static final String SERVICE_NAME = "ConnectionService";
+    private static final String USAGE = "Usage: sdb [args] " +
+            "start \t start SecureDB service" +
+            "stop \t stop SecureDB service" +
+            "help \t print SecureDB usage";
+    private static SdbConf sdbConf;
 
     /**
      * @param args
      */
     //TODO: to be implemented
     public static void main(String[] args) {
-        startDriver();
-
+        parseAndValidateInput(args);
     }
+
     private static void startDriver() {
+        initConfig();
         try {
-            ConnectionPool connectionPool = new ConnectionPool(new SdbConf());
-            Registry registry = LocateRegistry.getRegistry();
-            Naming.rebind("//localhost/ConnectionService", connectionPool);
+            ConnectionPool connectionPool = new ConnectionPool(getSdbConf());
+            ConnectionConf connectionConf = getSdbConf().getConnectionConf();
+            LocateRegistry.createRegistry(connectionConf.getSdbPort());
+            String sdbConnectionUrl = connectionConf.getSdbAddress() + ":" + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
+            Naming.rebind( sdbConnectionUrl, connectionPool);
 
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -57,21 +70,59 @@ public class SdbDriver {
         }
     }
 
+    //TODO: to be implemented
+    private static void stopDriver() {
+
+    }
+
+    private static void printUsage(OutputStream outputStream){
+        try {
+            outputStream.write(USAGE.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     //TODO: to be implemented
-    private void printUsage(OutputStream outputStream){
+    private static void failAndExit(String message){
         return;
     }
 
     //TODO: to be implemented
-    private void failAndExit(String message){
-        return;
+    private static void parseAndValidateInput(String[] argsList){
+
+        if (argsList.length == 0){
+            printUsage(System.out);
+            return;
+        }
+
+        if (argsList[0].toLowerCase().equals(HELP)){
+            printUsage(System.out);
+            return;
+        }
+
+        if (argsList[0].toLowerCase().equals(START)){
+            startDriver();
+            return;
+        }
+
+        if (argsList[0].toLowerCase().equals(STOP)){
+            stopDriver();
+            return;
+        }
     }
 
-    //TODO: to be implemented
-    private void parseAndValidateInput(String[] argsList){
-        return;
+
+    public static SdbConf getSdbConf() {
+        return sdbConf;
     }
 
+    public static void setSdbConf(SdbConf sdbConf) {
+        SdbDriver.sdbConf = sdbConf;
+    }
+
+    private static void initConfig(){
+        setSdbConf(new SdbConf());
+    }
 
 }

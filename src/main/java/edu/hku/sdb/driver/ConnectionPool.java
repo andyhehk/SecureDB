@@ -17,6 +17,7 @@
 
 package edu.hku.sdb.driver;
 
+import edu.hku.sdb.conf.ConnectionConf;
 import edu.hku.sdb.conf.SdbConf;
 import edu.hku.sdb.connect.Connection;
 import edu.hku.sdb.connect.ConnectionService;
@@ -36,12 +37,13 @@ public class ConnectionPool extends UnicastRemoteObject implements ConnectionSer
      * Default serialversion ID
      */
     private static final long serialVersionUID = 1L;
-    private static final String serviceName = "ConnectionService";
+    private static final String SERVICE_NAME = "Connection";
+    private static String serviceUrl;
     private Integer maxConnectionNumber;
     // TODO handle synchronized method for availableConnectionNumber
     private Integer availableConnectionNumber;
-    private SdbConf SDBConf;
-
+    private SdbConf sdbConf;
+    private SdbConnection sdbConnection;
 
     /**
      * @throws RemoteException
@@ -54,13 +56,15 @@ public class ConnectionPool extends UnicastRemoteObject implements ConnectionSer
     public ConnectionPool(SdbConf sdbConf) throws RemoteException {
         super(0);
         setSDBConf(sdbConf);
-        setAvailableConnectionNumber(10);
+        setAvailableConnectionNumber(sdbConf.getConnectionConf().getMaxConnectionNumber());
     }
 
     private void createConnection() {
         try {
-            SdbConnection sdbConnection = new SdbConnection();
-            Naming.rebind("//localhost/Connection", sdbConnection);
+            sdbConnection = new SdbConnection();
+            ConnectionConf connectionConf = sdbConf.getConnectionConf();
+            serviceUrl = connectionConf.getSdbAddress() + ":" + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
+            Naming.rebind(serviceUrl, sdbConnection);
         } catch (RemoteException e) {
             e.printStackTrace();
         } catch (MalformedURLException e) {
@@ -74,9 +78,11 @@ public class ConnectionPool extends UnicastRemoteObject implements ConnectionSer
     public Connection getConnection() {
         Connection connection = null;
         if (availableConnectionNumber > 0) {
-            createConnection();
+            if (sdbConnection == null){
+                createConnection();
+            }
             try {
-                connection = (Connection) Naming.lookup("//localhost/Connection");
+                connection = (Connection) Naming.lookup(serviceUrl);
             } catch (NotBoundException e) {
                 e.printStackTrace();
             } catch (MalformedURLException e) {
@@ -113,10 +119,10 @@ public class ConnectionPool extends UnicastRemoteObject implements ConnectionSer
     }
 
     public SdbConf getSDBConf() {
-        return SDBConf;
+        return sdbConf;
     }
 
-    public void setSDBConf(SdbConf SDBConf) {
-        this.SDBConf = SDBConf;
+    public void setSDBConf(SdbConf sdbConf) {
+        this.sdbConf = sdbConf;
     }
 }
