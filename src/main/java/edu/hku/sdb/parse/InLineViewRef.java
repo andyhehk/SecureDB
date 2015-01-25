@@ -13,22 +13,37 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
  *******************************************************************************/
 
 package edu.hku.sdb.parse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public class InLineViewRef extends TableRef {
 
-public abstract class Expr extends TreeNode<Expr> implements ParseNode {
-
-  private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
-
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    
-    for(Expr child : children) {
-      child.analyze(analyzer);
-    }
+  protected SelectStmt selectStmt;
+  
+  /**
+   * @param tableName
+   * @param alias
+   */
+  public InLineViewRef(String tableName, String alias) {
+    super(tableName, alias);
+    // TODO Auto-generated constructor stub
   }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer)
+   */
+  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+    // TODO Auto-generated method stub
+
+  }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#toSql()
+   */
+  public String toSql() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

@@ -13,22 +13,29 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
  *******************************************************************************/
 
-package edu.hku.sdb.parse;
+package edu.hku.sdb.optimize;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import edu.hku.sdb.exec.PlanNode;
+import edu.hku.sdb.parse.ParseNode;
 
-public abstract class Expr extends TreeNode<Expr> implements ParseNode {
+public class RuleBaseOptimizer extends Optimizer {
 
-  private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
-
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    
-    for(Expr child : children) {
-      child.analyze(analyzer);
-    }
+  /**
+   * 
+   */
+  public RuleBaseOptimizer() {
+    // TODO Auto-generated constructor stub
   }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.optimize.Optimizer#optimize(edu.hku.sdb.parse.ParseNode)
+   */
+  @Override
+  public PlanNode optimize(ParseNode parseTree) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

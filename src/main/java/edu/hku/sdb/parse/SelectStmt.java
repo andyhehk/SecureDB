@@ -15,6 +15,7 @@
  *    limitations under the License.
  *    
  *******************************************************************************/
+
 package edu.hku.sdb.parse;
 
 import java.util.List;
@@ -29,4 +30,9 @@ public class SelectStmt extends QueryStmt {
   
   //havingClause with aliases and agg output resolved
   private Expr havingPred;
+  
+  @Override
+  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+    super.analyze(analyzer);
+  }
 }

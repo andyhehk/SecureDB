@@ -13,22 +13,16 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
  *******************************************************************************/
 
 package edu.hku.sdb.parse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.HashMap;
+import java.util.List;
 
-public abstract class Expr extends TreeNode<Expr> implements ParseNode {
+public class QueryDesc {
 
-  private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
-
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    
-    for(Expr child : children) {
-      child.analyze(analyzer);
-    }
-  }
+  // only names of physical tables are stored.
+  protected List<String> tblNames; 
+  protected HashMap<String, List<String>> tblToCols;
 }

@@ -18,8 +18,11 @@
 
 package edu.hku.sdb.parse;
 
-public class LiteralExpr extends Expr {
+public abstract class LiteralExpr extends Expr {
 
+  private boolean isEncrypted;
+  private EncryptType encrytType;
+  
   public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
     // TODO Auto-generated method stub
 
@@ -28,6 +31,34 @@ public class LiteralExpr extends Expr {
   public String toSql() {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  /**
+   * @return the isEncrypted
+   */
+  public boolean isEncrypted() {
+    return isEncrypted;
+  }
+
+  /**
+   * @param isEncrypted the isEncrypted to set
+   */
+  public void setEncrypted(boolean isEncrypted) {
+    this.isEncrypted = isEncrypted;
+  }
+
+  /**
+   * @return the encrytType
+   */
+  public EncryptType getEncrytType() {
+    return encrytType;
+  }
+
+  /**
+   * @param encrytType the encrytType to set
+   */
+  public void setEncrytType(EncryptType encrytType) {
+    this.encrytType = encrytType;
   }
 
 }

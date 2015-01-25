@@ -18,5 +18,18 @@
 package edu.hku.sdb.parse;
 
 public class StringLiteral extends LiteralExpr {
+  
+  private final String value;
+  
+  public StringLiteral(String value) {
+    this.value = value;
+  }
 
+  /**
+   * @return the value
+   */
+  public String getValue() {
+    return value;
+  }
+  
 }

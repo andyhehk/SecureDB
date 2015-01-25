@@ -19,4 +19,5 @@ package edu.hku.sdb.parse;
 
 public abstract class BasicSemanticAnalyzer {
 
+  public abstract ParseNode analyze(ASTNode tree);
 }

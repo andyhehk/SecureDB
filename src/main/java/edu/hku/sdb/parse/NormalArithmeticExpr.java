@@ -15,10 +15,15 @@
  *    limitations under the License.
  *    
  *******************************************************************************/
+
 package edu.hku.sdb.parse;
 
 public class NormalArithmeticExpr extends ArithmeticExpr {
-
+  
+  public NormalArithmeticExpr(String op, Expr e1, Expr e2) {
+    super(op, e1, e2);
+  }
+  
   public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
     // TODO Auto-generated method stub
 

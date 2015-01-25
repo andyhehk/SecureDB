@@ -23,4 +23,13 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     // TODO Auto-generated constructor stub
   }
 
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.BasicSemanticAnalyzer#analyze()
+   */
+  @Override
+  public ParseNode analyze(ASTNode tree) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

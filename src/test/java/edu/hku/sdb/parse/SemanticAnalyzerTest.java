@@ -13,22 +13,37 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
  *******************************************************************************/
 
 package edu.hku.sdb.parse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.Assert.assertEquals;
 
-public abstract class Expr extends TreeNode<Expr> implements ParseNode {
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-  private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
+public class SemanticAnalyzerTest {
 
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    
-    for(Expr child : children) {
-      child.analyze(analyzer);
-    }
+  private SemanticAnalyzer testObj;
+  private ParseDriver parser;
+  
+  @Before
+  public void setUp() {
+    testObj = new SemanticAnalyzer();
+    parser = new ParseDriver();
   }
+  
+  @After
+  public void tearDown() {
+    
+  }
+  
+  @Test
+  public void testAnalyze() throws ParseException {
+    String command = "SELECT a + b FROM T1 JOIN T2 ON T1.id = T2.id;";
+    
+    ASTNode tree = parser.parse(command);
+  }
+  
 }

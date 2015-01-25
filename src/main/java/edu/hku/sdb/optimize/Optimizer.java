@@ -17,7 +17,10 @@
 
 package edu.hku.sdb.optimize;
 
+import edu.hku.sdb.parse.ParseNode;
+import edu.hku.sdb.exec.PlanNode;
+
 public abstract class Optimizer {
 
-  
+  public abstract PlanNode optimize(ParseNode parseTree);
 }
