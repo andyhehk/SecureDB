@@ -13,7 +13,7 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *
+ *    
  *******************************************************************************/
 
 package edu.hku.sdb.parse;
@@ -23,29 +23,29 @@ import java.util.List;
 
 public abstract class TreeNode<T extends TreeNode<T>> {
 
-    protected ArrayList<T> children;
+  protected ArrayList<T> children;
 
-    protected TreeNode() {
-        this.children = new ArrayList<T>();
-    }
+  protected TreeNode() {
+    this.children = new ArrayList<T>();
+  }
 
-    public T getChild(int i) {
-        return hasChild(i) ? children.get(i) : null;
-    }
+  public T getChild(int i) {
+    return hasChild(i) ? children.get(i) : null;
+  }
 
-    public boolean hasChild(int i) {
-        return children.size() > i;
-    }
+  public boolean hasChild(int i) {
+    return children.size() > i;
+  }
 
-    public void addChild(T node) {
-        children.add(node);
-    }
+  public void addChild(T node) {
+    children.add(node);
+  }
 
-    public void addChildren(List<? extends T> l) {
-        children.addAll(l);
-    }
+  public void addChildren(List<? extends T> l) {
+    children.addAll(l);
+  }
 
-    public void setChild(int i, T node) {
-        children.set(i, node);
-    }
+  public void setChild(int i, T node) {
+    children.set(i, node);
+  }
 }

@@ -21,13 +21,13 @@ import java.util.List;
 
 public class HashTableSlot extends BasicTupleSlot {
 
-    /* (non-Javadoc)
-     * @see edu.hku.sdb.exec.BasicTupleSlot#nextTuple()
-     */
-    @Override
-    public List<Object> nextTuple() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.exec.BasicTupleSlot#nextTuple()
+   */
+  @Override
+  public List<Object> nextTuple() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }

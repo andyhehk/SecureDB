@@ -13,7 +13,7 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *
+ *    
  *******************************************************************************/
 
 /**
@@ -26,9 +26,9 @@
  * parser location with respect to the definition of v (rather than with respect
  * to the top-level query, since that represents a completely different
  * "parser coordinate system").
- *
+ * 
  *<p>
- *
+ * 
  * So, when expanding the definition of v while analyzing the top-level query,
  * we tag each ASTNode with a reference to an ASTNodeOrign describing v and its
  * usage within the query.
@@ -37,60 +37,60 @@
 package edu.hku.sdb.parse;
 
 public class ASTNodeOrigin {
-    private final String objectType;
-    private final String objectName;
-    private final String objectDefinition;
-    private final String usageAlias;
-    private final ASTNode usageNode;
+  private final String objectType;
+  private final String objectName;
+  private final String objectDefinition;
+  private final String usageAlias;
+  private final ASTNode usageNode;
 
-    public ASTNodeOrigin(String objectType, String objectName,
-                         String objectDefinition, String usageAlias, ASTNode usageNode) {
-        this.objectType = objectType;
-        this.objectName = objectName;
-        this.objectDefinition = objectDefinition;
-        this.usageAlias = usageAlias;
-        this.usageNode = usageNode;
-    }
+  public ASTNodeOrigin(String objectType, String objectName,
+      String objectDefinition, String usageAlias, ASTNode usageNode) {
+    this.objectType = objectType;
+    this.objectName = objectName;
+    this.objectDefinition = objectDefinition;
+    this.usageAlias = usageAlias;
+    this.usageNode = usageNode;
+  }
 
-    /**
-     * @return the type of the object from which an ASTNode originated, e.g.
-     * "view".
-     */
-    public String getObjectType() {
-        return objectType;
-    }
+  /**
+   * @return the type of the object from which an ASTNode originated, e.g.
+   *         "view".
+   */
+  public String getObjectType() {
+    return objectType;
+  }
 
-    /**
-     * @return the name of the object from which an ASTNode originated, e.g. "v".
-     */
-    public String getObjectName() {
-        return objectName;
-    }
+  /**
+   * @return the name of the object from which an ASTNode originated, e.g. "v".
+   */
+  public String getObjectName() {
+    return objectName;
+  }
 
-    /**
-     * @return the definition of the object from which an ASTNode originated, e.g.
-     * <code>select x+1 as y from t</code>.
-     */
-    public String getObjectDefinition() {
-        return objectDefinition;
-    }
+  /**
+   * @return the definition of the object from which an ASTNode originated, e.g.
+   *         <code>select x+1 as y from t</code>.
+   */
+  public String getObjectDefinition() {
+    return objectDefinition;
+  }
 
-    /**
-     * @return the alias of the object from which an ASTNode originated, e.g. "v1"
-     * (this can help with debugging context-dependent expansions)
-     */
-    public String getUsageAlias() {
-        return usageAlias;
-    }
+  /**
+   * @return the alias of the object from which an ASTNode originated, e.g. "v1"
+   *         (this can help with debugging context-dependent expansions)
+   */
+  public String getUsageAlias() {
+    return usageAlias;
+  }
 
-    /**
-     * @return the expression node triggering usage of an object from which an
-     * ASTNode originated, e.g. <code>v as v1</code> (this can help with
-     * debugging context-dependent expansions)
-     */
-    public ASTNode getUsageNode() {
-        return usageNode;
-    }
+  /**
+   * @return the expression node triggering usage of an object from which an
+   *         ASTNode originated, e.g. <code>v as v1</code> (this can help with
+   *         debugging context-dependent expansions)
+   */
+  public ASTNode getUsageNode() {
+    return usageNode;
+  }
 }
 
 // End ASTNodeOrigin.java

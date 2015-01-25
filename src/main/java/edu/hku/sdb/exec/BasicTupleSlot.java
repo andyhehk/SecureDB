@@ -20,11 +20,10 @@ package edu.hku.sdb.exec;
 import java.util.List;
 
 public abstract class BasicTupleSlot {
-
-    /**
-     * Get the next tuple for the current cursor.
-     *
-     * @return
-     */
-    public abstract List<Object> nextTuple();
+  
+  /**
+   * Get the next tuple for the current cursor.
+   * @return
+   */
+  public abstract List<Object> nextTuple();
 }

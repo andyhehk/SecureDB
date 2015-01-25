@@ -13,14 +13,14 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *
+ *    
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
 public class SemanticAnalyzer extends BasicSemanticAnalyzer {
 
-    public SemanticAnalyzer() {
-        // TODO Auto-generated constructor stub
-    }
+  public SemanticAnalyzer() {
+    // TODO Auto-generated constructor stub
+  }
 
 }

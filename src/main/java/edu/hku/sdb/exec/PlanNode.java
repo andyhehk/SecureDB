@@ -19,25 +19,24 @@ package edu.hku.sdb.exec;
 
 import edu.hku.sdb.plan.PlanNodeDesc;
 
-public abstract class PlanNode<T extends PlanNodeDesc> {
+public abstract class PlanNode <T extends PlanNodeDesc> {
 
-    protected T nodeDesc;
-
-    /**
-     * Initialize resource needed.
-     */
-    public abstract void init();
-
-    /**
-     * Get next tuple
-     *
-     * @return
-     */
-    public abstract BasicTupleSlot nextTuple();
-
-    /**
-     * Close all resource.
-     */
-    public abstract void close();
-
+  protected T nodeDesc;
+  
+  /**
+   * Initialize resource needed.
+   */
+  public abstract void init();
+  
+  /**
+   * Get next tuple
+   * @return
+   */
+  public abstract BasicTupleSlot nextTuple();
+  
+  /**
+   * Close all resource.
+   */
+  public abstract void close();
+  
 }
