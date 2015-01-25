@@ -15,8 +15,7 @@ public class SdbConfTest extends TestCase {
 
     }
 
-    public void testGetSdbPath() throws Exception {
-
-
+    public void testConnectionInit() throws Exception {
+        sdbConf.getConnectionConf().printConfig();
     }
 }

@@ -17,6 +17,14 @@
 
 package edu.hku.sdb.conf;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -37,6 +45,15 @@ public class SdbConf {
     private static final String CONNECTION_CONF_FILE = "sdb-connection.xml";
     private static final String SDB_CONF = "SDB_CONF";
 
+    private static final String SDB_CON_MAX_NUM = "edu.hku.sdb.conf.connection.maxconnumber";
+    private static final String SDB_CON_ADDRESS= "edu.hku.sdb.conf.connection.address";
+    private static final String SDB_CON_PORT = "edu.hku.sdb.conf.connection.port";
+
+
+    public SdbConf(){
+        super();
+        init();
+    }
 
     public DbConf getMetadbConf() {
         return metaDbConf;
@@ -99,8 +116,48 @@ public class SdbConf {
         metaDbConf = DbConfFactory.getDbConf(filename);
     }
 
-    //TODO: Change to XML format reader
     private void initConnectionConf(String filename){
+
+        connectionConf = new ConnectionConf();
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(filename);
+            XPathFactory xFactory = XPathFactory.newInstance();
+            XPath xpath = xFactory.newXPath();
+
+            XPathExpression expression = xpath.compile("//property[name='" + SDB_CON_MAX_NUM + "']/value/text()");
+            NodeList nodes = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
+            String propertyValue = nodes.item(0).getNodeValue();
+            if (propertyValue != null){
+                connectionConf.setMaxConnectionNumber(Integer.parseInt(propertyValue));
+            }
+
+            expression = xpath.compile("//property[name='" + SDB_CON_ADDRESS + "']/value/text()");
+            nodes = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
+            propertyValue = nodes.item(0).getNodeValue();
+            if (propertyValue != null){
+                connectionConf.setSdbAddress(propertyValue);
+            }
+
+            expression = xpath.compile("//property[name='" + SDB_CON_PORT + "']/value/text()");
+            nodes = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
+            propertyValue = nodes.item(0).getNodeValue();
+            if (propertyValue != null){
+                connectionConf.setSdbPort(Integer.parseInt(propertyValue));
+            }
+
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XPathExpressionException e) {
+            e.printStackTrace();
+        }
+
         return;
     }
 

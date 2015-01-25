@@ -48,9 +48,9 @@ public class ConnectionConf extends Configuration {
     }
 
     public void printConfig(){
-        String config = "Sdb address is " + sdbAddress + "\n" +
-                "Sdb port number is " + sdbPort + "\n" +
-                "Maximum number of connection is " + maxConnectionNumber + "\n";
+        String config = "Sdb address: " + sdbAddress + "\n" +
+                "Sdb port: " + sdbPort + "\n" +
+                "Maximum number of connection: " + maxConnectionNumber + "\n";
         System.out.println(config);
     }
 
