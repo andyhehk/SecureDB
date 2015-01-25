@@ -17,6 +17,10 @@
 
 package edu.hku.sdb.connect;
 
+import edu.hku.sdb.conf.ConnectionConf;
+import edu.hku.sdb.conf.SdbConf;
+import org.apache.hadoop.fs.Stat;
+
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -27,19 +31,27 @@ import java.rmi.server.UnicastRemoteObject;
 public class SdbConnection extends UnicastRemoteObject implements Connection, Serializable {
 
     private static final long serialVersionUID = 227L;
+    private static final String SERVICE_NAME = "Statement";
 
-    public SdbConnection() throws RemoteException {
+    private ConnectionConf connectionConf;
+    private static String serviceUrl;
+    private Statement statement;
+
+
+    public SdbConnection(ConnectionConf connectionConf) throws RemoteException {
         super();
-        //TODO auto generated code
+        setConnectionConf(connectionConf);
     }
 
     @Override
     public Statement createStatement() throws RemoteException{
-        Statement statement = null;
         try {
-            SdbStatement sdbStatement= new SdbStatement();
-            Naming.rebind("//localhost/Statement", sdbStatement);
-            statement= (Statement) Naming.lookup("//localhost/Statement");
+            serviceUrl = connectionConf.getSdbAddress() + ":" + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
+            if (statement == null){
+                SdbStatement sdbStatement= new SdbStatement(connectionConf);
+                Naming.rebind(serviceUrl, statement);
+            };
+            statement= (Statement) Naming.lookup(serviceUrl);
         } catch (RemoteException e) {
             e.printStackTrace();
         } catch (MalformedURLException e) {
@@ -54,5 +66,14 @@ public class SdbConnection extends UnicastRemoteObject implements Connection, Se
     public void close() throws RemoteException {
 
     }
+
+    public ConnectionConf getConnectionConf() {
+        return connectionConf;
+    }
+
+    public void setConnectionConf(ConnectionConf connectionConf) {
+        this.connectionConf = connectionConf;
+    }
+
 
 }

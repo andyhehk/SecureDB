@@ -61,8 +61,8 @@ public class ConnectionPool extends UnicastRemoteObject implements ConnectionSer
 
     private void createConnection() {
         try {
-            sdbConnection = new SdbConnection();
             ConnectionConf connectionConf = sdbConf.getConnectionConf();
+            sdbConnection = new SdbConnection(connectionConf);
             serviceUrl = connectionConf.getSdbAddress() + ":" + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
             Naming.rebind(serviceUrl, sdbConnection);
         } catch (RemoteException e) {
