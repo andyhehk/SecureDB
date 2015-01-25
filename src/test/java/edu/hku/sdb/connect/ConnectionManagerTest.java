@@ -33,25 +33,11 @@ public class ConnectionManagerTest{
     }
 
     @Test
-    public void testGetConnectionService() throws Exception {
+    public void testGetStatement() throws Exception {
         ConnectionService connectionService = null;
         try {
             connectionService = (ConnectionService) Naming.lookup("//localhost:2019/ConnectionService");
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        assertNotNull(connectionService);
-    }
-
-    @Test
-    public void testGetConnection() throws Exception {
-        ConnectionService connectionService = null;
-        try {
-            connectionService = (ConnectionService) Naming.lookup("//localhost:2019/ConnectionService");
+            assertNotNull(connectionService);
         } catch (NotBoundException e) {
             e.printStackTrace();
         } catch (MalformedURLException e) {
@@ -61,22 +47,7 @@ public class ConnectionManagerTest{
         }
         Connection connection = connectionService.getConnection();
         assertNotNull(connection);
-    }
-
-    @Test
-    public void testGetStatement() throws Exception {
-        ConnectionService connectionService = null;
-        try {
-            connectionService = (ConnectionService) Naming.lookup("//localhost:2019/ConnectionService");
-        } catch (NotBoundException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-
-        Statement statement = connectionService.getConnection().createStatement();
+        Statement statement = connection.createStatement();
         assertNotNull(statement);
     }
 

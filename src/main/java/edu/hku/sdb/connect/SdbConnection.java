@@ -46,10 +46,10 @@ public class SdbConnection extends UnicastRemoteObject implements Connection, Se
     @Override
     public Statement createStatement() throws RemoteException{
         try {
-            serviceUrl = connectionConf.getSdbAddress() + ":" + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
             if (statement == null){
+                serviceUrl = connectionConf.getSdbAddress() + ":" + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
                 SdbStatement sdbStatement= new SdbStatement(connectionConf);
-                Naming.rebind(serviceUrl, statement);
+                Naming.rebind(serviceUrl, sdbStatement);
             };
             statement= (Statement) Naming.lookup(serviceUrl);
         } catch (RemoteException e) {

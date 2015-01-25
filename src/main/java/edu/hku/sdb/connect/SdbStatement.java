@@ -46,7 +46,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement, Seri
     //TODO to be implemented
     @Override
     public void close() {
-
+        
     }
 
     public ConnectionConf getConnectionConf() {
