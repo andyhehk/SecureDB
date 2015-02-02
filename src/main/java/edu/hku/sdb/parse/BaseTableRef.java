@@ -28,6 +28,14 @@ public class BaseTableRef extends TableRef {
     // TODO Auto-generated constructor stub
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof BaseTableRef))
+      return false;
+
+    return super.equals(obj);
+  }
+
   /*
    * (non-Javadoc)
    * 

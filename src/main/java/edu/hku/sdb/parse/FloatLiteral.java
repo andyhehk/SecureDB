@@ -25,6 +25,14 @@ public class FloatLiteral extends LiteralExpr {
     this.value = value;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof FloatLiteral))
+      return false;
+
+    return value == ((FloatLiteral) obj).value;
+  }
+
   /**
    * @return the value
    */

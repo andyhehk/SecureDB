@@ -26,25 +26,25 @@ import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable
 public class DBMeta {
-  
+
   @PrimaryKey
   private String name = null;
-  
+
   private Set<TableMeta> tbls = new HashSet<TableMeta>();
-  
+
   // The big primary number n
-  private BigInteger n = null ;
-  
+  private BigInteger n = null;
+
   // The secrete number g
   private BigInteger g = null;
-  
+
   // The random seed to generate row ids
   private BigInteger seed = null;
 
   public DBMeta(String name) {
     this.setName(name);
   }
-  
+
   /**
    * @return the name
    */
@@ -53,7 +53,8 @@ public class DBMeta {
   }
 
   /**
-   * @param name the name to set
+   * @param name
+   *          the name to set
    */
   public void setName(String name) {
     this.name = name;
@@ -67,7 +68,8 @@ public class DBMeta {
   }
 
   /**
-   * @param tbls the tbls to set
+   * @param tbls
+   *          the tbls to set
    */
   public void setTbls(Set<TableMeta> tbls) {
     this.tbls = tbls;
@@ -81,7 +83,8 @@ public class DBMeta {
   }
 
   /**
-   * @param n the n to set
+   * @param n
+   *          the n to set
    */
   public void setN(BigInteger n) {
     this.n = n;
@@ -95,7 +98,8 @@ public class DBMeta {
   }
 
   /**
-   * @param g the g to set
+   * @param g
+   *          the g to set
    */
   public void setG(BigInteger g) {
     this.g = g;
@@ -109,10 +113,11 @@ public class DBMeta {
   }
 
   /**
-   * @param seed the seed to set
+   * @param seed
+   *          the seed to set
    */
   public void setSeed(BigInteger seed) {
     this.seed = seed;
   }
-  
+
 }

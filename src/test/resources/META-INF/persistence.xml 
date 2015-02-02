@@ -11,7 +11,6 @@
         <class>edu.hku.sdb.catalog.ColumnMeta</class>
         <exclude-unlisted-classes/>
         <properties>
-        	<property name="javax.jdo.PersistenceManagerFactoryClass" value="org.datanucleus.api.jdo.JDOPersistenceManagerFactory"/>
             <property name="javax.jdo.option.ConnectionURL" value="jdbc:derby:metastore_db;create=true"/>
             <property name="javax.jdo.option.ConnectionDriverName" value="org.apache.derby.jdbc.EmbeddedDriver"/>
             <property name="javax.jdo.option.ConnectionUserName" value=""/>

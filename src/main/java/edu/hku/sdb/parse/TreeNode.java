@@ -26,26 +26,41 @@ public abstract class TreeNode<T extends TreeNode<T>> {
   protected ArrayList<T> children;
 
   protected TreeNode() {
-    this.children = new ArrayList<T>();
+    this.setChildren(new ArrayList<T>());
   }
 
   public T getChild(int i) {
-    return hasChild(i) ? children.get(i) : null;
+    return hasChild(i) ? getChildren().get(i) : null;
   }
 
   public boolean hasChild(int i) {
-    return children.size() > i;
+    return getChildren().size() > i;
   }
 
   public void addChild(T node) {
-    children.add(node);
+    getChildren().add(node);
   }
 
   public void addChildren(List<? extends T> l) {
-    children.addAll(l);
+    getChildren().addAll(l);
   }
 
   public void setChild(int i, T node) {
-    children.set(i, node);
+    getChildren().set(i, node);
+  }
+
+  /**
+   * @return the children
+   */
+  public ArrayList<T> getChildren() {
+    return children;
+  }
+
+  /**
+   * @param children
+   *          the children to set
+   */
+  public void setChildren(ArrayList<T> children) {
+    this.children = children;
   }
 }

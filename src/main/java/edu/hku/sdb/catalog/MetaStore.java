@@ -25,12 +25,12 @@ import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable
 public class MetaStore {
-  
+
   @PrimaryKey
   private String name = null;
-  
+
   private Set<DBMeta> dbs = new HashSet<DBMeta>();
-  
+
   public MetaStore(String name) {
     this.setName(name);
   }
@@ -43,7 +43,8 @@ public class MetaStore {
   }
 
   /**
-   * @param name the name to set
+   * @param name
+   *          the name to set
    */
   public void setName(String name) {
     this.name = name;
@@ -57,7 +58,8 @@ public class MetaStore {
   }
 
   /**
-   * @param dbs the dbs to set
+   * @param dbs
+   *          the dbs to set
    */
   public void setDbs(Set<DBMeta> dbs) {
     this.dbs = dbs;

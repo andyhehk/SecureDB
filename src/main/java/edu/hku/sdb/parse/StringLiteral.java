@@ -25,6 +25,14 @@ public class StringLiteral extends LiteralExpr {
     this.value = value;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof StringLiteral))
+      return false;
+
+    return value.equals(((StringLiteral) obj).value);
+  }
+
   /**
    * @return the value
    */

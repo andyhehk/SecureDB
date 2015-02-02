@@ -17,26 +17,74 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
-public class NormalArithmeticExpr extends ArithmeticExpr {
+public class NormalArithmeticExpr extends Expr {
 
-  /**
-   * @param op
-   * @param e1
-   * @param e2
+  enum Operator {
+    MULTIPLY("*", "multiply"),
+    DIVIDE("/", "divide"),
+    MOD("%", "mod"),
+    INT_DIVIDE("DIV", "int_divide"),
+    ADD("+", "add"),
+    SUBTRACT("-", "subtract"),
+    BITAND("&", "bitand"),
+    BITOR("|", "bitor"),
+    BITXOR("^", "bitxor"),
+    BITNOT("~", "bitnot");
+
+    private final String description;
+    private final String name;
+
+    private Operator(String description, String name) {
+      this.description = description;
+      this.name = name;
+    }
+
+    @Override
+    public String toString() {
+      return description;
+    }
+
+    public String getName() {
+      return name;
+    }
+  }
+
+  private final Operator op;
+
+  public NormalArithmeticExpr(Operator op) {
+    this.op = op;
+  }
+
+  public NormalArithmeticExpr(Operator op, Expr e1, Expr e2) {
+    this.op = op;
+    getChildren().add(e1);
+    getChildren().add(e2);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof NormalArithmeticExpr))
+      return false;
+
+    NormalArithmeticExpr arithObj = (NormalArithmeticExpr) obj;
+    return op.equals(arithObj.op) && children.equals(arithObj.children);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
-  public NormalArithmeticExpr(String op, Expr e1, Expr e2) {
-    super(op, e1, e2);
-    // TODO Auto-generated constructor stub
-  }
-
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    // TODO Auto-generated method stub
-
-  }
-
   public String toSql() {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  /**
+   * @return the op
+   */
+  public Operator getOp() {
+    return op;
   }
 
 }

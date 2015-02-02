@@ -25,9 +25,18 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
 
   private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
 
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Expr))
+      return false;
+
+    Expr exprObj = (Expr) obj;
+    return children.equals(exprObj.children);
+  }
+
   public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
 
-    for (Expr child : children) {
+    for (Expr child : getChildren()) {
       child.analyze(analyzer);
     }
   }

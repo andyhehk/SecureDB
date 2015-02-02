@@ -17,9 +17,83 @@
 
 package edu.hku.sdb.parse;
 
-public class JoinOperator {
+public enum JoinOperator {
+  INNER_JOIN("INNER JOIN"),
+  LEFT_OUTER_JOIN("LEFT OUTER JOIN"),
+  LEFT_SEMI_JOIN("LEFT SEMI JOIN"),
+  LEFT_ANTI_JOIN("LEFT ANTI JOIN"),
+  RIGHT_OUTER_JOIN("RIGHT OUTER JOIN"),
+  RIGHT_SEMI_JOIN("RIGHT SEMI JOIN"),
+  RIGHT_ANTI_JOIN("RIGHT ANTI JOIN"),
+  FULL_OUTER_JOIN("FULL OUTER JOIN"),
+  CROSS_JOIN("CROSS JOIN");
 
-  public static String NORMAL_JOIN = "";
-  public static String LEFT_OUTER_JOIN = "left outer";
-  public static String RIGHT_OUTER_JOIN = "right outer";
+  private final String description;
+
+  private JoinOperator(String description) {
+    this.description = description;
+  }
+
+  @Override
+  public String toString() {
+    return description;
+  }
+
+  public boolean isInnerJoin() {
+    return this == INNER_JOIN;
+  }
+
+  public boolean isOuterJoin() {
+    return this == LEFT_OUTER_JOIN || this == RIGHT_OUTER_JOIN
+        || this == FULL_OUTER_JOIN;
+  }
+
+  public boolean isSemiJoin() {
+    return this == JoinOperator.LEFT_SEMI_JOIN
+        || this == JoinOperator.LEFT_ANTI_JOIN
+        || this == JoinOperator.RIGHT_SEMI_JOIN
+        || this == JoinOperator.RIGHT_ANTI_JOIN;
+  }
+
+  public boolean isLeftSemiJoin() {
+    return this == JoinOperator.LEFT_SEMI_JOIN
+        || this == JoinOperator.LEFT_ANTI_JOIN;
+  }
+
+  public boolean isRightSemiJoin() {
+    return this == JoinOperator.RIGHT_SEMI_JOIN
+        || this == JoinOperator.RIGHT_ANTI_JOIN;
+  }
+
+  public boolean isCrossJoin() {
+    return this == JoinOperator.CROSS_JOIN;
+  }
+
+  public boolean isFullOuterJoin() {
+    return this == JoinOperator.FULL_OUTER_JOIN;
+  }
+
+  public boolean isAntiJoin() {
+    return this == JoinOperator.LEFT_ANTI_JOIN
+        || this == JoinOperator.RIGHT_ANTI_JOIN;
+  }
+
+  public JoinOperator invert() {
+    switch (this) {
+    case LEFT_OUTER_JOIN:
+      return RIGHT_OUTER_JOIN;
+    case RIGHT_OUTER_JOIN:
+      return LEFT_OUTER_JOIN;
+    case LEFT_SEMI_JOIN:
+      return RIGHT_SEMI_JOIN;
+    case RIGHT_SEMI_JOIN:
+      return LEFT_SEMI_JOIN;
+    case LEFT_ANTI_JOIN:
+      return RIGHT_ANTI_JOIN;
+    case RIGHT_ANTI_JOIN:
+      return LEFT_ANTI_JOIN;
+    default:
+      return this;
+    }
+  }
 }

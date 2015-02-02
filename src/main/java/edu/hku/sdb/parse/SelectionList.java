@@ -22,4 +22,28 @@ import java.util.List;
 public class SelectionList {
 
   protected List<SelectionItem> itemList;
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof SelectionList))
+      return false;
+
+    SelectionList listObj = (SelectionList) obj;
+    return itemList.equals(listObj.itemList);
+  }
+
+  /**
+   * @return the itemList
+   */
+  public List<SelectionItem> getItemList() {
+    return itemList;
+  }
+
+  /**
+   * @param itemList
+   *          the itemList to set
+   */
+  public void setItemList(List<SelectionItem> itemList) {
+    this.itemList = itemList;
+  }
 }

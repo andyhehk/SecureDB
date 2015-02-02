@@ -19,6 +19,25 @@ package edu.hku.sdb.parse;
 
 public class NormalBinPredicate extends BinaryPredicate {
 
+  public NormalBinPredicate(BinOperator op) {
+    this.op = op;
+  }
+
+  public NormalBinPredicate(BinOperator op, Expr e1, Expr e2) {
+    this.op = op;
+    children.add(e1);
+    children.add(e2);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof NormalBinPredicate))
+      return false;
+
+    NormalBinPredicate binPred = (NormalBinPredicate) obj;
+    return op.equals(binPred.op) && children.equals(binPred.children);
+  }
+
   /*
    * (non-Javadoc)
    * 

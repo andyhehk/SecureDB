@@ -17,10 +17,14 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
+import edu.hku.sdb.catalog.MetaStore;
+
 public class SemanticAnalyzer extends BasicSemanticAnalyzer {
 
-  public SemanticAnalyzer() {
-    // TODO Auto-generated constructor stub
+  private MetaStore metadb;
+
+  public SemanticAnalyzer(MetaStore metadb) {
+    this.metadb = metadb;
   }
 
   /*

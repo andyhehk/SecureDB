@@ -25,6 +25,14 @@ public class BoolLiteral extends LiteralExpr {
     this.value = value;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof BoolLiteral))
+      return false;
+
+    return value == ((BoolLiteral) obj).value;
+  }
+
   /**
    * @return the value
    */

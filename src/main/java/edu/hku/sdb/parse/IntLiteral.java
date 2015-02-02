@@ -20,9 +20,25 @@ package edu.hku.sdb.parse;
 
 public class IntLiteral extends LiteralExpr {
 
-  protected final int value;
+  private final int value;
 
   public IntLiteral(int value) {
     this.value = value;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof IntLiteral))
+      return false;
+
+    return value == ((IntLiteral) obj).value;
+  }
+
+  /**
+   * @return the value
+   */
+  public int getValue() {
+    return value;
+  }
+
 }

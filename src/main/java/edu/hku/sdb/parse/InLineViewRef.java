@@ -30,6 +30,19 @@ public class InLineViewRef extends TableRef {
     // TODO Auto-generated constructor stub
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof InLineViewRef))
+      return false;
+
+    if (!super.equals(obj))
+      return false;
+
+    InLineViewRef viewObj = (InLineViewRef) obj;
+
+    return selectStmt.equals(viewObj.selectStmt);
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -50,6 +63,21 @@ public class InLineViewRef extends TableRef {
   public String toSql() {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  /**
+   * @return the selectStmt
+   */
+  public SelectStmt getSelectStmt() {
+    return selectStmt;
+  }
+
+  /**
+   * @param selectStmt
+   *          the selectStmt to set
+   */
+  public void setSelectStmt(SelectStmt selectStmt) {
+    this.selectStmt = selectStmt;
   }
 
 }

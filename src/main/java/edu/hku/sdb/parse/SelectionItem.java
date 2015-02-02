@@ -19,6 +19,50 @@ package edu.hku.sdb.parse;
 
 public class SelectionItem {
 
-  protected Expr expr;
-  protected String alias;
+  private Expr expr;
+  private String alia;
+
+  public SelectionItem(Expr expr, String alia) {
+    this.expr = expr;
+    this.alia = alia;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof SelectionItem))
+      return false;
+
+    SelectionItem selitemObj = (SelectionItem) obj;
+    return expr.equals(selitemObj.expr) && alia.equals(selitemObj.alia);
+  }
+
+  /**
+   * @return the expr
+   */
+  public Expr getExpr() {
+    return expr;
+  }
+
+  /**
+   * @param expr
+   *          the expr to set
+   */
+  public void setExpr(Expr expr) {
+    this.expr = expr;
+  }
+
+  /**
+   * @return the alias
+   */
+  public String getAlia() {
+    return alia;
+  }
+
+  /**
+   * @param alias
+   *          the alias to set
+   */
+  public void setAlia(String alias) {
+    this.alia = alias;
+  }
 }

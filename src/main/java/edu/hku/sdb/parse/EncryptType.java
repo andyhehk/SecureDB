@@ -18,5 +18,6 @@
 package edu.hku.sdb.parse;
 
 public enum EncryptType {
-  SDB, PILLIAR
+  SDB,
+  PILLIAR
 }

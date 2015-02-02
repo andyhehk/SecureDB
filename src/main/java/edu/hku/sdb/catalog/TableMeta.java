@@ -25,12 +25,12 @@ import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable
 public class TableMeta {
-  
+
   @PrimaryKey
   private String name;
-  
-  private Set<ColumnMeta> cols = new HashSet<ColumnMeta>(); 
-  
+
+  private Set<ColumnMeta> cols = new HashSet<ColumnMeta>();
+
   public TableMeta(String name) {
     this.setName(name);
   }
@@ -43,7 +43,8 @@ public class TableMeta {
   }
 
   /**
-   * @param name the name to set
+   * @param name
+   *          the name to set
    */
   public void setName(String name) {
     this.name = name;
@@ -57,12 +58,11 @@ public class TableMeta {
   }
 
   /**
-   * @param cols the cols to set
+   * @param cols
+   *          the cols to set
    */
   public void setCols(Set<ColumnMeta> cols) {
     this.cols = cols;
   }
 
-
-  
 }

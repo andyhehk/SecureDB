@@ -20,8 +20,8 @@ package edu.hku.sdb.parse;
 public abstract class TableRef implements ParseNode {
 
   // represents a table/view name.
-  protected String tableName;
-  protected String alias;
+  protected String tblName;
+  protected String alia;
 
   protected JoinOperator joinOp;
   protected Expr onClause;
@@ -31,7 +31,94 @@ public abstract class TableRef implements ParseNode {
 
   public TableRef(String tableName, String alias) {
     super();
-    this.tableName = tableName;
-    this.alias = alias;
+    this.setTableName(tableName);
+    this.setAlia(alias);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof TableRef))
+      return false;
+
+    TableRef tblObj = (TableRef) obj;
+
+    return tblName.equals(tblObj.tblName) && alia.equals(tblObj.alia)
+        && joinOp.equals(tblObj.joinOp) && onClause.equals(tblObj.onClause)
+        && leftTblRef.equals(tblObj.leftTblRef);
+  }
+
+  /**
+   * @return the tableName
+   */
+  public String getTableName() {
+    return tblName;
+  }
+
+  /**
+   * @param tableName
+   *          the tableName to set
+   */
+  public void setTableName(String tableName) {
+    this.tblName = tableName;
+  }
+
+  /**
+   * @return the alias
+   */
+  public String getAlia() {
+    return alia;
+  }
+
+  /**
+   * @param alia
+   *          the alias to set
+   */
+  public void setAlia(String alia) {
+    this.alia = alia;
+  }
+
+  /**
+   * @return the joinOp
+   */
+  public JoinOperator getJoinOp() {
+    return joinOp;
+  }
+
+  /**
+   * @param joinOp
+   *          the joinOp to set
+   */
+  public void setJoinOp(JoinOperator joinOp) {
+    this.joinOp = joinOp;
+  }
+
+  /**
+   * @return the onClause
+   */
+  public Expr getOnClause() {
+    return onClause;
+  }
+
+  /**
+   * @param onClause
+   *          the onClause to set
+   */
+  public void setOnClause(Expr onClause) {
+    this.onClause = onClause;
+  }
+
+  /**
+   * @return the leftTblRef
+   */
+  public TableRef getLeftTblRef() {
+    return leftTblRef;
+  }
+
+  /**
+   * @param leftTblRef
+   *          the leftTblRef to set
+   */
+  public void setLeftTblRef(TableRef leftTblRef) {
+    this.leftTblRef = leftTblRef;
   }
 }

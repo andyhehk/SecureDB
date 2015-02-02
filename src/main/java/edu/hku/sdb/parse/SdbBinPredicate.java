@@ -19,6 +19,26 @@ package edu.hku.sdb.parse;
 
 public class SdbBinPredicate extends BinaryPredicate {
 
+  private SdbArithmeticExpr arithExpr;
+  private SdbKeyUpdateExpr keyUpExpr;
+
+  public SdbBinPredicate(BinOperator op, SdbArithmeticExpr arithExpr,
+      SdbKeyUpdateExpr keyUpExpr) {
+    this.op = op;
+    this.arithExpr = arithExpr;
+    this.keyUpExpr = keyUpExpr;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof SdbBinPredicate))
+      return false;
+
+    SdbBinPredicate sdbBin = (SdbBinPredicate) obj;
+    return op.equals(sdbBin.op) && arithExpr.equals(sdbBin.arithExpr)
+        && keyUpExpr.equals(sdbBin.keyUpExpr);
+  }
+
   /*
    * (non-Javadoc)
    * 

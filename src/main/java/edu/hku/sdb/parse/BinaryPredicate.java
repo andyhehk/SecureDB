@@ -19,4 +19,33 @@ package edu.hku.sdb.parse;
 
 public abstract class BinaryPredicate extends Predicate {
 
+  public enum BinOperator {
+    EQ("=", "eq"),
+    NE("!=", "ne"),
+    LE("<=", "le"),
+    GE(">=", "ge"),
+    LT("<", "lt"),
+    GT(">", "gt");
+
+    private final String description;
+    private final String name;
+
+    private BinOperator(String description, String name) {
+      this.description = description;
+      this.name = name;
+    }
+
+    @Override
+    public String toString() {
+      return description;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+  }
+
+  protected BinOperator op;
+
 }

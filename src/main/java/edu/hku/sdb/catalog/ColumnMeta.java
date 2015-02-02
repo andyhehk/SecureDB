@@ -17,26 +17,42 @@
 
 package edu.hku.sdb.catalog;
 
-import java.math.BigInteger;
-
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable
 public class ColumnMeta {
-  
+
   @PrimaryKey
   private String name;
-  
+
   private DataType type;
   private boolean isSensitive = false;
+  private ColumnKey colkey;
 
-  // The m part of the column key
-  private BigInteger m = null;
-  // The x part of the column key
-  private BigInteger x = null;
-  
   public ColumnMeta(String name) {
+    this.setName(name);
+  }
+
+  public ColumnMeta(String name, DataType type, boolean isSen, ColumnKey colkey) {
+    this.name = name;
+    this.type = type;
+    this.isSensitive = isSen;
+    this.setColkey(colkey);
+  }
+
+  /**
+   * @return the name
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * @param name
+   *          the name to set
+   */
+  public void setName(String name) {
     this.name = name;
   }
 
@@ -48,7 +64,8 @@ public class ColumnMeta {
   }
 
   /**
-   * @param type the type to set
+   * @param type
+   *          the type to set
    */
   public void setType(DataType type) {
     this.type = type;
@@ -62,38 +79,26 @@ public class ColumnMeta {
   }
 
   /**
-   * @param isSensitive the isSensitive to set
+   * @param isSensitive
+   *          the isSensitive to set
    */
   public void setSensitive(boolean isSensitive) {
     this.isSensitive = isSensitive;
   }
 
   /**
-   * @return the m
+   * @return the colkey
    */
-  public BigInteger getM() {
-    return m;
+  public ColumnKey getColkey() {
+    return colkey;
   }
 
   /**
-   * @param m the m to set
+   * @param colkey
+   *          the colkey to set
    */
-  public void setM(BigInteger m) {
-    this.m = m;
+  public void setColkey(ColumnKey colkey) {
+    this.colkey = colkey;
   }
 
-  /**
-   * @return the x
-   */
-  public BigInteger getX() {
-    return x;
-  }
-
-  /**
-   * @param x the x to set
-   */
-  public void setX(BigInteger x) {
-    this.x = x;
-  }
-  
 }

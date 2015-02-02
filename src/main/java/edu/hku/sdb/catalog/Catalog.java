@@ -17,6 +17,83 @@
 
 package edu.hku.sdb.catalog;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+
+import edu.hku.sdb.conf.SdbConf;
+
 public class Catalog {
+
+  private MetaStore metadb;
+  private Connection clientdbCon;
+  private Connection serverdbCon;
+
+  public Catalog() {
+
+  }
+
+  public Catalog(SdbConf sdbconf) {
+    initMetaDB();
+    initConnections();
+  }
+
+  /**
+   * Initialize the metastore database
+   */
+  private void initMetaDB() {
+
+  }
+
+  /**
+   * Initialize the clientdb and serverdb connections.
+   */
+  private void initConnections() {
+
+  }
+
+  /**
+   * @return the metadb
+   */
+  public MetaStore getMetadb() {
+    return metadb;
+  }
+
+  /**
+   * @param metadb
+   *          the metadb to set
+   */
+  public void setMetadb(MetaStore metadb) {
+    this.metadb = metadb;
+  }
+
+  /**
+   * @return the clientdbCon
+   */
+  public Connection getClientdbCon() {
+    return clientdbCon;
+  }
+
+  /**
+   * @param clientdbCon
+   *          the clientdbCon to set
+   */
+  public void setClientdbCon(Connection clientdbCon) {
+    this.clientdbCon = clientdbCon;
+  }
+
+  /**
+   * @return the serverdbCon
+   */
+  public Connection getServerdbCon() {
+    return serverdbCon;
+  }
+
+  /**
+   * @param serverdbCon
+   *          the serverdbCon to set
+   */
+  public void setServerdbCon(Connection serverdbCon) {
+    this.serverdbCon = serverdbCon;
+  }
 
 }

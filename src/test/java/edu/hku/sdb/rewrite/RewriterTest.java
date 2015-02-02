@@ -61,38 +61,38 @@ public class RewriterTest extends TestCase {
    * Rigourous Test :-)
    */
   public void testRewriterSimple() {
-    String[] stmts = stmtArraySimple.split(";");
-    for (String stmt : stmts)
-      try {
-        doRewrite(stmt);
-      } catch (ParseException e) {
-        System.out.println(e.getMessage());
-      }
-    assertTrue(true);
+    // String[] stmts = stmtArraySimple.split(";");
+    // for (String stmt : stmts)
+    // try {
+    // doRewrite(stmt);
+    // } catch (ParseException e) {
+    // System.out.println(e.getMessage());
+    // }
+    // assertTrue(true);
+    // }
+    //
+    // public void testRewriterOneLevel() {
+    // String[] stmts = stmtArrayOneLevel.split(";");
+    // for (String stmt : stmts)
+    // try {
+    // doRewrite(stmt);
+    // } catch (ParseException e) {
+    // System.out.println(e.getMessage());
+    // }
+    // assertTrue(true);
   }
-
-  public void testRewriterOneLevel() {
-    String[] stmts = stmtArrayOneLevel.split(";");
-    for (String stmt : stmts)
-      try {
-        doRewrite(stmt);
-      } catch (ParseException e) {
-        System.out.println(e.getMessage());
-      }
-    assertTrue(true);
-  }
-
-  private void printVizTree(ASTNode tree) {
-    TestUtility testUtility = new TestUtility(tree);
-    System.out.println(testUtility.visualize());
-  }
-
-  private void doRewrite(String stmt) throws ParseException {
-    ASTNode tree = parseDriver.parse(stmt.trim());
-    // HiveRewriter hiveRewriter = new HiveRewriter(tree);
-    // hiveRewriter.rewrite();
-    // System.out.println("Input SQL: " + stmt);
-    // System.out.println("Output SQL: " + hiveRewriter.prettyPrint());
-  }
+  //
+  // private void printVizTree(ASTNode tree) {
+  // TestUtility testUtility = new TestUtility(tree);
+  // System.out.println(testUtility.visualize());
+  // }
+  //
+  // private void doRewrite(String stmt) throws ParseException {
+  // ASTNode tree = parseDriver.parse(stmt.trim());
+  // // HiveRewriter hiveRewriter = new HiveRewriter(tree);
+  // // hiveRewriter.rewrite();
+  // // System.out.println("Input SQL: " + stmt);
+  // // System.out.println("Output SQL: " + hiveRewriter.prettyPrint());
+  // }
 
 }
