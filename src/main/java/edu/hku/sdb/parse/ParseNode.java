@@ -17,16 +17,18 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
+import edu.hku.sdb.catalog.DBMeta;
+
 public interface ParseNode {
 
   /**
    * Perform semantic analysis of node and all of its children. Throw exception
    * if any errors found.
    * 
-   * @param analyzer
+   * @param dbMeta
    * @throws SemanticException
    */
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException;
+  public void analyze(DBMeta dbMeta) throws SemanticException;
 
   /**
    * @return SQL syntax corresponding to this node

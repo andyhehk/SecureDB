@@ -21,9 +21,9 @@ import java.math.BigInteger;
 
 public class ColumnKey {
   // The m part of the column key
-  private BigInteger m = null;
+  private final BigInteger m;
   // The x part of the column key
-  private BigInteger x = null;
+  private final BigInteger x;
 
   public ColumnKey(String m, String x) {
     this.m = new BigInteger(m);
@@ -52,25 +52,9 @@ public class ColumnKey {
   }
 
   /**
-   * @param m
-   *          the m to set
-   */
-  public void setM(BigInteger m) {
-    this.m = m;
-  }
-
-  /**
    * @return the x
    */
   public BigInteger getX() {
     return x;
-  }
-
-  /**
-   * @param x
-   *          the x to set
-   */
-  public void setX(BigInteger x) {
-    this.x = x;
   }
 }

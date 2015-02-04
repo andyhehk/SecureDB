@@ -32,6 +32,7 @@ public class TableMeta {
   private Set<ColumnMeta> cols = new HashSet<ColumnMeta>();
 
   public TableMeta(String name) {
+    // table name should be case insensitive
     this.setName(name);
   }
 
@@ -47,7 +48,7 @@ public class TableMeta {
    *          the name to set
    */
   public void setName(String name) {
-    this.name = name;
+    this.name = name.toLowerCase();
   }
 
   /**

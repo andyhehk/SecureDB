@@ -19,30 +19,74 @@ package edu.hku.sdb.parse;
 
 import java.util.List;
 
+import edu.hku.sdb.catalog.DBMeta;
+
 public class SelectStmt extends QueryStmt {
 
   private SelectionList selectList;
   private List<TableRef> tableRefs;
   private Expr whereClause;
   private List<Expr> groupingExprs;
-  private Expr havingExpr;
+  private Expr havingExpr;   // original having clause
 
   // havingClause with aliases and agg output resolved
   protected Expr havingPred;
 
   @Override
+  public void analyze(DBMeta dbMeta) throws SemanticException {
+    selectList.analyze(dbMeta);
+
+    for(TableRef tblRef : tableRefs) {
+      tblRef.analyze(dbMeta);
+    }
+    
+    whereClause.analyze(dbMeta);
+    
+    for(Expr expr : groupingExprs) {
+      expr.analyze(dbMeta);
+    }
+    
+    havingExpr.analyze(dbMeta);
+  }
+  
+  @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof SelectStmt))
       return false;
 
+    if(selectList == null || tableRefs == null) {
+      try {
+        throw new SemanticException("A selection statement cannot have empty selection list or table list");
+      } catch (SemanticException e) {
+        e.printStackTrace();
+      }
+    }
+    
     SelectStmt selObj = (SelectStmt) obj;
+    
+    if ((whereClause == null) != (selObj.whereClause == null))
+      return false;
+    else if ((groupingExprs == null) != (selObj.groupingExprs == null))
+      return false;
+    else if ((havingExpr == null) != (selObj.havingExpr == null))
+      return false;
+    else if ((havingPred == null) != (selObj.havingPred == null))
+      return false;
 
-    return selectList.equals(selObj.selectList)
-        && tableRefs.equals(selObj.tableRefs)
-        && whereClause.equals(selObj.whereClause)
-        && groupingExprs.equals(selObj.groupingExprs)
-        && havingExpr.equals(selObj.havingExpr)
-        && havingPred.equals(selObj.havingPred);
+    else {
+      if ((whereClause != null) && !whereClause.equals(selObj.whereClause))
+        return false;
+      if ((groupingExprs != null)
+          && !groupingExprs.equals(selObj.groupingExprs))
+        return false;
+      if ((havingExpr != null) && !havingExpr.equals(selObj.havingExpr))
+        return false;
+      if ((havingPred != null) && !havingPred.equals(selObj.havingPred))
+        return false;
+
+      return selectList.equals(selObj.selectList)
+          && tableRefs.equals(selObj.tableRefs);
+    }
   }
 
   /**

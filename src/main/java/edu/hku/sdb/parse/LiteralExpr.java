@@ -18,9 +18,11 @@
 
 package edu.hku.sdb.parse;
 
+import edu.hku.sdb.catalog.DBMeta;
+
 public class LiteralExpr extends Expr {
 
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+  public void analyze(DBMeta dbMeta) throws SemanticException {
     // TODO Auto-generated method stub
 
   }

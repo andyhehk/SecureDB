@@ -20,11 +20,11 @@ package edu.hku.sdb.parse;
 public class NormalBinPredicate extends BinaryPredicate {
 
   public NormalBinPredicate(BinOperator op) {
-    this.op = op;
+    super(op);
   }
 
   public NormalBinPredicate(BinOperator op, Expr e1, Expr e2) {
-    this.op = op;
+    super(op);
     children.add(e1);
     children.add(e2);
   }

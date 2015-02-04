@@ -46,6 +46,16 @@ public abstract class BinaryPredicate extends Predicate {
 
   }
 
-  protected BinOperator op;
+  protected final BinOperator op;
 
+  public BinaryPredicate(BinOperator op) {
+    this.op = op;
+  }
+
+  /**
+   * @return the op
+   */
+  public BinOperator getOp() {
+    return op;
+  }
 }

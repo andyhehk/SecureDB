@@ -17,6 +17,8 @@
 
 package edu.hku.sdb.parse;
 
+import edu.hku.sdb.catalog.DBMeta;
+
 public class LikePredicate extends Predicate {
 
   /*
@@ -26,7 +28,7 @@ public class LikePredicate extends Predicate {
    * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
    * )
    */
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+  public void analyze(DBMeta dbMeta) throws SemanticException {
     // TODO Auto-generated method stub
 
   }

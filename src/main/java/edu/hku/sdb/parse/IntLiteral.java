@@ -25,6 +25,11 @@ public class IntLiteral extends LiteralExpr {
   public IntLiteral(int value) {
     this.value = value;
   }
+  
+  public IntLiteral(String value) {
+    this.value = Integer.parseInt(value);;
+  }
+
 
   @Override
   public boolean equals(Object obj) {

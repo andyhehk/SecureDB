@@ -32,6 +32,7 @@ public class MetaStore {
   private Set<DBMeta> dbs = new HashSet<DBMeta>();
 
   public MetaStore(String name) {
+    // Metastore is case sensitive
     this.setName(name);
   }
 

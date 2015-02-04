@@ -24,4 +24,11 @@ public class SemanticException extends Exception {
    */
   private static final long serialVersionUID = 1L;
 
+  public SemanticException(String message) {
+    super(message);
+  }
+
+  public SemanticException(String message, Throwable throwable) {
+    super(message, throwable);
+  }
 }

@@ -18,18 +18,22 @@
 package edu.hku.sdb.parse;
 
 import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.DataType;
 
 public class FieldLiteral extends LiteralExpr {
 
-  private String tbl;
-  private String name;
-  private DataType type;
+  private final String tbl;
+  private final String name;
+  private final DataType type;
   private boolean isSen;
   private ColumnKey colKey;
 
-  public FieldLiteral() {
-
+  public FieldLiteral(String tbl, String name, DataType type) {
+    this.name = name;
+    this.tbl = tbl;
+    this.type = type;
+    isSen = false;
   }
 
   public FieldLiteral(String tbl, String name, DataType type, boolean isSen,
@@ -41,14 +45,32 @@ public class FieldLiteral extends LiteralExpr {
     this.colKey = colKey;
   }
 
+  /**
+   * Get table name of this field referred, also the column key if
+   * it is a sensitive column.
+   */
+  public void analyze(DBMeta dbMeta) throws SemanticException {
+    // TODO
+
+  }
+  
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof FieldLiteral))
       return false;
+
     FieldLiteral fieldobj = (FieldLiteral) obj;
+
+    if ((colKey == null) != (fieldobj.colKey == null))
+      return false;
+
+    if (colKey != null) {
+      if (!colKey.equals(fieldobj.getColKey()))
+        return false;
+    }
+
     return tbl.equals(fieldobj.getTbl()) && name.equals(fieldobj.getName())
-        && type.equals(fieldobj.getType()) && isSen == fieldobj.isSen()
-        && colKey.equals(fieldobj.getColKey());
+        && type.equals(fieldobj.getType()) && isSen == fieldobj.isSen();
   }
 
   /**
@@ -59,14 +81,6 @@ public class FieldLiteral extends LiteralExpr {
   }
 
   /**
-   * @param tbl
-   *          the tbl to set
-   */
-  public void setTbl(String tbl) {
-    this.tbl = tbl;
-  }
-
-  /**
    * @return the name
    */
   public String getName() {
@@ -74,26 +88,10 @@ public class FieldLiteral extends LiteralExpr {
   }
 
   /**
-   * @param name
-   *          the name to set
-   */
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  /**
    * @return the type
    */
   public DataType getType() {
     return type;
-  }
-
-  /**
-   * @param type
-   *          the type to set
-   */
-  public void setType(DataType type) {
-    this.type = type;
   }
 
   /**

@@ -17,12 +17,19 @@
 
 package edu.hku.sdb.parse;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class SelectionList {
+import edu.hku.sdb.catalog.DBMeta;
+
+public class SelectionList implements ParseNode {
 
   protected List<SelectionItem> itemList;
 
+  public SelectionList() {
+    itemList = new ArrayList<SelectionItem>();
+  }
+  
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof SelectionList))
@@ -45,5 +52,23 @@ public class SelectionList {
    */
   public void setItemList(List<SelectionItem> itemList) {
     this.itemList = itemList;
+  }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.catalog.DBMeta)
+   */
+  @Override
+  public void analyze(DBMeta dbMeta) throws SemanticException {
+    for(SelectionItem item : itemList)
+      item.analyze(dbMeta);
+  }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#toSql()
+   */
+  @Override
+  public String toSql() {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

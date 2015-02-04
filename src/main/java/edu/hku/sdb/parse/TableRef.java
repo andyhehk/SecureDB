@@ -20,19 +20,18 @@ package edu.hku.sdb.parse;
 public abstract class TableRef implements ParseNode {
 
   // represents a table/view name.
-  protected String tblName;
-  protected String alia;
+  protected final String tblName;
+  protected String alia = "";
 
   protected JoinOperator joinOp;
   protected Expr onClause;
 
-  // the ref to the left of us, if we are part of a JOIN clause
+  // the ref to the left of this table, if it is part of a JOIN clause
   protected TableRef leftTblRef;
 
-  public TableRef(String tableName, String alias) {
-    super();
-    this.setTableName(tableName);
-    this.setAlia(alias);
+  public TableRef(String tblName, String alia) {
+    this.tblName = tblName;
+    this.alia = alia;
   }
 
   @Override
@@ -42,9 +41,47 @@ public abstract class TableRef implements ParseNode {
 
     TableRef tblObj = (TableRef) obj;
 
-    return tblName.equals(tblObj.tblName) && alia.equals(tblObj.alia)
-        && joinOp.equals(tblObj.joinOp) && onClause.equals(tblObj.onClause)
-        && leftTblRef.equals(tblObj.leftTblRef);
+    if ((joinOp == null) != (tblObj.joinOp == null))
+      return false;
+
+    if ((onClause == null) != (tblObj.onClause == null))
+      return false;
+
+    if ((leftTblRef == null) != (tblObj.leftTblRef == null))
+      return false;
+
+    if ((tblName == null) != (tblObj.tblName == null))
+      return false;
+
+    if ((alia == null) != (tblObj.alia == null))
+      return false;
+
+    if (joinOp != null) {
+      if (!joinOp.equals(tblObj.joinOp))
+        return false;
+    }
+
+    if (onClause != null) {
+      if (!onClause.equals(tblObj.onClause))
+        return false;
+    }
+
+    if (leftTblRef != null) {
+      if (!leftTblRef.equals(tblObj.leftTblRef))
+        return false;
+    }
+
+    if (tblName != null) {
+      if (!tblName.equals(tblObj.tblName))
+        return false;
+    }
+
+    if (alia != null) {
+      if (!alia.equals(tblObj.alia))
+        return false;
+    }
+
+    return true;
   }
 
   /**
@@ -52,14 +89,6 @@ public abstract class TableRef implements ParseNode {
    */
   public String getTableName() {
     return tblName;
-  }
-
-  /**
-   * @param tableName
-   *          the tableName to set
-   */
-  public void setTableName(String tableName) {
-    this.tblName = tableName;
   }
 
   /**
@@ -74,7 +103,9 @@ public abstract class TableRef implements ParseNode {
    *          the alias to set
    */
   public void setAlia(String alia) {
-    this.alia = alia;
+    if (alia != null) {
+      this.alia = alia;
+    }
   }
 
   /**

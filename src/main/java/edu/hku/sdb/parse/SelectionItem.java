@@ -17,11 +17,20 @@
 
 package edu.hku.sdb.parse;
 
-public class SelectionItem {
+import edu.hku.sdb.catalog.DBMeta;
+
+public class SelectionItem implements ParseNode {
 
   private Expr expr;
   private String alia;
 
+  /**
+   * Default constructor
+   */
+  public SelectionItem() {
+  
+  }
+  
   public SelectionItem(Expr expr, String alia) {
     this.expr = expr;
     this.alia = alia;
@@ -33,7 +42,18 @@ public class SelectionItem {
       return false;
 
     SelectionItem selitemObj = (SelectionItem) obj;
-    return expr.equals(selitemObj.expr) && alia.equals(selitemObj.alia);
+
+    if ((expr == null) != (selitemObj.expr == null))
+      return false;
+
+    if ((alia == null) != (selitemObj.alia == null))
+      return false;
+
+    if(alia != null)
+      if(!alia.equals(selitemObj.alia))
+        return false;
+    
+    return expr.equals(selitemObj.expr);
   }
 
   /**
@@ -64,5 +84,22 @@ public class SelectionItem {
    */
   public void setAlia(String alias) {
     this.alia = alias;
+  }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.catalog.DBMeta)
+   */
+  @Override
+  public void analyze(DBMeta dbMeta) throws SemanticException {
+    expr.analyze(dbMeta);
+  }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#toSql()
+   */
+  @Override
+  public String toSql() {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

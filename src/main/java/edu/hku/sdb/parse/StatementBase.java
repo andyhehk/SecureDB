@@ -13,34 +13,11 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *
  *******************************************************************************/
+
 package edu.hku.sdb.parse;
 
-public class FloatLiteral extends LiteralExpr {
+public abstract class StatementBase implements ParseNode {
 
-  private final float value;
-
-  public FloatLiteral(float value) {
-    this.value = value;
-  }
-  
-  public FloatLiteral(String value) {
-    this.value = Float.parseFloat(value);;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof FloatLiteral))
-      return false;
-
-    return value == ((FloatLiteral) obj).value;
-  }
-
-  /**
-   * @return the value
-   */
-  public float getValue() {
-    return value;
-  }
+  protected boolean isExplain = false;
 }

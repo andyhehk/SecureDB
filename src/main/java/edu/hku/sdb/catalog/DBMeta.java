@@ -42,6 +42,7 @@ public class DBMeta {
   private BigInteger seed = null;
 
   public DBMeta(String name) {
+    // database name should be case insensitive
     this.setName(name);
   }
 
@@ -57,7 +58,7 @@ public class DBMeta {
    *          the name to set
    */
   public void setName(String name) {
-    this.name = name;
+    this.name = name.toLowerCase();
   }
 
   /**

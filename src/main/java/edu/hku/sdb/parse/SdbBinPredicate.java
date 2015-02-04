@@ -24,7 +24,7 @@ public class SdbBinPredicate extends BinaryPredicate {
 
   public SdbBinPredicate(BinOperator op, SdbArithmeticExpr arithExpr,
       SdbKeyUpdateExpr keyUpExpr) {
-    this.op = op;
+    super(op);
     this.arithExpr = arithExpr;
     this.keyUpExpr = keyUpExpr;
   }

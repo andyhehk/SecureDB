@@ -47,7 +47,8 @@
 			<artifactId>hadoop-common</artifactId>
 			<version>2.4.1</version>
 		</dependency>
-		<!--  It is not a good idea to include hive-jdbc, we may just skip the tests using it or use mock up class to test  -->
+		<!-- It is not a good idea to include hive-jdbc, we may just skip the tests 
+			using it or use mock up class to test -->
 		<dependency>
 			<groupId>org.apache.hive</groupId>
 			<artifactId>hive-jdbc</artifactId>
@@ -74,6 +75,12 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.10</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>18.0</version>
+		</dependency>
+
 	</dependencies>
 
 	<distributionManagement>

@@ -17,6 +17,17 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
+import edu.hku.sdb.catalog.DBMeta;
+
 public class UnionStmt extends QueryStmt {
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.catalog.DBMeta)
+   */
+  @Override
+  public void analyze(DBMeta dbMeta) throws SemanticException {
+    // TODO Auto-generated method stub
+    
+  }
 
 }

@@ -21,6 +21,8 @@ package edu.hku.sdb.parse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.hku.sdb.catalog.DBMeta;
+
 public abstract class Expr extends TreeNode<Expr> implements ParseNode {
 
   private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
@@ -34,10 +36,11 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
     return children.equals(exprObj.children);
   }
 
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+  @Override
+  public void analyze(DBMeta dbMeta) throws SemanticException {
 
     for (Expr child : getChildren()) {
-      child.analyze(analyzer);
+      child.analyze(dbMeta);
     }
   }
 }

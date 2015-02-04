@@ -31,6 +31,8 @@ public class Tester {
     for (String stmt : stmts)
       try {
         ASTNode tree = pd.parse(stmt.trim());
+        tree = ParseUtils.findRootNotNull(tree);
+        
         DOTTreeGenerator gen = new DOTTreeGenerator();
         StringTemplate st = gen.toDOT(tree);
         System.out.println(st);

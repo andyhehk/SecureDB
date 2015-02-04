@@ -35,7 +35,8 @@ public class ColumnMeta {
   }
 
   public ColumnMeta(String name, DataType type, boolean isSen, ColumnKey colkey) {
-    this.name = name;
+    // column name should be case insensitive
+    this.setName(name);
     this.type = type;
     this.isSensitive = isSen;
     this.setColkey(colkey);
@@ -53,7 +54,7 @@ public class ColumnMeta {
    *          the name to set
    */
   public void setName(String name) {
-    this.name = name;
+    this.name = name.toLowerCase();
   }
 
   /**

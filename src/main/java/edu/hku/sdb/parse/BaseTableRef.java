@@ -17,6 +17,8 @@
 
 package edu.hku.sdb.parse;
 
+import edu.hku.sdb.catalog.DBMeta;
+
 public class BaseTableRef extends TableRef {
 
   /**
@@ -25,7 +27,6 @@ public class BaseTableRef extends TableRef {
    */
   public BaseTableRef(String tableName, String alias) {
     super(tableName, alias);
-    // TODO Auto-generated constructor stub
   }
 
   @Override
@@ -43,7 +44,7 @@ public class BaseTableRef extends TableRef {
    * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
    * )
    */
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+  public void analyze(DBMeta dbMeta) throws SemanticException {
     // TODO Auto-generated method stub
 
   }

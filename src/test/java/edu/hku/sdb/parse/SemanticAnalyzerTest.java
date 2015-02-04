@@ -46,7 +46,6 @@ public class SemanticAnalyzerTest {
   public void setUp() {
 
     // Prepare a test metastore
-    metadb = new MetaStore("test");
 
     DBMeta dbmeta = new DBMeta("test");
     TableMeta tblmeta1 = new TableMeta("T1");
@@ -71,9 +70,8 @@ public class SemanticAnalyzerTest {
     dbmeta.getTbls().add(tblmeta1);
     dbmeta.getTbls().add(tblmeta2);
 
-    metadb.getDbs().add(dbmeta);
 
-    testObj = new SemanticAnalyzer(metadb);
+    testObj = new SemanticAnalyzer(dbmeta);
     parser = new ParseDriver();
   }
 
@@ -82,6 +80,10 @@ public class SemanticAnalyzerTest {
 
   }
 
+  /**
+   * Prepare a selection statement with a single join operator.
+   * @return
+   */
   private ParseNode prepareAnsJoin() {
     SelectStmt selStmt = new SelectStmt();
 
@@ -125,10 +127,17 @@ public class SemanticAnalyzerTest {
 
     ASTNode astTree = parser.parse(command);
 
-    ParseNode parseTree = testObj.analyze(astTree);
-    ParseNode ansTree = prepareAnsJoin();
+    ParseNode parseTree;
+    try {
+      parseTree = testObj.analyze(astTree);
+      ParseNode ansTree = prepareAnsJoin();
 
-    assertEquals(parseTree, ansTree);
+      assertEquals(parseTree, ansTree);
+    } catch (SemanticException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
 
   }
 

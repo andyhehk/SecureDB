@@ -17,12 +17,9 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
-public abstract class QueryStmt implements ParseNode {
+import edu.hku.sdb.catalog.DBMeta;
 
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    // TODO Auto-generated method stub
-
-  }
+public abstract class QueryStmt extends StatementBase {
 
   public String toSql() {
     // TODO Auto-generated method stub

@@ -13,34 +13,65 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *
  *******************************************************************************/
+
 package edu.hku.sdb.parse;
 
-public class FloatLiteral extends LiteralExpr {
+import edu.hku.sdb.catalog.DBMeta;
 
-  private final float value;
+public class InsertStmt extends StatementBase {
 
-  public FloatLiteral(float value) {
-    this.value = value;
+  private String targetTbl;
+  private QueryStmt queryStmt;
+  
+  public InsertStmt(String targetTbl) {
+    this.targetTbl = targetTbl;
   }
   
-  public FloatLiteral(String value) {
-    this.value = Float.parseFloat(value);;
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer)
+   */
+  @Override
+  public void analyze(DBMeta dbMeta) throws SemanticException {
+    // TODO Auto-generated method stub
+    
   }
 
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#toSql()
+   */
   @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof FloatLiteral))
-      return false;
-
-    return value == ((FloatLiteral) obj).value;
+  public String toSql() {
+    // TODO Auto-generated method stub
+    return null;
   }
 
   /**
-   * @return the value
+   * @return the queryStmt
    */
-  public float getValue() {
-    return value;
+  public QueryStmt getQueryStmt() {
+    return queryStmt;
   }
+
+  /**
+   * @param queryStmt the queryStmt to set
+   */
+  public void setQueryStmt(QueryStmt queryStmt) {
+    this.queryStmt = queryStmt;
+  }
+
+  /**
+   * @return the targetTbl
+   */
+  public String getTargetTbl() {
+    return targetTbl;
+  }
+
+  /**
+   * @param targetTbl the targetTbl to set
+   */
+  public void setTargetTbl(String targetTbl) {
+    this.targetTbl = targetTbl;
+  }
+
 }

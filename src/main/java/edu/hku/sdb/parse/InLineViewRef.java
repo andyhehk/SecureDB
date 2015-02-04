@@ -17,17 +17,23 @@
 
 package edu.hku.sdb.parse;
 
+import edu.hku.sdb.catalog.DBMeta;
+
 public class InLineViewRef extends TableRef {
 
-  protected SelectStmt selectStmt;
+  protected QueryStmt queryStmt;
 
+  public InLineViewRef() {
+    super(null, null);
+  }
+  
   /**
    * @param tableName
    * @param alias
    */
-  public InLineViewRef(String tableName, String alias) {
-    super(tableName, alias);
-    // TODO Auto-generated constructor stub
+  public InLineViewRef(String alia, QueryStmt queryStmt) {
+    super(null, alia);
+    this.queryStmt = queryStmt;
   }
 
   @Override
@@ -40,7 +46,7 @@ public class InLineViewRef extends TableRef {
 
     InLineViewRef viewObj = (InLineViewRef) obj;
 
-    return selectStmt.equals(viewObj.selectStmt);
+    return queryStmt.equals(viewObj.queryStmt);
   }
 
   /*
@@ -50,7 +56,7 @@ public class InLineViewRef extends TableRef {
    * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
    * )
    */
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+  public void analyze(DBMeta dbMeta) throws SemanticException {
     // TODO Auto-generated method stub
 
   }
@@ -68,16 +74,16 @@ public class InLineViewRef extends TableRef {
   /**
    * @return the selectStmt
    */
-  public SelectStmt getSelectStmt() {
-    return selectStmt;
+  public QueryStmt getQueryStmt() {
+    return queryStmt;
   }
 
   /**
-   * @param selectStmt
+   * @param queryStmt
    *          the selectStmt to set
    */
-  public void setSelectStmt(SelectStmt selectStmt) {
-    this.selectStmt = selectStmt;
+  public void setQueryStmt(QueryStmt queryStmt) {
+    this.queryStmt = queryStmt;
   }
 
 }
