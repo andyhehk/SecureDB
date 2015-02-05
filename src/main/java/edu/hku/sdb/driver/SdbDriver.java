@@ -39,10 +39,11 @@ public class SdbDriver {
   private static final String HELP = "help";
   private static final String START = "start";
   private static final String STOP = "stop";
+  private static final String CONFIG_OPTION = "--sdbconf";
   private static final String SERVICE_NAME = "ConnectionService";
-  private static final String USAGE = "Usage: sdb [args] "
-      + "start \t start SecureDB service" + "stop \t stop SecureDB service"
-      + "help \t print SecureDB usage";
+  private static final String USAGE = "Usage: sdb [args] [--options]\n"
+      + "start \t start SecureDB service\n" + "\t\t\t --sdbconf pathToSdbConfigurationFile \n"
+          + "stop \t stop SecureDB service\n" + "help \t print SecureDB usage";
   private static SdbConf sdbConf;
 
   /**
@@ -54,7 +55,6 @@ public class SdbDriver {
   }
 
   private static void startDriver() {
-    initConfig();
     try {
       ConnectionPool connectionPool = new ConnectionPool(getSdbConf());
       ConnectionConf connectionConf = getSdbConf().getConnectionConf();
@@ -102,6 +102,12 @@ public class SdbDriver {
     }
 
     if (argsList[0].toLowerCase().equals(START)) {
+      if (argsList.length > 2 && argsList[1].toLowerCase().equals(CONFIG_OPTION)){
+        initConfig(argsList[2]);
+      }
+      else {
+        initConfig();
+      }
       startDriver();
       return;
     }
@@ -122,6 +128,10 @@ public class SdbDriver {
 
   private static void initConfig() {
     setSdbConf(new SdbConf());
+  }
+
+  private static void initConfig(String sdbConfPath) {
+    setSdbConf(new SdbConf(sdbConfPath));
   }
 
 }

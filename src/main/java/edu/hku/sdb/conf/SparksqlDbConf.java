@@ -32,18 +32,4 @@ public class SparksqlDbConf extends DbConf {
     super();
   }
 
-  @Override
-  public Connection getConnection() {
-    Connection connection = null;
-    try {
-      Class.forName(jdbcDriverName);
-      connection = DriverManager.getConnection(jdbcUrl + "/" + databaseName,
-          username, password);
-    } catch (ClassNotFoundException e) {
-      e.printStackTrace();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-    return connection;
-  }
 }

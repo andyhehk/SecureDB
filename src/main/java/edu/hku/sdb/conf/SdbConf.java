@@ -51,6 +51,13 @@ public class SdbConf {
 
   public SdbConf() {
     super();
+    setSdbConfPath(loadSystemSdbPath());
+    init();
+  }
+
+  public SdbConf(String sdbConfPath){
+    super();
+    setSdbConfPath(sdbConfPath);
     init();
   }
 
@@ -95,7 +102,6 @@ public class SdbConf {
   }
 
   private void init() {
-    setSdbConfPath(loadSystemSdbPath());
     initClientDbConf(sdbConfPath + "/" + CLIENT_CONF_FILE);
     initServerDbConf(sdbConfPath + "/" + SERVER_CONF_FILE);
     initMetaDbConf(sdbConfPath + "/" + METASTORE_CONF_FILE);
@@ -110,7 +116,6 @@ public class SdbConf {
     serverDbConf = DbConfFactory.getDbConf(filename);
   }
 
-  // TODO: config metastore for hive.
   private void initMetaDbConf(String filename) {
     metaDbConf = DbConfFactory.getDbConf(filename);
   }

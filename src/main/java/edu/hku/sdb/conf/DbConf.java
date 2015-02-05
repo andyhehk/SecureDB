@@ -17,7 +17,10 @@
 
 package edu.hku.sdb.conf;
 
+
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public abstract class DbConf extends Configuration {
   protected String username;
@@ -33,7 +36,24 @@ public abstract class DbConf extends Configuration {
     System.out.println(config);
   }
 
-  abstract public Connection getConnection();
+  public Connection getConnection() {
+    Connection connection = null;
+    try {
+      Class.forName(jdbcDriverName);
+      if (username != null && password != null){
+        connection = DriverManager.getConnection(jdbcUrl,
+                username, password);
+      }
+      else {
+        connection = DriverManager.getConnection(jdbcUrl);
+      }
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return connection;
+  }
 
   public String getJdbcUrl() {
     return jdbcUrl;
