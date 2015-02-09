@@ -20,6 +20,7 @@ package edu.hku.sdb.conf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -84,68 +85,54 @@ public class DbConfFactory {
       XPath xpath) throws XPathExpressionException {
     XPathExpression expression;
     NodeList nodes;
+    Node firstNode;
     String propertyValue;
 
     expression = xpath.compile("//property[name='" + USERNAME
         + "']/value/text()");
     nodes = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
-    propertyValue = nodes.item(0).getNodeValue();
-    if (propertyValue != null) {
+    firstNode = nodes.item(0);
+    if (firstNode != null) {
+      propertyValue = firstNode.getNodeValue();
       dbConf.setUsername(propertyValue);
     }
 
     expression = xpath.compile("//property[name='" + PASSWORD
         + "']/value/text()");
     nodes = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
-    propertyValue = nodes.item(0).getNodeValue();
-    if (propertyValue != null) {
+    firstNode = nodes.item(0);
+    if (firstNode != null) {
+      propertyValue = firstNode.getNodeValue();
       dbConf.setPassword(propertyValue);
     }
 
     expression = xpath.compile("//property[name='" + DATABASE_NAME
         + "']/value/text()");
     nodes = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
-    propertyValue = nodes.item(0).getNodeValue();
-    if (propertyValue != null) {
+    firstNode = nodes.item(0);
+    if (firstNode != null) {
+      propertyValue = firstNode.getNodeValue();
       dbConf.setDatabaseName(propertyValue);
     }
 
     expression = xpath
         .compile("//property[name='" + DRIVER + "']/value/text()");
     nodes = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
-    propertyValue = nodes.item(0).getNodeValue();
-    if (propertyValue != null) {
+    firstNode = nodes.item(0);
+    if (firstNode != null) {
+      propertyValue = firstNode.getNodeValue();
       dbConf.setJdbcDriverName(propertyValue);
     }
 
     expression = xpath.compile("//property[name='" + URL + "']/value/text()");
     nodes = (NodeList) expression.evaluate(document, XPathConstants.NODESET);
-    propertyValue = nodes.item(0).getNodeValue();
-    if (propertyValue != null) {
+    firstNode = nodes.item(0);
+    if (firstNode != null) {
+      propertyValue = firstNode.getNodeValue();
       dbConf.setJdbcUrl(propertyValue);
     }
 
     return dbConf;
   }
-  /*
-   * //Load DbConf using XML instead of XPATH private static DbConf
-   * loadXMLConfig(String configFile, DbConf dbConf) { try { XMLInputFactory
-   * inputFactory = XMLInputFactory.newInstance(); InputStream in = new
-   * FileInputStream(configFile); XMLEventReader eventReader =
-   * inputFactory.createXMLEventReader(in); while (eventReader.hasNext()) {
-   * XMLEvent event = eventReader.nextEvent(); if (event.isStartElement()) {
-   * StartElement startElement = event.asStartElement();
-   * 
-   * if (event.isStartElement()) { if
-   * (event.asStartElement().getName().getLocalPart() .equals(USERNAME)) { event
-   * = eventReader.nextEvent();
-   * dbConf.setUsername(event.asCharacters().getData()); continue; } } if
-   * (event.isStartElement()) { if
-   * (event.asStartElement().getName().getLocalPart() .equals(PASSWORD)) { event
-   * = eventReader.nextEvent();
-   * dbConf.setPassword(event.asCharacters().getData()); continue; } } } } }
-   * catch (FileNotFoundException e) { e.printStackTrace(); } catch
-   * (XMLStreamException e) { e.printStackTrace(); } return dbConf; }
-   */
 
 }

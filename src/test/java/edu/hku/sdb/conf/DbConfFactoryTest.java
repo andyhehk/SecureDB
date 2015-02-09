@@ -14,12 +14,19 @@ public class DbConfFactoryTest extends TestCase {
   }
 
   public void testGetDbConf() throws Exception {
-    // DbConfFactory dbConfFactory = new DbConfFactory();
-    // DbConf clientDbConf = dbConfFactory
-    // .getDbConf("/Users/Yifan/sdb/dev/securedb/target/conf/sdb-client.xml");
-    // String clientDatabase = clientDbConf.getDatabaseName();
-    // String clientUrl = clientDbConf.getJdbcUrl();
-    // assertEquals(clientDatabase, "sdbclient");
-    // assertEquals(clientUrl, "jdbc:mysql://localhost");
+    DbConfFactory dbConfFactory = new DbConfFactory();
+    DbConf clientDbConf = dbConfFactory.getDbConf("src/test/resources/conf/sdb-client.xml");
+    String clientDatabase = clientDbConf.getDatabaseName();
+    String clientUrl = clientDbConf.getJdbcUrl();
+    String clientUsername = clientDbConf.getUsername();
+    String clientPassword = clientDbConf.getPassword();
+    String clientDriverName = clientDbConf.getJdbcDriverName();
+
+    assertEquals(clientUsername, null);
+    assertEquals(clientPassword, null);
+    assertEquals(clientDatabase, "sdbclient");
+    assertEquals(clientDriverName, "org.apache.derby.jdbc.EmbeddedDriver");
+    assertEquals(clientUrl, "jdbc:derby:memory:sdbclient;create=true");
+
   }
 }

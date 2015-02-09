@@ -27,19 +27,4 @@ import java.sql.SQLException;
 public class MysqlDbConf extends DbConf {
   private static final Logger LOG = LoggerFactory.getLogger(MysqlDbConf.class);
 
-  @Override
-  public Connection getConnection() {
-    Connection connection = null;
-    try {
-      Class.forName(jdbcDriverName);
-      connection = DriverManager.getConnection(jdbcUrl + "/" + databaseName,
-          username, password);
-    } catch (ClassNotFoundException e) {
-      e.printStackTrace();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-    return connection;
-  }
-
 }
