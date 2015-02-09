@@ -19,7 +19,7 @@ package edu.hku.sdb.parse;
 
 import java.util.List;
 
-import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.catalog.MetaStore;
 
 public class SelectStmt extends QueryStmt {
 
@@ -27,43 +27,56 @@ public class SelectStmt extends QueryStmt {
   private List<TableRef> tableRefs;
   private Expr whereClause;
   private List<Expr> groupingExprs;
-  private Expr havingExpr;   // original having clause
+  private Expr havingExpr; // original having clause
 
   // havingClause with aliases and agg output resolved
   protected Expr havingPred;
-
-  @Override
-  public void analyze(DBMeta dbMeta) throws SemanticException {
-    selectList.analyze(dbMeta);
-
-    for(TableRef tblRef : tableRefs) {
-      tblRef.analyze(dbMeta);
-    }
-    
-    whereClause.analyze(dbMeta);
-    
-    for(Expr expr : groupingExprs) {
-      expr.analyze(dbMeta);
-    }
-    
-    havingExpr.analyze(dbMeta);
-  }
   
+  /**
+   * @see edu.hku.sdb.parse.ParseNode#analyze()
+   */
+  @Override
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+      throws SemanticException {
+    // Resolve the nested query first if any
+    for (TableRef tblRef : tableRefs) {
+      tblRef.analyze(metaDB, (ParseNode) null);
+    }
+    
+    // Resolve the table names of the selection items
+    selectList.analyze(metaDB,
+        tableRefs.toArray(new ParseNode[tableRefs.size()]));
+    // Resolve the table names of the fields in the where clause
+    whereClause.analyze(metaDB,
+        tableRefs.toArray(new ParseNode[tableRefs.size()]));
+    // Resolve the table names of the grouping fields
+    for (Expr expr : groupingExprs) {
+      expr.analyze(metaDB, tableRefs.toArray(new ParseNode[tableRefs.size()]));
+    }
+
+    // Get the table name of the aggregation field.
+    // It must be called after selection item resolved their table names.
+    havingExpr.analyze(metaDB,
+        selectList.itemList.toArray(new ParseNode[tableRefs.size()]));
+
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof SelectStmt))
       return false;
 
-    if(selectList == null || tableRefs == null) {
+    if (selectList == null || tableRefs == null) {
       try {
-        throw new SemanticException("A selection statement cannot have empty selection list or table list");
+        throw new SemanticException(
+            "A selection statement cannot have empty selection list or table list");
       } catch (SemanticException e) {
         e.printStackTrace();
       }
     }
-    
+
     SelectStmt selObj = (SelectStmt) obj;
-    
+
     if ((whereClause == null) != (selObj.whereClause == null))
       return false;
     else if ((groupingExprs == null) != (selObj.groupingExprs == null))

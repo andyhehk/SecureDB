@@ -17,7 +17,7 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.catalog.MetaStore;
 
 public class BaseTableRef extends TableRef {
 
@@ -44,7 +44,7 @@ public class BaseTableRef extends TableRef {
    * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
    * )
    */
-  public void analyze(DBMeta dbMeta) throws SemanticException {
+  public void analyze(MetaStore metaDB, ParseNode... fieldParent) throws SemanticException {
     // TODO Auto-generated method stub
 
   }

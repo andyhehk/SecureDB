@@ -18,9 +18,10 @@
 package edu.hku.sdb.catalog;
 
 import java.math.BigInteger;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.jdo.annotations.Join;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.PrimaryKey;
 
@@ -30,7 +31,9 @@ public class DBMeta {
   @PrimaryKey
   private String name = null;
 
-  private Set<TableMeta> tbls = new HashSet<TableMeta>();
+  // TODO add foreign key relationship
+  @Join
+  private List<TableMeta> tbls = new ArrayList<TableMeta>();
 
   // The big primary number n
   private BigInteger n = null;
@@ -44,6 +47,20 @@ public class DBMeta {
   public DBMeta(String name) {
     // database name should be case insensitive
     this.setName(name);
+  }
+
+  /**
+   * @return the tbls
+   */
+  public List<TableMeta> getTbls() {
+    return tbls;
+  }
+
+  /**
+   * @param tbls the tbls to set
+   */
+  public void setTbls(List<TableMeta> tbls) {
+    this.tbls = tbls;
   }
 
   /**
@@ -61,20 +78,6 @@ public class DBMeta {
     this.name = name.toLowerCase();
   }
 
-  /**
-   * @return the tbls
-   */
-  public Set<TableMeta> getTbls() {
-    return tbls;
-  }
-
-  /**
-   * @param tbls
-   *          the tbls to set
-   */
-  public void setTbls(Set<TableMeta> tbls) {
-    this.tbls = tbls;
-  }
 
   /**
    * @return the n
@@ -121,4 +124,28 @@ public class DBMeta {
     this.seed = seed;
   }
 
+  
+  public void add(TableMeta tbl) {
+    getTbls().add(tbl);
+  }
+  
+  
+  /**
+   * Remove a table by name.
+   * 
+   * @param tblName
+   */
+  public void remove(String tblName) {
+    // case insensitive.
+  }
+
+  
+  /**
+   * Number of tables.
+   * 
+   * @return
+   */
+  public int size() {
+    return getTbls().size();
+  }
 }

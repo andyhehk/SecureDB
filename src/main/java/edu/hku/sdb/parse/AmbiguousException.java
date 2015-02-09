@@ -13,37 +13,21 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *
  *******************************************************************************/
 
 package edu.hku.sdb.parse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public class AmbiguousException extends SemanticException {
 
-import edu.hku.sdb.catalog.MetaStore;
-
-public abstract class Expr extends TreeNode<Expr> implements ParseNode {
-
-  private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
-
-  @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof Expr))
-      return false;
-
-    Expr exprObj = (Expr) obj;
-    return children.equals(exprObj.children);
-  }
+  private static final long serialVersionUID = 1L;
+  private static final String message = "Cannot resolve the table name of field"
+      + " %s, since more than one table contain field %s!";
 
   /**
-   * 
+   * @param fieldName
    */
-  @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldParent) throws SemanticException {
-
-    for (Expr child : getChildren()) {
-      child.analyze(metaDB, fieldParent);
-    }
+  public AmbiguousException(String fieldName) {
+    super(String.format(message, fieldName));
   }
+
 }

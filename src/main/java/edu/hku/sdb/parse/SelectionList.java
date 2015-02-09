@@ -20,7 +20,7 @@ package edu.hku.sdb.parse;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.catalog.MetaStore;
 
 public class SelectionList implements ParseNode {
 
@@ -54,13 +54,13 @@ public class SelectionList implements ParseNode {
     this.itemList = itemList;
   }
 
-  /* (non-Javadoc)
+  /**
    * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.catalog.DBMeta)
    */
   @Override
-  public void analyze(DBMeta dbMeta) throws SemanticException {
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
     for(SelectionItem item : itemList)
-      item.analyze(dbMeta);
+      item.analyze(metaDB, fieldSources);
   }
 
   /* (non-Javadoc)

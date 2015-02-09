@@ -21,21 +21,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.parse.BinaryPredicate.BinOperator;
 import edu.hku.sdb.parse.NormalArithmeticExpr.Operator;
 
 public class SemanticAnalyzer extends BasicSemanticAnalyzer {
 
-  private final DBMeta dbMeta;
+  private DBMeta dbMeta;
+  private final MetaStore metaDB;
 
-  public SemanticAnalyzer(DBMeta dbMeta) {
-    this.dbMeta = dbMeta;
+  public SemanticAnalyzer(MetaStore metaDB) {
+    this.metaDB = metaDB;
   }
 
-  /*
-   * (non-Javadoc)
+  /**
+   * Perform semantic analyze of a AST tree. A new parse tree
+   * is returned.
    * 
-   * @see edu.hku.sdb.parse.BasicSemanticAnalyzer#analyze()
+   * @return parseNode 
    */
   @Override
   public ParseNode analyze(ASTNode tree) throws SemanticException {
@@ -43,6 +46,13 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     return analyzeInternal(tree);
   }
 
+  /**
+   * Analyze from the token of the root.
+   * 
+   * @param tree
+   * @return
+   * @throws SemanticException
+   */
   private ParseNode analyzeInternal(ASTNode tree) throws SemanticException {
     ParseNode parseTree = null;
 
@@ -51,7 +61,6 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       parseTree = buildStmt(tree);
     }
 
-    
     return parseTree;
   }
 
@@ -262,7 +271,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         selectItem.setExpr(new FieldLiteral(null, child.getText(), null));
         continue;
       case HiveLexer.Identifier:
-        selectItem.setAlia(child.getText());
+        selectItem.setAlias(child.getText());
         continue;
       }
     }
@@ -420,7 +429,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
    */
   private TableRef buildBaseTableRef(ASTNode tree) {
     String tblName = null;
-    String alia = null;
+    String alias = null;
 
     for (int i = 0; i < tree.getChildCount(); i++) {
       ASTNode child = (ASTNode) tree.getChild(i);
@@ -434,7 +443,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       }
     }
 
-    return new BaseTableRef(tblName, alia);
+    return new BaseTableRef(tblName, alias);
   }
 
   /**
@@ -454,7 +463,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         inlineView.setQueryStmt(buildQueryStmt(child));
         continue;
       case HiveLexer.Identifier:
-        inlineView.setAlia(child.getText());
+        inlineView.setAlias(child.getText());
         continue;
       }
     }

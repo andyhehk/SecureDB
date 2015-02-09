@@ -17,8 +17,6 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.DBMeta;
-
 public abstract class QueryStmt extends StatementBase {
 
   public String toSql() {

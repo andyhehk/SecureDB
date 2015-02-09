@@ -22,12 +22,10 @@ import static org.junit.Assert.*;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
-import javax.jdo.Transaction;
 
 import org.junit.After;
 import org.junit.Before;
@@ -76,6 +74,7 @@ public class MetaStoreTest {
   @After
   public void clearTestDB() {
     try {
+      pm.close();
       DriverManager.getConnection("jdbc:derby:memory:test_db;drop=true");
     } catch (SQLException se) {
       if (!se.getSQLState().equals("08006")) {
@@ -85,49 +84,50 @@ public class MetaStoreTest {
     }
   }
 
-  /**
-   * Insert 1. a "test" database; 2. a "test" table; 3. a "test" column
-   */
   @Test
   public void testInsertDB() {
-    Transaction tx = pm.currentTransaction();
-    String name = "test";
-    try {
-      tx.begin();
-      MetaStore metadb = new MetaStore(name);
+    MetaStore metaDB = new MetaStore(pm);
 
-      DBMeta db = new DBMeta(name);
-      TableMeta tblMeta = new TableMeta(name);
-      ColumnMeta colMeta = new ColumnMeta(name);
+    String dbName1 = "dummy_db1";
+    String dbName2 = "dummy_db2";
 
-      tblMeta.getCols().add(colMeta);
-      db.getTbls().add(tblMeta);
-      metadb.getDbs().add(db);
+    DBMeta db1 = new DBMeta(dbName1);
+    DBMeta db2 = new DBMeta(dbName2.toUpperCase());
 
-      pm.makePersistent(metadb);
-      tx.commit();
+    metaDB.addDB(db1);
+    metaDB.addDB(db2);
 
-      MetaStore testmetadb = pm.getObjectById(MetaStore.class, name);
-      Set<DBMeta> testdbs = testmetadb.getDbs();
+    assertEquals(db1, metaDB.getDB(dbName1.toUpperCase()));
+    assertEquals(db2, metaDB.getDB(dbName2));
 
-      assertEquals(testdbs.size(), 1);
-      for (DBMeta testdb : testdbs) {
-        assertEquals(testdb.getTbls().size(), 1);
-        assertEquals(testdb.getName(), name);
-        for (TableMeta testtbl : testdb.getTbls()) {
-          assertEquals(testtbl.getCols().size(), 1);
-          assertEquals(testtbl.getName(), name);
-          for (ColumnMeta testcol : testtbl.getCols()) {
-            assertEquals(testcol.getName(), name);
-          }
-        }
-      }
-    } finally {
-      if (tx.isActive()) {
-        tx.rollback();
-      }
-      pm.close();
-    }
+    String tblName1 = "dummy_tbl1";
+    String tblName2 = "dummy_tbl2";
+
+    TableMeta tbl1 = new TableMeta(dbName1, tblName1.toUpperCase());
+    TableMeta tbl2 = new TableMeta(dbName2.toUpperCase(), tblName2);
+
+    metaDB.addTbl(tbl1);
+    metaDB.addTbl(tbl2);
+
+    assertEquals(tbl1, metaDB.getTbl(dbName1.toUpperCase(), tblName1));
+    assertEquals(tbl2, metaDB.getTbl(dbName2, tblName2.toUpperCase()));
+
+    String colName1 = "dummy_col1";
+    String colName2 = "dummy_col2";
+
+    ColumnMeta col1 = new ColumnMeta(dbName1.toUpperCase(),
+        tblName1.toUpperCase(), colName1);
+    ColumnMeta col2 = new ColumnMeta(dbName2, tblName2.toUpperCase(),
+        colName2.toUpperCase());
+
+    metaDB.addCol(col1);
+    metaDB.addCol(col2);
+
+    assertEquals(col1,
+        metaDB.getCol(dbName1, tblName1.toUpperCase(), colName1.toUpperCase()));
+    assertEquals(col2,
+        metaDB.getCol(dbName2.toUpperCase(), tblName2.toUpperCase(), colName2));
+
   }
 
 }

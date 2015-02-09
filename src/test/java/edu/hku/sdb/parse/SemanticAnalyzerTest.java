@@ -48,30 +48,30 @@ public class SemanticAnalyzerTest {
     // Prepare a test metastore
 
     DBMeta dbmeta = new DBMeta("test");
-    TableMeta tblmeta1 = new TableMeta("T1");
-    TableMeta tblmeta2 = new TableMeta("T2");
+//    TableMeta tblmeta1 = new TableMeta("T1");
+//    TableMeta tblmeta2 = new TableMeta("T2");
+//
+//    // All columns are sensitive
+//
+//    tblmeta1.getCols().add(
+//        new ColumnMeta("id", DataType.INT, true, new ColumnKey(new BigInteger(
+//            "1"), new BigInteger("3"))));
+//    tblmeta1.getCols().add(
+//        new ColumnMeta("a", DataType.INT, true, new ColumnKey(new BigInteger(
+//            "1"), new BigInteger("3"))));
+//
+//    tblmeta2.getCols().add(
+//        new ColumnMeta("id", DataType.INT, true, new ColumnKey(new BigInteger(
+//            "1"), new BigInteger("3"))));
+//    tblmeta2.getCols().add(
+//        new ColumnMeta("b", DataType.INT, true, new ColumnKey(new BigInteger(
+//            "1"), new BigInteger("3"))));
+//
+//    dbmeta.getTbls().add(tblmeta1);
+//    dbmeta.getTbls().add(tblmeta2);
 
-    // All columns are sensitive
 
-    tblmeta1.getCols().add(
-        new ColumnMeta("id", DataType.INT, true, new ColumnKey(new BigInteger(
-            "1"), new BigInteger("3"))));
-    tblmeta1.getCols().add(
-        new ColumnMeta("a", DataType.INT, true, new ColumnKey(new BigInteger(
-            "1"), new BigInteger("3"))));
-
-    tblmeta2.getCols().add(
-        new ColumnMeta("id", DataType.INT, true, new ColumnKey(new BigInteger(
-            "1"), new BigInteger("3"))));
-    tblmeta2.getCols().add(
-        new ColumnMeta("b", DataType.INT, true, new ColumnKey(new BigInteger(
-            "1"), new BigInteger("3"))));
-
-    dbmeta.getTbls().add(tblmeta1);
-    dbmeta.getTbls().add(tblmeta2);
-
-
-    testObj = new SemanticAnalyzer(dbmeta);
+    testObj = new SemanticAnalyzer(metadb);
     parser = new ParseDriver();
   }
 

@@ -21,7 +21,7 @@ public abstract class TableRef implements ParseNode {
 
   // represents a table/view name.
   protected final String tblName;
-  protected String alia = "";
+  protected String alias = "";
 
   protected JoinOperator joinOp;
   protected Expr onClause;
@@ -29,9 +29,9 @@ public abstract class TableRef implements ParseNode {
   // the ref to the left of this table, if it is part of a JOIN clause
   protected TableRef leftTblRef;
 
-  public TableRef(String tblName, String alia) {
+  public TableRef(String tblName, String alias) {
     this.tblName = tblName;
-    this.alia = alia;
+    this.alias = alias;
   }
 
   @Override
@@ -53,7 +53,7 @@ public abstract class TableRef implements ParseNode {
     if ((tblName == null) != (tblObj.tblName == null))
       return false;
 
-    if ((alia == null) != (tblObj.alia == null))
+    if ((alias == null) != (tblObj.alias == null))
       return false;
 
     if (joinOp != null) {
@@ -76,8 +76,8 @@ public abstract class TableRef implements ParseNode {
         return false;
     }
 
-    if (alia != null) {
-      if (!alia.equals(tblObj.alia))
+    if (alias != null) {
+      if (!alias.equals(tblObj.alias))
         return false;
     }
 
@@ -94,17 +94,17 @@ public abstract class TableRef implements ParseNode {
   /**
    * @return the alias
    */
-  public String getAlia() {
-    return alia;
+  public String getAlias() {
+    return alias;
   }
 
   /**
-   * @param alia
+   * @param alias
    *          the alias to set
    */
-  public void setAlia(String alia) {
-    if (alia != null) {
-      this.alia = alia;
+  public void setAlias(String alias) {
+    if (alias != null) {
+      this.alias = alias;
     }
   }
 

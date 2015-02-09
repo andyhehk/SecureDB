@@ -17,12 +17,12 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.catalog.MetaStore;
 
 public class SelectionItem implements ParseNode {
 
   private Expr expr;
-  private String alia;
+  private String alias;
 
   /**
    * Default constructor
@@ -31,9 +31,9 @@ public class SelectionItem implements ParseNode {
   
   }
   
-  public SelectionItem(Expr expr, String alia) {
+  public SelectionItem(Expr expr, String alias) {
     this.expr = expr;
-    this.alia = alia;
+    this.alias = alias;
   }
 
   @Override
@@ -46,11 +46,11 @@ public class SelectionItem implements ParseNode {
     if ((expr == null) != (selitemObj.expr == null))
       return false;
 
-    if ((alia == null) != (selitemObj.alia == null))
+    if ((alias == null) != (selitemObj.alias == null))
       return false;
 
-    if(alia != null)
-      if(!alia.equals(selitemObj.alia))
+    if(alias != null)
+      if(!alias.equals(selitemObj.alias))
         return false;
     
     return expr.equals(selitemObj.expr);
@@ -74,24 +74,24 @@ public class SelectionItem implements ParseNode {
   /**
    * @return the alias
    */
-  public String getAlia() {
-    return alia;
+  public String getAlias() {
+    return alias;
   }
 
   /**
    * @param alias
    *          the alias to set
    */
-  public void setAlia(String alias) {
-    this.alia = alias;
+  public void setAlias(String alias) {
+    this.alias = alias;
   }
 
   /* (non-Javadoc)
    * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.catalog.DBMeta)
    */
   @Override
-  public void analyze(DBMeta dbMeta) throws SemanticException {
-    expr.analyze(dbMeta);
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
+    expr.analyze(metaDB, fieldSources);
   }
 
   /* (non-Javadoc)

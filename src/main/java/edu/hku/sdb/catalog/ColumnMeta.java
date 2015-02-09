@@ -17,44 +17,136 @@
 
 package edu.hku.sdb.catalog;
 
+import java.io.Serializable;
+import java.util.StringTokenizer;
+
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.PrimaryKey;
 
-@PersistenceCapable
+import edu.hku.sdb.catalog.TableMeta.TablePK;
+
+@PersistenceCapable(objectIdClass = ColumnMeta.ColumnPK.class)
 public class ColumnMeta {
 
   @PrimaryKey
-  private String name;
+  private String dbName;
+
+  @PrimaryKey
+  private String tblName;
+
+  @PrimaryKey
+  private String colName;
 
   private DataType type;
   private boolean isSensitive = false;
-  private ColumnKey colkey;
+  private ColumnKey colKey;
 
-  public ColumnMeta(String name) {
-    this.setName(name);
+  public static class ColumnPK implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    public String dbName;
+    public String tblName;
+    public String colName;
+
+    public ColumnPK() {
+    }
+
+    public ColumnPK(String value) {
+      StringTokenizer token = new StringTokenizer(value, "::");
+      token.nextToken(); // className
+      this.dbName = token.nextToken(); // db name
+      this.tblName = token.nextToken(); // table name
+      this.colName = token.nextToken(); // column name
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == this) {
+        return true;
+      }
+      if (!(obj instanceof ColumnPK)) {
+        return false;
+      }
+      ColumnPK c = (ColumnPK) obj;
+
+      
+      return dbName.equals(c.dbName) && tblName.equals(c.tblName)
+          && colName.equals(c.colName);
+    }
+
+    @Override
+    public int hashCode() {
+      return this.dbName.hashCode() ^ this.tblName.hashCode()
+          ^ this.colName.hashCode();
+    }
+
+    @Override
+    public String toString() {
+      // Give output expected by String constructor
+      return this.getClass().getName() + "::" + this.dbName + "::"
+          + this.tblName + "::" + this.colName;
+    }
+
   }
 
-  public ColumnMeta(String name, DataType type, boolean isSen, ColumnKey colkey) {
-    // column name should be case insensitive
-    this.setName(name);
+  public ColumnMeta(String dbName, String tblName, String colName) {
+    // names should be case insensitive
+    this.setDbName(dbName.toLowerCase());
+    this.setTblName(tblName.toLowerCase());
+    this.setColName(colName.toLowerCase());
+  }
+
+  public ColumnMeta(String dbName, String tblName, String colName,
+      DataType type, boolean isSen, ColumnKey colKey) {
+    // names should be case insensitive
+    this.setDbName(dbName.toLowerCase());
+    this.setTblName(tblName.toLowerCase());
+    this.setColName(colName.toLowerCase());
     this.type = type;
     this.isSensitive = isSen;
-    this.setColkey(colkey);
+    this.setColkey(colKey);
   }
 
   /**
-   * @return the name
+   * @return the dbName
    */
-  public String getName() {
-    return name;
+  public String getDbName() {
+    return dbName;
   }
 
   /**
-   * @param name
-   *          the name to set
+   * @param dbName the dbName to set
    */
-  public void setName(String name) {
-    this.name = name.toLowerCase();
+  public void setDbName(String dbName) {
+    this.dbName = dbName;
+  }
+
+  /**
+   * @return the tblName
+   */
+  public String getTblName() {
+    return tblName;
+  }
+
+  /**
+   * @param tblName the tblName to set
+   */
+  public void setTblName(String tblName) {
+    this.tblName = tblName;
+  }
+
+  /**
+   * @return the colName
+   */
+  public String getColName() {
+    return colName;
+  }
+
+  /**
+   * @param colName the colName to set
+   */
+  public void setColName(String colName) {
+    this.colName = colName;
   }
 
   /**
@@ -91,7 +183,7 @@ public class ColumnMeta {
    * @return the colkey
    */
   public ColumnKey getColkey() {
-    return colkey;
+    return colKey;
   }
 
   /**
@@ -99,7 +191,7 @@ public class ColumnMeta {
    *          the colkey to set
    */
   public void setColkey(ColumnKey colkey) {
-    this.colkey = colkey;
+    this.colKey = colkey;
   }
 
 }

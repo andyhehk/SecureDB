@@ -17,7 +17,7 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.catalog.MetaStore;
 
 public class InsertStmt extends StatementBase {
 
@@ -32,7 +32,7 @@ public class InsertStmt extends StatementBase {
    * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer)
    */
   @Override
-  public void analyze(DBMeta dbMeta) throws SemanticException {
+  public void analyze(MetaStore metaDB, ParseNode... fieldParent) throws SemanticException {
     // TODO Auto-generated method stub
     
   }

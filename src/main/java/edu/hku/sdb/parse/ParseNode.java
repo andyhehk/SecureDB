@@ -17,18 +17,26 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.catalog.MetaStore;
 
 public interface ParseNode {
 
   /**
    * Perform semantic analysis of node and all of its children. Throw exception
-   * if any errors found.
+   * if any errors found. Two major tasks:
    * 
-   * @param dbMeta
+   * 1. Resolve the table name of a field. It may throw ambiguous exception if
+   * the table name cannot be uniquely identified or not found exception if the
+   * table name cannot be resolved.
+   * 
+   * 2. Set the column keys of all sensitive columns.
+   * 
+   * @param metaDB
+   * @param fieldSources
    * @throws SemanticException
    */
-  public void analyze(DBMeta dbMeta) throws SemanticException;
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+      throws SemanticException;
 
   /**
    * @return SQL syntax corresponding to this node

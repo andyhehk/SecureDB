@@ -17,52 +17,99 @@
 
 package edu.hku.sdb.catalog;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.PersistenceManager;
+import javax.jdo.Query;
+import javax.jdo.Transaction;
 
-@PersistenceCapable
 public class MetaStore {
 
-  @PrimaryKey
-  private String name = null;
+  public static final String name = "metastore_db";
+  private PersistenceManager pm;
 
-  private Set<DBMeta> dbs = new HashSet<DBMeta>();
-
-  public MetaStore(String name) {
-    // Metastore is case sensitive
-    this.setName(name);
+  public MetaStore(PersistenceManager pm) {
+    this.pm = pm;
   }
 
-  /**
-   * @return the name
-   */
-  public String getName() {
-    return name;
+  public void addDB(DBMeta db) {
+    Transaction tx = pm.currentTransaction();
+    try {
+      tx.begin();
+      pm.makePersistent(db);
+      tx.commit();
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+    }
   }
 
-  /**
-   * @param name
-   *          the name to set
-   */
-  public void setName(String name) {
-    this.name = name;
+  public void addTbl(TableMeta tbl) {
+    Transaction tx = pm.currentTransaction();
+    try {
+      tx.begin();
+      pm.makePersistent(tbl);
+      tx.commit();
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+    }
   }
 
-  /**
-   * @return the dbs
-   */
-  public Set<DBMeta> getDbs() {
-    return dbs;
+  public void addCol(ColumnMeta col) {
+    Transaction tx = pm.currentTransaction();
+    try {
+      tx.begin();
+      pm.makePersistent(col);
+      tx.commit();
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+    }
   }
 
-  /**
-   * @param dbs
-   *          the dbs to set
-   */
-  public void setDbs(Set<DBMeta> dbs) {
-    this.dbs = dbs;
+  public DBMeta getDB(String dbName) {
+    return pm.getObjectById(DBMeta.class, dbName.toLowerCase());
   }
+
+  public TableMeta getTbl(String dbName, String tblName) {
+    TableMeta.TablePK key = new TableMeta.TablePK(
+        TableMeta.TablePK.class.getName() + "::" + dbName.toLowerCase() + "::"
+            + tblName.toLowerCase());
+
+    return (TableMeta) pm.getObjectById(key);
+  }
+
+  public ColumnMeta getCol(String dbName, String tblName, String colName) {
+    ColumnMeta.ColumnPK key = new ColumnMeta.ColumnPK(
+        ColumnMeta.ColumnPK.class.getName() + "::" + dbName.toLowerCase()
+        + "::" + tblName.toLowerCase() + "::" + colName.toLowerCase());
+    
+    return (ColumnMeta) pm.getObjectById(key);
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<DBMeta> getAllDBs() {
+    Query q = pm.newQuery(DBMeta.class);
+
+    return (List<DBMeta>) q.execute();
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<TableMeta> getAllTbls() {
+    Query q = pm.newQuery(TableMeta.class);
+
+    return (List<TableMeta>) q.execute();
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<ColumnMeta> getAllCols() {
+    Query q = pm.newQuery(ColumnMeta.class);
+
+    return (List<ColumnMeta>) q.execute();
+  }
+
 }
