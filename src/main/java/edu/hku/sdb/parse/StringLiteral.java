@@ -40,4 +40,12 @@ public class StringLiteral extends LiteralExpr {
     return value;
   }
 
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#toSql()
+   */
+  @Override
+  public String toSql() {
+    return value;
+  }
+
 }

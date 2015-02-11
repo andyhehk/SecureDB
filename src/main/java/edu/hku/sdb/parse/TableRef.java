@@ -152,4 +152,7 @@ public abstract class TableRef implements ParseNode {
   public void setLeftTblRef(TableRef leftTblRef) {
     this.leftTblRef = leftTblRef;
   }
+  
+  
+  
 }

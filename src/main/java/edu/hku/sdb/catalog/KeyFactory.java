@@ -13,37 +13,38 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *
  *******************************************************************************/
 
-package edu.hku.sdb.parse;
+package edu.hku.sdb.catalog;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.StringTokenizer;
 
-import edu.hku.sdb.catalog.MetaStore;
+public class KeyFactory {
 
-public abstract class Expr extends TreeNode<Expr> implements ParseNode {
-
-  private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
-
-  @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof Expr))
-      return false;
-
-    Expr exprObj = (Expr) obj;
-    return children.equals(exprObj.children);
-  }
-
-  /**
-   * 
-   */
-  @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
-    // Analyze each child
-    for (Expr child : getChildren()) {
-      child.analyze(metaDB, fieldSources);
+  public static Key stringToKey(String keyString) {
+    Key key = null;
+    
+    StringTokenizer token = new StringTokenizer(keyString, "::");
+    
+    String clazz = token.nextToken(); 
+    
+    if(clazz.equals(DBMeta.DBPK.class.getName())) {
+      key = new DBMeta.DBPK(keyString);
     }
+    
+    else if(clazz.equals(TableMeta.TablePK.class.getName())) {
+      key = new TableMeta.TablePK(keyString);
+    }
+    
+    else if(clazz.equals(ColumnMeta.ColumnPK.class.getName())) {
+      key = new ColumnMeta.ColumnPK(keyString);
+    }
+    
+    else {
+      throw new RuntimeException("Unsupported Primary key: " + clazz);
+    }
+    
+    return key;
+    
   }
 }

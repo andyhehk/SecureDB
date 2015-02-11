@@ -28,11 +28,6 @@
 		<!-- We should not embed the database connectors, but the tests are depended 
 			on them -->
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.26</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
 			<version>10.11.1.1</version>
@@ -46,13 +41,6 @@
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-common</artifactId>
 			<version>2.4.1</version>
-		</dependency>
-		<!-- It is not a good idea to include hive-jdbc, we may just skip the tests 
-			using it or use mock up class to test -->
-		<dependency>
-			<groupId>org.apache.hive</groupId>
-			<artifactId>hive-jdbc</artifactId>
-			<version>0.12.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.datanucleus</groupId>

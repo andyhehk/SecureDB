@@ -39,4 +39,12 @@ public class BoolLiteral extends LiteralExpr {
   public boolean getValue() {
     return value;
   }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#toSql()
+   */
+  @Override
+  public String toSql() {
+    return Boolean.toString(value);
+  }
 }

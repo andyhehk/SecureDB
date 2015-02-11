@@ -57,4 +57,9 @@ public class ColumnKey {
   public BigInteger getX() {
     return x;
   }
+  
+  @Override
+  public String toString() {
+    return "m: "+ m + "; x: " + x;
+  }
 }

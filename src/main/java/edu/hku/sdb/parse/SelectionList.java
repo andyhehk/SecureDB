@@ -20,10 +20,18 @@ package edu.hku.sdb.parse;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.hku.sdb.catalog.MetaStore;
+
+import com.google.common.base.Joiner;
+
 
 public class SelectionList implements ParseNode {
 
+  private static final Logger LOG = LoggerFactory.getLogger(SelectionList.class);
+  
   protected List<SelectionItem> itemList;
 
   public SelectionList() {
@@ -68,7 +76,14 @@ public class SelectionList implements ParseNode {
    */
   @Override
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    
+    List<String> items = new ArrayList<String>();
+    
+    for(SelectionItem item : itemList) {
+      items.add(item.toSql());
+    }
+    
+    return Joiner.on(",").join(items);
+    
   }
 }

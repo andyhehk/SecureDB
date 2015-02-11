@@ -30,4 +30,13 @@ public class UnionStmt extends QueryStmt {
     
   }
 
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#toSql()
+   */
+  @Override
+  public String toSql() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

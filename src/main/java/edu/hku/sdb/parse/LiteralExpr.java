@@ -18,18 +18,7 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.MetaStore;
 
-public class LiteralExpr extends Expr {
-
-  public void analyze(MetaStore metaDB, ParseNode... fieldParent) throws SemanticException {
-    // TODO Auto-generated method stub
-
-  }
-
-  public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+public abstract class LiteralExpr extends Expr {
 
 }

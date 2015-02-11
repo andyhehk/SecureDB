@@ -20,16 +20,18 @@ package edu.hku.sdb.catalog;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.jdo.annotations.Join;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.PrimaryKey;
 
-@PersistenceCapable
+
+@PersistenceCapable(objectIdClass = DBMeta.DBPK.class)
 public class DBMeta {
 
   @PrimaryKey
-  private String name = null;
+  private String dbName = null;
 
   // TODO add foreign key relationship
   @Join
@@ -44,6 +46,46 @@ public class DBMeta {
   // The random seed to generate row ids
   private BigInteger seed = null;
 
+  public static class DBPK extends Key {
+
+    private static final long serialVersionUID = 1L;
+    public String dbName;
+
+    public DBPK() {
+    }
+
+    public DBPK(String value) {
+      StringTokenizer token = new StringTokenizer(value, "::");
+      token.nextToken(); // className
+      this.dbName = token.nextToken(); // db name
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == this) {
+        return true;
+      }
+      if (!(obj instanceof DBPK)) {
+        return false;
+      }
+      DBPK c = (DBPK) obj;
+
+      return dbName.equals(c.dbName) ;
+    }
+
+    @Override
+    public int hashCode() {
+      return this.dbName.hashCode();
+    }
+
+    @Override
+    public String toString() {
+      // Give output expected by String constructor
+      return this.getClass().getName() + "::" + this.dbName;
+    }
+
+  }
+  
   public DBMeta(String name) {
     // database name should be case insensitive
     this.setName(name);
@@ -67,7 +109,7 @@ public class DBMeta {
    * @return the name
    */
   public String getName() {
-    return name;
+    return dbName;
   }
 
   /**
@@ -75,7 +117,7 @@ public class DBMeta {
    *          the name to set
    */
   public void setName(String name) {
-    this.name = name.toLowerCase();
+    this.dbName = name.toLowerCase();
   }
 
 

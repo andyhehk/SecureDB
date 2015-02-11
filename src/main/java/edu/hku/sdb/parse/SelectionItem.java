@@ -17,23 +17,33 @@
 
 package edu.hku.sdb.parse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.hku.sdb.catalog.MetaStore;
+
+import static com.google.common.base.Preconditions.*;
 
 public class SelectionItem implements ParseNode {
 
+  private static final Logger LOG = LoggerFactory
+      .getLogger(SelectionItem.class);
+
   private Expr expr;
-  private String alias;
+  // Make sure alias is not null
+  private String alias = "";
 
   /**
    * Default constructor
    */
   public SelectionItem() {
-  
+
   }
-  
+
   public SelectionItem(Expr expr, String alias) {
     this.expr = expr;
-    this.alias = alias;
+    // Make sure alias is not null
+    this.alias = checkNotNull(alias, "Alias is null");
   }
 
   @Override
@@ -43,17 +53,16 @@ public class SelectionItem implements ParseNode {
 
     SelectionItem selitemObj = (SelectionItem) obj;
 
-    if ((expr == null) != (selitemObj.expr == null))
+    if ((expr == null) != (selitemObj.expr == null)) {
+      String err = (expr == null) ? "Left selection item is null, while "
+          + "right selection item is: " + selitemObj.expr
+          : "Left selection item is: " + expr
+              + ", while right selection item is null";
+      LOG.debug(err);
       return false;
+    }
 
-    if ((alias == null) != (selitemObj.alias == null))
-      return false;
-
-    if(alias != null)
-      if(!alias.equals(selitemObj.alias))
-        return false;
-    
-    return expr.equals(selitemObj.expr);
+    return expr.equals(selitemObj.expr) && alias.equals(selitemObj.alias);
   }
 
   /**
@@ -83,23 +92,31 @@ public class SelectionItem implements ParseNode {
    *          the alias to set
    */
   public void setAlias(String alias) {
-    this.alias = alias;
+    // Make sure alias is not null
+    this.alias = checkNotNull(alias, "Alias is null");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.catalog.DBMeta)
    */
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+      throws SemanticException {
     expr.analyze(metaDB, fieldSources);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   @Override
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    if (alias.equals(""))
+      return expr.toSql();
+    else
+      return expr.toSql() + "AS" + alias;
   }
 }

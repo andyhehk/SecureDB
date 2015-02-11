@@ -18,10 +18,17 @@
 
 package edu.hku.sdb.rewrite;
 
-import edu.hku.sdb.parse.QueryStmt;
+import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.parse.ParseNode;
 
 public abstract class AbstractRewriter {
 
-  public abstract QueryStmt rewrite(QueryStmt query);
+  protected final DBMeta dbMeta;
+  
+  public AbstractRewriter(DBMeta dbMeta) {
+    this.dbMeta = dbMeta;
+  }
+  
+  public abstract ParseNode rewrite(ParseNode query);
 
 }

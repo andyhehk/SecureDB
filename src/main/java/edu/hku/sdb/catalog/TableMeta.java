@@ -17,18 +17,12 @@
 
 package edu.hku.sdb.catalog;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.jdo.annotations.Join;
 import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(objectIdClass = TableMeta.TablePK.class)
@@ -44,7 +38,7 @@ public class TableMeta {
   @Join
   private List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
-  public static class TablePK implements Serializable {
+  public static class TablePK extends Key {
 
     private static final long serialVersionUID = 1L;
     public String dbName;

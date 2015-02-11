@@ -19,6 +19,8 @@ package edu.hku.sdb.parse;
 
 import edu.hku.sdb.catalog.MetaStore;
 
+import static com.google.common.base.Preconditions.*;
+
 public class BaseTableRef extends TableRef {
 
   /**
@@ -26,7 +28,9 @@ public class BaseTableRef extends TableRef {
    * @param alias
    */
   public BaseTableRef(String tableName, String alias) {
-    super(tableName, alias);
+    // Trim any white space.
+    super(checkNotNull(tableName, "Table Name is null."), checkNotNull(alias,
+        "Alias is null."));
   }
 
   @Override
@@ -44,8 +48,11 @@ public class BaseTableRef extends TableRef {
    * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
    * )
    */
-  public void analyze(MetaStore metaDB, ParseNode... fieldParent) throws SemanticException {
-    // TODO Auto-generated method stub
+  public void analyze(MetaStore metaDB, ParseNode... fieldParent)
+      throws SemanticException {
+    
+    if(onClause!=null)
+      onClause.analyze(metaDB, fieldParent);
 
   }
 
@@ -55,8 +62,30 @@ public class BaseTableRef extends TableRef {
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    StringBuilder sb = new StringBuilder();
+
+    if (alias.equals("")) {
+      if (onClause == null) {
+        if(joinOp == null)
+          sb.append(tblName + ",");
+        else
+          sb.append(tblName);
+      }
+      else
+        sb.append("JOIN " + tblName + " ON " + onClause.toSql());
+    } else {
+      if (onClause == null) {
+        if(joinOp == null)
+          sb.append(tblName + " as " + alias +",");
+        else
+          sb.append(tblName + " as " + alias);
+      }
+      else
+        sb.append(" Join " + tblName + " as " + alias + " ON "
+            + onClause.toSql());
+    }
+
+    return sb.toString();
   }
 
 }

@@ -45,14 +45,15 @@ public class SelectStmtTest {
 
     List<TableRef> tblRefs = new ArrayList<TableRef>();
 
-    BaseTableRef tbl1 = new BaseTableRef("T1", null);
+    BaseTableRef tbl1 = new BaseTableRef("T1", "T11");
+    tbl1.setJoinOp(JoinOperator.INNER_JOIN);
     FieldLiteral left = new FieldLiteral("T1", "id", DataType.INT, true,
         new ColumnKey("1", "2"));
     FieldLiteral right = new FieldLiteral("T2", "id", DataType.INT, true,
         new ColumnKey("2", "3"));
     Expr onClause = new NormalBinPredicate(BinOperator.EQ, left, right);
 
-    BaseTableRef tbl2 = new BaseTableRef("T2", null);
+    BaseTableRef tbl2 = new BaseTableRef("T2", "");
     tbl2.setJoinOp(JoinOperator.INNER_JOIN);
     tbl2.setLeftTblRef(tbl1);
     tbl2.setOnClause(onClause);

@@ -18,9 +18,17 @@
 
 package edu.hku.sdb.rewrite;
 
-import edu.hku.sdb.parse.QueryStmt;
+import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.parse.ParseNode;
 
 public class HiveRewriter extends AbstractRewriter {
+
+  /**
+   * @param dbMeta
+   */
+  public HiveRewriter(DBMeta dbMeta) {
+    super(dbMeta);
+  }
 
   /*
    * (non-Javadoc)
@@ -29,7 +37,7 @@ public class HiveRewriter extends AbstractRewriter {
    * edu.hku.sdb.rewrite.AbstractRewriter#rewrite(edu.hku.sdb.parse.QueryStmt)
    */
   @Override
-  public QueryStmt rewrite(QueryStmt query) {
+  public ParseNode rewrite(ParseNode query) {
     return query;
   }
 

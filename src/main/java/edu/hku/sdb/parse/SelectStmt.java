@@ -17,11 +17,19 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.hku.sdb.catalog.MetaStore;
 
+import com.google.common.base.Joiner;
+
 public class SelectStmt extends QueryStmt {
+
+  private static final Logger LOG = LoggerFactory.getLogger(SelectStmt.class);
 
   private SelectionList selectList;
   private List<TableRef> tableRefs;
@@ -31,7 +39,7 @@ public class SelectStmt extends QueryStmt {
 
   // havingClause with aliases and agg output resolved
   protected Expr havingPred;
-  
+
   /**
    * @see edu.hku.sdb.parse.ParseNode#analyze()
    */
@@ -40,24 +48,30 @@ public class SelectStmt extends QueryStmt {
       throws SemanticException {
     // Resolve the nested query first if any
     for (TableRef tblRef : tableRefs) {
-      tblRef.analyze(metaDB, (ParseNode) null);
+      tblRef
+          .analyze(metaDB, tableRefs.toArray(new ParseNode[tableRefs.size()]));
     }
-    
+
     // Resolve the table names of the selection items
     selectList.analyze(metaDB,
         tableRefs.toArray(new ParseNode[tableRefs.size()]));
+
     // Resolve the table names of the fields in the where clause
-    whereClause.analyze(metaDB,
-        tableRefs.toArray(new ParseNode[tableRefs.size()]));
+    if (whereClause != null)
+      whereClause.analyze(metaDB,
+          tableRefs.toArray(new ParseNode[tableRefs.size()]));
+
     // Resolve the table names of the grouping fields
-    for (Expr expr : groupingExprs) {
-      expr.analyze(metaDB, tableRefs.toArray(new ParseNode[tableRefs.size()]));
-    }
+    if (groupingExprs != null)
+      for (Expr expr : groupingExprs) {
+        expr.analyze(metaDB, tableRefs.toArray(new ParseNode[tableRefs.size()]));
+      }
 
     // Get the table name of the aggregation field.
     // It must be called after selection item resolved their table names.
-    havingExpr.analyze(metaDB,
-        selectList.itemList.toArray(new ParseNode[tableRefs.size()]));
+    if (havingExpr != null)
+      havingExpr.analyze(metaDB,
+          selectList.itemList.toArray(new ParseNode[tableRefs.size()]));
 
   }
 
@@ -69,33 +83,68 @@ public class SelectStmt extends QueryStmt {
     if (selectList == null || tableRefs == null) {
       try {
         throw new SemanticException(
-            "A selection statement cannot have empty selection list or table list");
+            "A selection statement cannot have empty selection list or table "
+                + "list");
       } catch (SemanticException e) {
         e.printStackTrace();
       }
     }
 
     SelectStmt selObj = (SelectStmt) obj;
-
-    if ((whereClause == null) != (selObj.whereClause == null))
+    
+    // TODO Too verbose. Can we have better way to debug.
+    if ((whereClause == null) != (selObj.whereClause == null)) {
+      String err = (whereClause == null) ? "Left where clause is null, while "
+          + "right clause is: " + selObj.whereClause : "Left where clause is: "
+          + whereClause + ", while right clause is null";
+      LOG.debug(err);
       return false;
-    else if ((groupingExprs == null) != (selObj.groupingExprs == null))
+    } else if ((groupingExprs == null) != (selObj.groupingExprs == null)) {
+      String err = (groupingExprs == null) ? "Left group by clause is null, "
+          + "while right clause is: " + selObj.groupingExprs
+          : "Left group by clause is: " + groupingExprs
+              + ", while right clause is null";
+      LOG.debug(err);
       return false;
-    else if ((havingExpr == null) != (selObj.havingExpr == null))
+    } else if ((havingExpr == null) != (selObj.havingExpr == null)) {
+      String err = (havingExpr == null) ? "Left having clause is null, while "
+          + "right clause is: " + selObj.havingExpr : "Left having clause is: "
+          + havingExpr + ", while right clause is null";
+      LOG.debug(err);
       return false;
-    else if ((havingPred == null) != (selObj.havingPred == null))
+    } else if ((havingPred == null) != (selObj.havingPred == null)) {
+      String err = (havingPred == null) ? "Left having predicate is null, while "
+          + "right predicate is: " + selObj.havingPred
+          : "Left having predicate is: " + havingPred
+              + ", while right predicate is null";
+      LOG.debug(err);
       return false;
-
-    else {
-      if ((whereClause != null) && !whereClause.equals(selObj.whereClause))
+    } else {
+      if ((whereClause != null) && !whereClause.equals(selObj.whereClause)) {
+        String err = "Left where clause is: " + whereClause
+            + ";Right where clause is: " + selObj.whereClause;
+        LOG.debug(err);
         return false;
+      }
       if ((groupingExprs != null)
-          && !groupingExprs.equals(selObj.groupingExprs))
+          && !groupingExprs.equals(selObj.groupingExprs)) {
+        String err = "Left group by clause is: " + groupingExprs
+            + ";Right group by clause is: " + selObj.groupingExprs;
+        LOG.debug(err);
         return false;
-      if ((havingExpr != null) && !havingExpr.equals(selObj.havingExpr))
+      }
+      if ((havingExpr != null) && !havingExpr.equals(selObj.havingExpr)) {
+        String err = "Left having clause is: " + havingExpr
+            + ";Right having clause is: " + selObj.havingExpr;
+        LOG.debug(err);
         return false;
-      if ((havingPred != null) && !havingPred.equals(selObj.havingPred))
+      }
+      if ((havingPred != null) && !havingPred.equals(selObj.havingPred)) {
+        String err = "Left having predicate is: " + havingPred
+            + ";Right having predicate is: " + selObj.havingPred;
+        LOG.debug(err);
         return false;
+      }
 
       return selectList.equals(selObj.selectList)
           && tableRefs.equals(selObj.tableRefs);
@@ -175,6 +224,37 @@ public class SelectStmt extends QueryStmt {
    */
   public void setHavingExpr(Expr havingExpr) {
     this.havingExpr = havingExpr;
+  }
+
+  public String toSql() {
+    StringBuffer sb = new StringBuffer();
+
+    sb.append("SELECT " + selectList.toSql() + "\n");
+
+    List<String> tables = new ArrayList<String>();
+    for (TableRef tbl : tableRefs) {
+      tables.add(tbl.toSql());
+    }
+
+    sb.append("FROM " + Joiner.on(" ").join(tables) + "\n");
+
+    if (whereClause != null)
+      sb.append("WHERE " + whereClause.toSql() + "\n");
+
+    List<String> groups = new ArrayList<String>();
+
+    if (groupingExprs != null) {
+      for (Expr expr : groupingExprs) {
+        groups.add(expr.toSql());
+      }
+
+      sb.append("GROUP BY " + Joiner.on(",").join(groups) + "\n");
+    }
+
+    if (havingExpr != null)
+      sb.append("HAVING " + havingExpr.toSql() + "\n");
+
+    return sb.toString();
   }
 
 }

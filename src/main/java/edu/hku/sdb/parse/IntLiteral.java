@@ -46,4 +46,12 @@ public class IntLiteral extends LiteralExpr {
     return value;
   }
 
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#toSql()
+   */
+  @Override
+  public String toSql() {
+    return Integer.toString(value);
+  }
+
 }

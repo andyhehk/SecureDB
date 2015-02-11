@@ -35,10 +35,9 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
   }
 
   /**
-   * Perform semantic analyze of a AST tree. A new parse tree
-   * is returned.
+   * Perform semantic analyze of a AST tree. A new parse tree is returned.
    * 
-   * @return parseNode 
+   * @return parseNode
    */
   @Override
   public ParseNode analyze(ASTNode tree) throws SemanticException {
@@ -60,6 +59,8 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     case HiveParser.TOK_QUERY:
       parseTree = buildStmt(tree);
     }
+
+    parseTree.analyze(metaDB, (ParseNode) null);
 
     return parseTree;
   }
@@ -94,7 +95,11 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       if (fromStmt != null)
         ((SelectStmt) insertStmt.getQueryStmt()).setTableRefs(fromStmt);
 
-      stmt = insertStmt;
+      // It is just a simple selection query.
+      if (insertStmt.getTargetTbl() == null)
+        stmt = insertStmt.getQueryStmt();
+      else
+        stmt = insertStmt;
     }
 
     return stmt;
@@ -167,6 +172,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     for (int i = 0; i < tree.getChildCount(); i++) {
       ASTNode child = (ASTNode) tree.getChild(i);
       switch (child.getType()) {
+      // TODO Cannot support select * at this moment
       case HiveParser.TOK_SELEXPR:
         selectList.getItemList().add(buildSelectItem(child));
         continue;
@@ -268,7 +274,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         selectItem.setExpr(buildDotExpr(child));
         continue;
       case HiveParser.TOK_TABLE_OR_COL:
-        selectItem.setExpr(new FieldLiteral(null, child.getText(), null));
+        selectItem.setExpr(new FieldLiteral("", child.getText(), null));
         continue;
       case HiveLexer.Identifier:
         selectItem.setAlias(child.getText());
@@ -303,7 +309,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         expr.addChild(buildDotExpr(child));
         continue;
       case HiveParser.TOK_TABLE_OR_COL:
-        expr.addChild(new FieldLiteral(null, child.getText(), null));
+        expr.addChild(new FieldLiteral("", child.getChild(0).getText(), null));
         continue;
       }
     }
@@ -349,12 +355,15 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         binPred.addChild(buildDotExpr(child));
         continue;
       case HiveParser.TOK_TABLE_OR_COL:
-        binPred.addChild(new FieldLiteral(null, child.getText(), null));
+        binPred.addChild(new FieldLiteral("", child.getChild(0).getText(), null));
         continue;
       case HiveParser.BigintLiteral:
       case HiveParser.SmallintLiteral:
       case HiveParser.TinyintLiteral:
         binPred.addChild(new IntLiteral(child.getText()));
+        continue;
+      case HiveParser.Number:
+        binPred.addChild(buildNumLiteral(child));
         continue;
       case HiveParser.DecimalLiteral:
         binPred.addChild(new FloatLiteral(child.getText()));
@@ -393,7 +402,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
             ParseUtils.JOIN_OPERATOR_MAP.get(child.getType())));
         continue;
       case HiveParser.TOK_TABREF:
-        tblRefs.add(buildBaseTableRef(child));
+        tblRefs.add(buildBaseTableRef(child, op));
         continue;
       case HiveParser.TOK_SUBQUERY:
         tblRefs.add(buildInlineViewRef(child));
@@ -427,9 +436,9 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
    * @param tree
    * @return
    */
-  private TableRef buildBaseTableRef(ASTNode tree) {
-    String tblName = null;
-    String alias = null;
+  private TableRef buildBaseTableRef(ASTNode tree, JoinOperator op) {
+    String tblName = "";
+    String alias = "";
 
     for (int i = 0; i < tree.getChildCount(); i++) {
       ASTNode child = (ASTNode) tree.getChild(i);
@@ -438,12 +447,15 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         tblName = child.getChild(0).getText();
         continue;
       case HiveLexer.Identifier:
-        tblName = child.getText();
+        alias = child.getText();
         continue;
       }
     }
 
-    return new BaseTableRef(tblName, alias);
+    BaseTableRef baseTbl = new BaseTableRef(tblName, alias);
+    baseTbl.setJoinOp(op);
+    
+    return baseTbl;
   }
 
   /**
@@ -482,5 +494,17 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     Expr onClause = buildNormalBinPredicate(tree, BinOperator.EQ);
 
     return onClause;
+  }
+  
+  private LiteralExpr buildNumLiteral(ASTNode tree) {
+    LiteralExpr expr = null;
+    String text = tree.getText();
+    
+    if(text.contains(".")) 
+      expr = new FloatLiteral(text);
+    else
+      expr = new IntLiteral(text);
+    
+    return expr;
   }
 }

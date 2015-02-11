@@ -17,6 +17,8 @@
 
 package edu.hku.sdb.parse;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class NormalBinPredicate extends BinaryPredicate {
 
   public NormalBinPredicate(BinOperator op) {
@@ -25,8 +27,8 @@ public class NormalBinPredicate extends BinaryPredicate {
 
   public NormalBinPredicate(BinOperator op, Expr e1, Expr e2) {
     super(op);
-    children.add(e1);
-    children.add(e2);
+    children.add(checkNotNull(e1, "Left expression is null."));
+    children.add(checkNotNull(e2, "Right expression is null."));
   }
 
   @Override
@@ -41,23 +43,20 @@ public class NormalBinPredicate extends BinaryPredicate {
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
-   * )
-   */
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    // TODO Auto-generated method stub
-
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    return checkNotNull(getChild(0), "Left expression is null.").toSql() + " "
+        + op + " "
+        + checkNotNull(getChild(1), "Right expression is null.").toSql();
+  }
+
+  @Override
+  public String toString() {
+    return "(Left child: "
+        + checkNotNull(getChild(0), "Left expression is null.") + ";Operator: "
+        + op + ";" + "Right child: "
+        + checkNotNull(getChild(1), "Right expression is null.") + ")";
   }
 
 }

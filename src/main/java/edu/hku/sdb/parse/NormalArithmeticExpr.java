@@ -17,6 +17,8 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
+import static com.google.common.base.Preconditions.*;
+
 public class NormalArithmeticExpr extends Expr {
 
   enum Operator {
@@ -57,8 +59,8 @@ public class NormalArithmeticExpr extends Expr {
 
   public NormalArithmeticExpr(Operator op, Expr e1, Expr e2) {
     this.op = op;
-    getChildren().add(e1);
-    getChildren().add(e2);
+    getChildren().add(checkNotNull(e1, "Left expression is null."));
+    getChildren().add(checkNotNull(e2, "Right expression is null."));
   }
 
   @Override
@@ -76,8 +78,9 @@ public class NormalArithmeticExpr extends Expr {
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    return checkNotNull(getChild(0), "Left expression is null.").toSql() + " "
+        + op + " "
+        + checkNotNull(getChild(1), "Right expression is null.").toSql();
   }
 
   /**

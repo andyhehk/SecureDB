@@ -21,7 +21,7 @@ import edu.hku.sdb.catalog.MetaStore;
 
 public class InsertStmt extends StatementBase {
 
-  private String targetTbl;
+  private String targetTbl = null;
   private QueryStmt queryStmt;
   
   public InsertStmt(String targetTbl) {

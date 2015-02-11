@@ -43,7 +43,6 @@ public abstract class BinaryPredicate extends Predicate {
     public String getName() {
       return name;
     }
-
   }
 
   protected final BinOperator op;

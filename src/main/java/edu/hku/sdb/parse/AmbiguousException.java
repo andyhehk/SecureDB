@@ -27,7 +27,7 @@ public class AmbiguousException extends SemanticException {
    * @param fieldName
    */
   public AmbiguousException(String fieldName) {
-    super(String.format(message, fieldName));
+    super(String.format(message, fieldName, fieldName));
   }
 
 }

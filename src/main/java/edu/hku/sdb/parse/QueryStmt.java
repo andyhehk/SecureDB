@@ -19,9 +19,6 @@ package edu.hku.sdb.parse;
 
 public abstract class QueryStmt extends StatementBase {
 
-  public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+
 
 }

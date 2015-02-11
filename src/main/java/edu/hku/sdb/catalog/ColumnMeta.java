@@ -17,13 +17,10 @@
 
 package edu.hku.sdb.catalog;
 
-import java.io.Serializable;
 import java.util.StringTokenizer;
 
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.PrimaryKey;
-
-import edu.hku.sdb.catalog.TableMeta.TablePK;
 
 @PersistenceCapable(objectIdClass = ColumnMeta.ColumnPK.class)
 public class ColumnMeta {
@@ -41,7 +38,7 @@ public class ColumnMeta {
   private boolean isSensitive = false;
   private ColumnKey colKey;
 
-  public static class ColumnPK implements Serializable {
+  public static class ColumnPK extends Key {
 
     private static final long serialVersionUID = 1L;
     public String dbName;
