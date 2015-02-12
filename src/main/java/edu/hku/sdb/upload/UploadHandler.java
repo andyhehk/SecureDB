@@ -16,6 +16,7 @@ public class UploadHandler {
 
   private String HDFS_URL;
   private String HDFS_FILE_PATH;
+  private String sourceFile;
   private FileSystem hdfs;
 
   public String getHDFS_FILE_PATH() {
@@ -34,13 +35,32 @@ public class UploadHandler {
     this.HDFS_URL = HDFS_URL;
   }
 
+  public String getSourceFile() {
+    return sourceFile;
+  }
+
+  public void setSourceFile(String sourceFile) {
+    this.sourceFile = sourceFile;
+  }
+
+
   public void upload(){
     BufferedWriter bufferedWriter = getBufferedWriter();
-    
+    BufferedReader bufferedReader = null;
     try {
-      bufferedWriter.write("Hello World");
+      bufferedReader = new BufferedReader(new FileReader(sourceFile));
+      String line;
+      while ((line = bufferedReader.readLine()) != null) {
+        String newLine = line;
+        //TODO: process the line.
+        bufferedWriter.write(newLine);
+      }
+      bufferedReader.close();
       bufferedWriter.close();
       hdfs.close();
+
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -52,6 +72,7 @@ public class UploadHandler {
     try {
       hdfs = FileSystem.get(new URI(HDFS_URL), configuration);
       Path file = new Path(HDFS_FILE_PATH);
+      //TODO: append to file instead of delete
       if (hdfs.exists(file)) {
         hdfs.delete(file, true);
       }
