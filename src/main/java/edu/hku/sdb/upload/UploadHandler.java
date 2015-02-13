@@ -1,5 +1,7 @@
 package edu.hku.sdb.upload;
 
+import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.TableMeta;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -18,6 +20,15 @@ public class UploadHandler {
   private String HDFS_FILE_PATH;
   private String sourceFile;
   private FileSystem hdfs;
+  private MetaStore metaStore;
+
+  public MetaStore getMetaStore() {
+    return metaStore;
+  }
+
+  public void setMetaStore(MetaStore metaStore) {
+    this.metaStore = metaStore;
+  }
 
   public String getHDFS_FILE_PATH() {
     return HDFS_FILE_PATH;
@@ -52,7 +63,7 @@ public class UploadHandler {
       String line;
       while ((line = bufferedReader.readLine()) != null) {
         String newLine = line;
-        //TODO: process the line.
+        //TODO: process the line with meta.
         bufferedWriter.write(newLine);
       }
       bufferedReader.close();
@@ -91,7 +102,6 @@ public class UploadHandler {
     }
     return bufferedWriter;
   }
-
 
   public String encrypt(String plainText){
     return null;
