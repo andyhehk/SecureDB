@@ -14,7 +14,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -34,7 +36,7 @@ public class UploadHandlerTest {
   private String driver = "org.apache.derby.jdbc.EmbeddedDriver";
   private PersistenceManagerFactory pmf;
   private PersistenceManager pm;
-
+  private UploadHandler uploadHandler;
   /**
    * Prepare a in-memory database for testing
    */
@@ -49,7 +51,7 @@ public class UploadHandlerTest {
 
     Properties properties = new Properties();
     properties.setProperty("javax.jdo.option.ConnectionURL",
-            "jdbc:derby:memory:test_db;create=true");
+            "jdbc:derby:memory:sdbclient;create=true");
     properties.setProperty("javax.jdo.option.ConnectionDriverName",
             "org.apache.derby.jdbc.EmbeddedDriver");
     properties.setProperty("javax.jdo.option.ConnectionUserName", "");
@@ -61,6 +63,12 @@ public class UploadHandlerTest {
 
     pmf = JDOHelper.getPersistenceManagerFactory(properties);
     pm = pmf.getPersistenceManager();
+
+    try {
+      prepareMetaDB();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   /**
@@ -70,7 +78,7 @@ public class UploadHandlerTest {
   public void clearTestDB() {
     try {
       pm.close();
-      DriverManager.getConnection("jdbc:derby:memory:test_db;drop=true");
+      DriverManager.getConnection("jdbc:derby:memory:sdbclient;drop=true");
     } catch (SQLException se) {
       if (!se.getSQLState().equals("08006")) {
         // SQLState 08006 indicates a success
@@ -79,15 +87,13 @@ public class UploadHandlerTest {
     }
   }
 
-  @Test
-  public void testUpload() throws Exception {
+  public void prepareMetaDB() throws Exception {
 
-    UploadHandler uploadHandler = new UploadHandler();
+    uploadHandler = new UploadHandler();
     uploadHandler.setHDFS_URL("hdfs://localhost:9000");
     uploadHandler.setHDFS_FILE_PATH("hdfs://localhost:9000/user/yifan/test.txt");
     uploadHandler.setSourceFile("src/test/resources/upload/employee.txt");
 
-    //TODO: create a tableMeta to test
     MetaStore metaDB = new MetaStore(pm);
 
     String dbName1 = "sdbclient";
@@ -103,6 +109,9 @@ public class UploadHandlerTest {
     String colName1 = "id";
     String colName2 = "name";
     String colName3 = "salary";
+    String colName4 = "rowId";
+    String colName5 = "R";
+    String colName6 = "S";
 
     ColumnMeta col1 = new ColumnMeta(dbName1.toUpperCase(),
             tblName1.toUpperCase(), colName1);
@@ -116,15 +125,34 @@ public class UploadHandlerTest {
     col3.setType(DataType.INT);
     //TODO: test with a sample column key
     col3.setColkey(new ColumnKey("1", "1"));
+    ColumnMeta col4 = new ColumnMeta(dbName1, tblName1.toUpperCase(),
+            colName4.toUpperCase());
+
+    col4.setSensitive(true);
+    col4.setType(DataType.INT);
+    col4.setColkey(new ColumnKey("1", "1"));
+    ColumnMeta col5 = new ColumnMeta(dbName1, tblName1.toUpperCase(),
+            colName5.toUpperCase());
+    col5.setSensitive(true);
+    col5.setType(DataType.INT);
+    col5.setColkey(new ColumnKey("1", "1"));
+    ColumnMeta col6 = new ColumnMeta(dbName1, tblName1.toUpperCase(),
+            colName6.toUpperCase());
+    col6.setSensitive(true);
+    col6.setType(DataType.INT);
+    col6.setColkey(new ColumnKey("1", "1"));
 
     metaDB.addCol(col1);
     metaDB.addCol(col2);
     metaDB.addCol(col3);
+    metaDB.addCol(col4);
+    metaDB.addCol(col5);
+    metaDB.addCol(col6);
 
-
+    uploadHandler.setMetaStore(metaDB);
 
   }
-  @Test
+//  @Test
   public void testGetBufferedReader() throws Exception {
     String sourceFile = ("src/test/resources/upload/employee.txt");
     BufferedReader bufferedReader = null;
@@ -142,4 +170,6 @@ public class UploadHandlerTest {
       e.printStackTrace();
     }
   }
+
+  
 }
