@@ -110,7 +110,9 @@ public class UploadHandler {
     String newLine = "";
     String[] columnValues = line.split(";");
 
+    //TODO: should programatically get db name
     DBMeta dbMeta = metaStore.getDB("sdbclient");
+    //TODO: should get the specific columns of that table instead of columns
     List<ColumnMeta> allCols = metaStore.getAllCols();
     BigInteger n = dbMeta.getN();
     BigInteger p = dbMeta.getP();
@@ -133,10 +135,9 @@ public class UploadHandler {
       }
       newLine = appendColumnString(newLine, columnIndex, plaintext);
     }
-
     //Adding rowId column
-//    BigInteger encryptedR = Crypto.PailierEncrypt(rowId, p, q);
-    //TODO: encrypt R well
+    //TODO: should encrypt R as well, uncomment the line below
+    //BigInteger encryptedR = Crypto.PailierEncrypt(rowId, p, q);
     BigInteger encryptedR = rowId;
     newLine = appendColumnString(newLine, columnValues.length, encryptedR);
 
