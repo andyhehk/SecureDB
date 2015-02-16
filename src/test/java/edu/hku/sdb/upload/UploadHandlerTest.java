@@ -108,9 +108,15 @@ public class UploadHandlerTest {
     */
 
     uploadHandler = new UploadHandler();
-    uploadHandler.setHDFS_URL("hdfs://localhost:9000");
-    uploadHandler.setHDFS_FILE_PATH("hdfs://localhost:9000/user/yifan/employee.txt");
+    uploadHandler.setHDFS_URL("file:///");
+    String homeDir = System.getenv("HOME");
+    uploadHandler.setHDFS_FILE_PATH("file://"+homeDir+"/employee.txt");
+
+//    uploadHandler.setHDFS_URL("hdfs://localhost:9000");
+//    uploadHandler.setHDFS_FILE_PATH("hdfs://localhost:9000/user/yifan/employee.txt");
+
     uploadHandler.setSourceFile("src/test/resources/upload/employee.txt");
+    uploadHandler.setLocalMode(true);
 
     MetaStore metaDB = new MetaStore(pm);
 

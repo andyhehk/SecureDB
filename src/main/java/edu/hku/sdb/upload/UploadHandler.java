@@ -21,6 +21,7 @@ public class UploadHandler {
   private String HDFS_URL;
   private String HDFS_FILE_PATH;
   private String sourceFile;
+  private boolean localMode;
   private FileSystem hdfs;
   //TODO: replace metaStore with DBMeta/TableMeta
   private MetaStore metaStore;
@@ -57,6 +58,13 @@ public class UploadHandler {
     this.sourceFile = sourceFile;
   }
 
+  public boolean isLocalMode() {
+    return localMode;
+  }
+
+  public void setLocalMode(boolean localMode) {
+    this.localMode = localMode;
+  }
 
   public void upload(){
     BufferedWriter bufferedWriter = getBufferedWriter();
@@ -72,8 +80,6 @@ public class UploadHandler {
       bufferedWriter.close();
       hdfs.close();
 
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -82,6 +88,9 @@ public class UploadHandler {
   private BufferedWriter getBufferedWriter() {
     BufferedWriter bufferedWriter = null;
     Configuration configuration = new Configuration();
+    if (localMode){
+      configuration.set("mapred.job.tracker", "local");
+    }
     try {
       hdfs = FileSystem.get(new URI(HDFS_URL), configuration);
       Path file = new Path(HDFS_FILE_PATH);
@@ -95,11 +104,7 @@ public class UploadHandler {
           }
       });
       bufferedWriter = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-    } catch (URISyntaxException e) {
-      e.printStackTrace();
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
+    } catch (URISyntaxException | IOException e) {
       e.printStackTrace();
     }
     return bufferedWriter;
@@ -130,8 +135,7 @@ public class UploadHandler {
         plaintext.setPlainText(columnValues[columnIndex]);
       }
       else {
-        IntegerPlaintext integerPlaintext = getIntegerPlaintext(columnValues[columnIndex], n, p, q, g, rowId, columnMeta);
-        plaintext = integerPlaintext;
+        plaintext = getIntegerPlaintext(columnValues[columnIndex], n, p, q, g, rowId, columnMeta);
       }
       newLine = appendColumnString(newLine, columnIndex, plaintext);
     }

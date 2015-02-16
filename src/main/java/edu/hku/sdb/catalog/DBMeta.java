@@ -40,6 +40,12 @@ public class DBMeta {
   // The big primary number n
   private BigInteger n = null;
 
+  // The big primary number p to generate n
+  private BigInteger p = null;
+
+  // The big primary number p to generate n
+  private BigInteger q = null;
+
   // The secrete number g
   private BigInteger g = null;
 
@@ -134,6 +140,22 @@ public class DBMeta {
    */
   public void setN(BigInteger n) {
     this.n = n;
+  }
+
+  public BigInteger getQ() {
+    return q;
+  }
+
+  public void setQ(BigInteger q) {
+    this.q = q;
+  }
+
+  public BigInteger getP() {
+    return p;
+  }
+
+  public void setP(BigInteger p) {
+    this.p = p;
   }
 
   /**
