@@ -15,6 +15,12 @@ import java.util.List;
 
 /**
  * Created by Eric Haibin Lin on 12/2/15.
+ * Encrypt and upload a plaintext file to HDFS
+ *
+ * Major tasks:
+ * 1. Read plaintext line by line
+ * 2. For every line, generate row-id, encrypt sensitive integer columns with row-id.
+ * 3. Write file to HDFS.
  */
 public class UploadHandler {
 
@@ -72,6 +78,7 @@ public class UploadHandler {
     try {
       bufferedReader = new BufferedReader(new FileReader(sourceFile));
       String line;
+      //Read and process plaintext line by line
       while ((line = bufferedReader.readLine()) != null) {
         String newLine = processLine(line);
         bufferedWriter.write(newLine);
@@ -85,6 +92,10 @@ public class UploadHandler {
     }
   }
 
+  /**
+   *
+   * @return a buffered writer for target file in HDFS
+   */
   private BufferedWriter getBufferedWriter() {
     BufferedWriter bufferedWriter = null;
     Configuration configuration = new Configuration();
@@ -94,10 +105,12 @@ public class UploadHandler {
     try {
       hdfs = FileSystem.get(new URI(HDFS_URL), configuration);
       Path file = new Path(HDFS_FILE_PATH);
-      //TODO: append to file instead of delete
+      //Delete the file if it already exists
+      //TODO: Better to append to the file?
       if (hdfs.exists(file)) {
         hdfs.delete(file, true);
       }
+      //Create file
       OutputStream os = hdfs.create(file,
         new Progressable() {
           public void progress() {
@@ -108,11 +121,6 @@ public class UploadHandler {
       e.printStackTrace();
     }
     return bufferedWriter;
-  }
-
-  //TODO: delete test method
-  public String processLineForTest(String line){
-    return processLine(line);
   }
 
   private String processLine(String line){
@@ -139,6 +147,7 @@ public class UploadHandler {
         plaintext.setPlainText(columnValues[columnIndex]);
       }
       else {
+        //For plaintext of integer type, initiate the object with columnKeys
         plaintext = getIntegerPlaintext(columnValues[columnIndex], n, p, q, g, rowId, columnMeta);
       }
       newLine = appendColumnString(newLine, columnIndex, plaintext);
@@ -159,6 +168,17 @@ public class UploadHandler {
     return newLine + "\n";
   }
 
+  /**
+   * Initiate a integerPlaintext object
+   * @param columnValue
+   * @param n
+   * @param p
+   * @param q
+   * @param g
+   * @param rowId
+   * @param columnMeta
+   * @return
+   */
   private IntegerPlaintext getIntegerPlaintext(String columnValue, BigInteger n, BigInteger p, BigInteger q, BigInteger g, BigInteger rowId, ColumnMeta columnMeta) {
     IntegerPlaintext integerPlaintext = new IntegerPlaintext();
     integerPlaintext.setPlainText(columnValue);
@@ -179,6 +199,13 @@ public class UploadHandler {
     return newLine;
   }
 
+  /**
+   * Append a new column value to line, separated by ";"
+   * @param newLine
+   * @param columnIndex 0 for the beginning of line
+   * @param plaintext
+   * @return
+   */
   private String appendColumnString(String newLine, int columnIndex, Object plaintext) {
     if (columnIndex != 0){
       newLine += ";";
@@ -187,6 +214,11 @@ public class UploadHandler {
     return newLine;
   }
 
+  /**
+   * Generates a positive random big integer less than n
+   * @param n
+   * @return
+   */
   private BigInteger generateRandomInt(BigInteger n){
     BigInteger r = null;
     while(true){

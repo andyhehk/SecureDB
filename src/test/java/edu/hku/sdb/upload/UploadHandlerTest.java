@@ -192,35 +192,16 @@ public class UploadHandlerTest {
 
   }
 
-  @Test
-  public void testUpload() throws Exception {
-    String encryptedLine = (uploadHandler.processLineForTest("1;James;4"));
-    String[] columnValues = encryptedLine.split(";");
-    BigInteger r = Crypto.PailierDecrypt(new BigInteger(columnValues[3]), new BigInteger(db1.getP()) , new BigInteger(db1.getQ()));
-    BigInteger itemKey = Crypto.generateItemKey(m1, x1, r, g,p,q);
-    BigInteger salaryDecrypted =  Crypto.decrypt(new BigInteger(columnValues[2]), itemKey, n);
-    assertEquals(new BigInteger("4"), salaryDecrypted);
-  }
+//  @Test
+//  public void testUpload() throws Exception {
+//    String encryptedLine = (uploadHandler.processLineForTest("1;James;4"));
+//    String[] columnValues = encryptedLine.split(";");
+//    BigInteger r = Crypto.PailierDecrypt(new BigInteger(columnValues[3]), new BigInteger(db1.getP()) , new BigInteger(db1.getQ()));
+//    BigInteger itemKey = Crypto.generateItemKey(m1, x1, r, g,p,q);
+//    BigInteger salaryDecrypted =  Crypto.decrypt(new BigInteger(columnValues[2]), itemKey, n);
+//    assertEquals(new BigInteger("4"), salaryDecrypted);
+//  }
 
-/*  @Test
-  public void testGetBufferedReader() throws Exception {
-    String sourceFile = ("src/test/resources/upload/employee.txt");
-    BufferedReader bufferedReader = null;
-    try {
-      bufferedReader = new BufferedReader(new FileReader(sourceFile));
-      String line;
-      while ((line = bufferedReader.readLine()) != null) {
-        String newLine = line;
-        assertNotNull(newLine);
-      }
-      bufferedReader.close();
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-  }
-*/
   @Test
   public void testUploadIntegrated(){
     uploadHandler.upload();

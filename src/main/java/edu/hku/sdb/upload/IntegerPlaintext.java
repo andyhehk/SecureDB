@@ -8,6 +8,7 @@ import java.math.BigInteger;
 
 /**
  * Created by Eric Haibin Lin on 14/2/15.
+ * An integer plaintext returns itself if it is not sensitive, returns encrypted value with supplied columnKey if so.
  */
 public class IntegerPlaintext extends AbstractPlaintext {
 
