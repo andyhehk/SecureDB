@@ -97,15 +97,15 @@ public class UploadHandlerTest {
 
   public void prepareMetaDB() throws Exception {
 
-    n = new BigInteger("35");
-    g = new BigInteger("2");
-    p = new BigInteger("7");
-    q = new BigInteger("5");
-    /*n = (new BigInteger("91056390710389826661362945896125780562083120966028947466819744421480611063788891569681707503066914102268385452352368991831195586814279365402707955380475412720505658218035093486944255102433792593309438648993776412638716311098144165230321872380587410143867387942045612725519865341003363677330210531214120466111"));
+//    n = new BigInteger("35");
+//    g = new BigInteger("2");
+//    p = new BigInteger("7");
+//    q = new BigInteger("5");
+    n = (new BigInteger("91056390710389826661362945896125780562083120966028947466819744421480611063788891569681707503066914102268385452352368991831195586814279365402707955380475412720505658218035093486944255102433792593309438648993776412638716311098144165230321872380587410143867387942045612725519865341003363677330210531214120466111"));
     g = (new BigInteger("526631133645616033980"));
     p = (new BigInteger("13381418623214727587437247106170095945191359410765179156151809065341458743599113643820767819224626539634002433392648336651723690747518211610218927601568823"));
     q = (new BigInteger("6804688895422554648792548642105479511973881515271617258279580587887409482982376538544184457823535138084697746276682826853000739663322061212950993288918457"));
-    */
+
 
     uploadHandler = new UploadHandler();
     uploadHandler.setHDFS_URL("file:///");
@@ -123,10 +123,10 @@ public class UploadHandlerTest {
     String dbName1 = "sdbclient";
     db1 = new DBMeta(dbName1);
 
-    db1.setN(n);
-    db1.setG(g);
-    db1.setP(p);
-    db1.setQ(q);
+    db1.setN(n.toString());
+    db1.setG(g.toString());
+    db1.setP(p.toString());
+    db1.setQ(q.toString());
 
     metaDB.addDB(db1);
 
@@ -192,15 +192,15 @@ public class UploadHandlerTest {
 
   }
 
-/*  @Test
+  @Test
   public void testUpload() throws Exception {
-    String encryptedLine = (uploadHandler.processLine("1;James;4"));
+    String encryptedLine = (uploadHandler.processLineForTest("1;James;4"));
     String[] columnValues = encryptedLine.split(";");
-    BigInteger r = Crypto.PailierDecrypt(new BigInteger(columnValues[3]), db1.getP(), db1.getQ());
+    BigInteger r = Crypto.PailierDecrypt(new BigInteger(columnValues[3]), new BigInteger(db1.getP()) , new BigInteger(db1.getQ()));
     BigInteger itemKey = Crypto.generateItemKey(m1, x1, r, g,p,q);
     BigInteger salaryDecrypted =  Crypto.decrypt(new BigInteger(columnValues[2]), itemKey, n);
     assertEquals(new BigInteger("4"), salaryDecrypted);
-  }*/
+  }
 
 /*  @Test
   public void testGetBufferedReader() throws Exception {

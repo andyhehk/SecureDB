@@ -117,7 +117,7 @@ public class Crypto {
 
 	/**
 	 * 
-	 * @param plaintext
+	 * @param ciphertext
 	 * @param p
 	 * @param q
 	 * @return decrypted value using Paillier encryption

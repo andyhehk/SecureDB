@@ -110,6 +110,10 @@ public class UploadHandler {
     return bufferedWriter;
   }
 
+  //TODO: delete test method
+  public String processLineForTest(String line){
+    return processLine(line);
+  }
 
   private String processLine(String line){
     String newLine = "";
@@ -119,10 +123,10 @@ public class UploadHandler {
     DBMeta dbMeta = metaStore.getDB("sdbclient");
     //TODO: should get the specific columns of that table instead of columns
     List<ColumnMeta> allCols = metaStore.getAllCols();
-    BigInteger n = dbMeta.getN();
-    BigInteger p = dbMeta.getP();
-    BigInteger q = dbMeta.getQ();
-    BigInteger g = dbMeta.getG();
+    BigInteger n = new BigInteger(dbMeta.getN());
+    BigInteger p = new BigInteger(dbMeta.getP());
+    BigInteger q = new BigInteger(dbMeta.getQ());
+    BigInteger g = new BigInteger(dbMeta.getG());
     BigInteger rowId = generateRandomInt(n);
 
     for (int columnIndex = 0; columnIndex < columnValues.length; columnIndex++){
@@ -140,9 +144,7 @@ public class UploadHandler {
       newLine = appendColumnString(newLine, columnIndex, plaintext);
     }
     //Adding rowId column
-    //TODO: should encrypt R as well, uncomment the line below
-    //BigInteger encryptedR = Crypto.PailierEncrypt(rowId, p, q);
-    BigInteger encryptedR = rowId;
+    BigInteger encryptedR = Crypto.PailierEncrypt(rowId, p, q);
     newLine = appendColumnString(newLine, columnValues.length, encryptedR);
 
     //Adding s column
@@ -188,8 +190,7 @@ public class UploadHandler {
   private BigInteger generateRandomInt(BigInteger n){
     BigInteger r = null;
     while(true){
-      //TODO: fix the bitLength of r
-      r = Crypto.generatePositiveRand(2);
+      r = Crypto.generatePositiveRand(1024);
       if (r.compareTo(BigInteger.ZERO) == 1 && r.compareTo(n) == -1) break;
     }
     return r;
