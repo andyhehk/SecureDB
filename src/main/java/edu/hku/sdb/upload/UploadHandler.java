@@ -106,7 +106,7 @@ public class UploadHandler {
       hdfs = FileSystem.get(new URI(HDFS_URL), configuration);
       Path file = new Path(HDFS_FILE_PATH);
       //Delete the file if it already exists
-      //TODO: Better to append to the file?
+      //TODO: Do we need to support appending to the file?
       if (hdfs.exists(file)) {
         hdfs.delete(file, true);
       }

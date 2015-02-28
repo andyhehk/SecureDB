@@ -26,7 +26,9 @@ public enum JoinOperator {
   RIGHT_SEMI_JOIN("RIGHT SEMI JOIN"),
   RIGHT_ANTI_JOIN("RIGHT ANTI JOIN"),
   FULL_OUTER_JOIN("FULL OUTER JOIN"),
-  CROSS_JOIN("CROSS JOIN");
+  CROSS_JOIN("CROSS JOIN"),
+  NULL_JOIN(" ");
+
 
   private final String description;
 

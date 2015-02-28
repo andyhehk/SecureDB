@@ -55,6 +55,11 @@ public class RewriterTest extends TestCase {
     this.parseDriver = new ParseDriver();
     this.stmtArraySimple = "CREATE TABLE employee (id int, age int, salary int ENC);";
     this.stmtArrayOneLevel = "select id, sum(price*quantity) from (select id, price, quantity from A JOIN B ) t group by id;";
+    try {
+      printVizTree(parseDriver.parse("SELECT a + b FROM T1 JOIN T2 ON T1.id = T2.id WHERE a > 1.0"));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
   }
 
   /**
@@ -81,18 +86,11 @@ public class RewriterTest extends TestCase {
     // }
     // assertTrue(true);
   }
-  //
-  // private void printVizTree(ASTNode tree) {
-  // TestUtility testUtility = new TestUtility(tree);
-  // System.out.println(testUtility.visualize());
-  // }
-  //
-  // private void doRewrite(String stmt) throws ParseException {
-  // ASTNode tree = parseDriver.parse(stmt.trim());
-  // // HiveRewriter hiveRewriter = new HiveRewriter(tree);
-  // // hiveRewriter.rewrite();
-  // // System.out.println("Input SQL: " + stmt);
-  // // System.out.println("Output SQL: " + hiveRewriter.prettyPrint());
-  // }
+
+  private void printVizTree(ASTNode tree) {
+    TestUtility testUtility = new TestUtility(tree);
+    System.out.println(testUtility.visualize());
+  }
+
 
 }
