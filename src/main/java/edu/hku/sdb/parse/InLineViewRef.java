@@ -26,13 +26,14 @@ public class InLineViewRef extends TableRef {
   public InLineViewRef() {
     super(null, null);
   }
-  
+
   /**
-   * @param tableName
+   *
    * @param alias
+   * @param queryStmt
    */
-  public InLineViewRef(String alia, QueryStmt queryStmt) {
-    super(null, alia);
+  public InLineViewRef(String alias, QueryStmt queryStmt) {
+    super(null, alias);
     this.queryStmt = queryStmt;
   }
 
