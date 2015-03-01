@@ -18,15 +18,11 @@
 
 package edu.hku.sdb.parse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.hku.sdb.catalog.MetaStore;
 
 public abstract class Expr extends TreeNode<Expr> implements ParseNode {
 
-  private final static Logger LOG = LoggerFactory.getLogger(Expr.class);
-
+  
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof Expr))
@@ -46,4 +42,6 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
       child.analyze(metaDB, fieldSources);
     }
   }
+  
+
 }

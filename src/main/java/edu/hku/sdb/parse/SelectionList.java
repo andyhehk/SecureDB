@@ -27,17 +27,17 @@ import edu.hku.sdb.catalog.MetaStore;
 
 import com.google.common.base.Joiner;
 
-
 public class SelectionList implements ParseNode {
 
-  private static final Logger LOG = LoggerFactory.getLogger(SelectionList.class);
-  
+  private static final Logger LOG = LoggerFactory
+      .getLogger(SelectionList.class);
+
   protected List<SelectionItem> itemList;
 
   public SelectionList() {
     itemList = new ArrayList<SelectionItem>();
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof SelectionList))
@@ -66,24 +66,43 @@ public class SelectionList implements ParseNode {
    * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.catalog.DBMeta)
    */
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
-    for(SelectionItem item : itemList)
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+      throws SemanticException {
+    for (SelectionItem item : itemList)
       item.analyze(metaDB, fieldSources);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   @Override
   public String toSql() {
-    
+
     List<String> items = new ArrayList<String>();
-    
-    for(SelectionItem item : itemList) {
+
+    for (SelectionItem item : itemList) {
       items.add(item.toSql());
     }
-    
+
     return Joiner.on(",").join(items);
-    
+
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+
+    for (SelectionItem item : itemList) {
+      if (item.involveSdbEncrytedCol())
+        return true;
+    }
+
+    return false;
   }
 }

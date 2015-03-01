@@ -46,13 +46,13 @@ public class SelectStmt extends QueryStmt {
   @Override
   public void analyze(MetaStore metaDB, ParseNode... fieldSources)
       throws SemanticException {
-    // Resolve the nested query first if any
+    // Resolve the nested queries and join clauses first if any.
     for (TableRef tblRef : tableRefs) {
       tblRef
           .analyze(metaDB, tableRefs.toArray(new ParseNode[tableRefs.size()]));
     }
 
-    // Resolve the table names of the selection items
+    // Resolve the table names of the selection items.
     selectList.analyze(metaDB,
         tableRefs.toArray(new ParseNode[tableRefs.size()]));
 
@@ -94,55 +94,55 @@ public class SelectStmt extends QueryStmt {
     
     // TODO Too verbose. Can we have better way to debug.
     if ((whereClause == null) != (selObj.whereClause == null)) {
-      String err = (whereClause == null) ? "Left where clause is null, while "
+      String info = (whereClause == null) ? "Left where clause is null, while "
           + "right clause is: " + selObj.whereClause : "Left where clause is: "
           + whereClause + ", while right clause is null";
-      LOG.debug(err);
+      LOG.debug(info);
       return false;
     } else if ((groupingExprs == null) != (selObj.groupingExprs == null)) {
-      String err = (groupingExprs == null) ? "Left group by clause is null, "
+      String info = (groupingExprs == null) ? "Left group by clause is null, "
           + "while right clause is: " + selObj.groupingExprs
           : "Left group by clause is: " + groupingExprs
               + ", while right clause is null";
-      LOG.debug(err);
+      LOG.debug(info);
       return false;
     } else if ((havingExpr == null) != (selObj.havingExpr == null)) {
-      String err = (havingExpr == null) ? "Left having clause is null, while "
+      String info = (havingExpr == null) ? "Left having clause is null, while "
           + "right clause is: " + selObj.havingExpr : "Left having clause is: "
           + havingExpr + ", while right clause is null";
-      LOG.debug(err);
+      LOG.debug(info);
       return false;
     } else if ((havingPred == null) != (selObj.havingPred == null)) {
-      String err = (havingPred == null) ? "Left having predicate is null, while "
+      String info = (havingPred == null) ? "Left having predicate is null, while "
           + "right predicate is: " + selObj.havingPred
           : "Left having predicate is: " + havingPred
               + ", while right predicate is null";
-      LOG.debug(err);
+      LOG.debug(info);
       return false;
     } else {
       if ((whereClause != null) && !whereClause.equals(selObj.whereClause)) {
-        String err = "Left where clause is: " + whereClause
+        String info = "Left where clause is: " + whereClause
             + ";Right where clause is: " + selObj.whereClause;
-        LOG.debug(err);
+        LOG.debug(info);
         return false;
       }
       if ((groupingExprs != null)
           && !groupingExprs.equals(selObj.groupingExprs)) {
-        String err = "Left group by clause is: " + groupingExprs
+        String info = "Left group by clause is: " + groupingExprs
             + ";Right group by clause is: " + selObj.groupingExprs;
-        LOG.debug(err);
+        LOG.debug(info);
         return false;
       }
       if ((havingExpr != null) && !havingExpr.equals(selObj.havingExpr)) {
-        String err = "Left having clause is: " + havingExpr
+        String info = "Left having clause is: " + havingExpr
             + ";Right having clause is: " + selObj.havingExpr;
-        LOG.debug(err);
+        LOG.debug(info);
         return false;
       }
       if ((havingPred != null) && !havingPred.equals(selObj.havingPred)) {
-        String err = "Left having predicate is: " + havingPred
+        String info = "Left having predicate is: " + havingPred
             + ";Right having predicate is: " + selObj.havingPred;
-        LOG.debug(err);
+        LOG.debug(info);
         return false;
       }
 
@@ -226,6 +226,7 @@ public class SelectStmt extends QueryStmt {
     this.havingExpr = havingExpr;
   }
 
+  @Override
   public String toSql() {
     StringBuffer sb = new StringBuffer();
 
@@ -255,6 +256,36 @@ public class SelectStmt extends QueryStmt {
       sb.append("HAVING " + havingExpr.toSql() + "\n");
 
     return sb.toString();
+  }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    if(selectList.involveSdbEncrytedCol()) {
+      return true;
+    }
+    
+    for(TableRef tblRef : tableRefs) {
+      if(tblRef.involveSdbEncrytedCol())
+        return true;
+    }
+    
+    if(whereClause.involveSdbEncrytedCol()) {
+      return true;
+    }
+    
+    for(Expr group : groupingExprs) {
+      if(group.involveSdbEncrytedCol()) 
+        return true;
+    }
+    
+    if(havingExpr.involveSdbEncrytedCol()) {
+      return true;
+    }
+    
+    return false;
   }
 
 }

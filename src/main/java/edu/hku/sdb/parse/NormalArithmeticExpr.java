@@ -90,4 +90,13 @@ public class NormalArithmeticExpr extends Expr {
     return op;
   }
 
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    return checkNotNull(getChild(0), "Left expression is null.").involveSdbEncrytedCol() || 
+        checkNotNull(getChild(1), "Right expression is null.").involveSdbEncrytedCol();
+  }
+
 }

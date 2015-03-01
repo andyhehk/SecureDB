@@ -74,4 +74,12 @@ public class SdbArithmeticExpr extends Expr {
     this.op = op;
   }
 
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    return true;
+  }
+
 }

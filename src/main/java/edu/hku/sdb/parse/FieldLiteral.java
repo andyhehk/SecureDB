@@ -337,11 +337,7 @@ public class FieldLiteral extends LiteralExpr {
    */
   @Override
   public String toSql() {
-    if (tblName.equals(""))
-      return name;
-
-    else
-      return tblName + "." + name;
+    return tblName.equals("") ? name : tblName + "." + name;
   }
 
   @Override
@@ -349,5 +345,13 @@ public class FieldLiteral extends LiteralExpr {
     return "tableName: " + tblName + ";" + "field name: " + name + ";"
         + "DataType: " + type + ";" + "isSensitive: " + Boolean.toString(isSen)
         + ";" + "Column Key: " + colKey;
+  }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    return isSen;
   }
 }

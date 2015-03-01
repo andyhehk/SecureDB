@@ -119,4 +119,12 @@ public class SelectionItem implements ParseNode {
     else
       return expr.toSql() + "AS" + alias;
   }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    return expr.involveSdbEncrytedCol();
+  }
 }

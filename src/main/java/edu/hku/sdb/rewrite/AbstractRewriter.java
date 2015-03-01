@@ -18,17 +18,63 @@
 
 package edu.hku.sdb.rewrite;
 
+import java.util.List;
+
 import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.parse.BaseTableRef;
+import edu.hku.sdb.parse.Expr;
+import edu.hku.sdb.parse.InLineViewRef;
 import edu.hku.sdb.parse.ParseNode;
+import edu.hku.sdb.parse.SelectStmt;
+import edu.hku.sdb.parse.SelectionList;
+import edu.hku.sdb.parse.TableRef;
 
 public abstract class AbstractRewriter {
 
   protected final DBMeta dbMeta;
-  
+
   public AbstractRewriter(DBMeta dbMeta) {
     this.dbMeta = dbMeta;
   }
-  
-  public abstract ParseNode rewrite(ParseNode query);
 
+  public abstract void rewrite(ParseNode parseTree) throws UnSupportedException;
+
+  /**
+   * Internal rewrite function. All rewriting should be involved by this
+   * function.
+   * 
+   * @param parseTree
+   * @return
+   */
+  protected void rewriteInternal(ParseNode parseTree)
+      throws UnSupportedException {
+
+    if (parseTree instanceof SelectStmt) {
+      rewriteSelStmt((SelectStmt) parseTree);
+    }
+  }
+
+  protected abstract void rewriteSelStmt(SelectStmt selStmt)
+      throws UnSupportedException;
+
+  protected abstract void rewriteSelList(SelectionList selList)
+      throws UnSupportedException;
+
+  protected abstract void rewriteTableRefs(List<TableRef> tblRefs)
+      throws UnSupportedException;
+
+  protected abstract void rewriteBaseTblRef(BaseTableRef tblRef)
+      throws UnSupportedException;
+
+  protected abstract void rewriteInLineViewRef(InLineViewRef inlineView)
+      throws UnSupportedException;
+
+  protected abstract void rewriteWhereClause(Expr whereClause)
+      throws UnSupportedException;
+
+  protected abstract void rewriteGroupByExprs(List<Expr> groupExprs)
+      throws UnSupportedException;
+
+  protected abstract void rewriteHavingExpr(Expr havingExpr)
+      throws UnSupportedException;
 }

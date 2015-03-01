@@ -32,7 +32,7 @@ public class BaseTableRef extends TableRef {
     super(checkNotNull(tableName, "Table Name is null."), checkNotNull(alias,
         "Alias is null."));
   }
-
+  
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof BaseTableRef))
@@ -50,10 +50,8 @@ public class BaseTableRef extends TableRef {
    */
   public void analyze(MetaStore metaDB, ParseNode... fieldParent)
       throws SemanticException {
-    
     if(onClause!=null)
       onClause.analyze(metaDB, fieldParent);
-
   }
 
   /*
@@ -84,8 +82,15 @@ public class BaseTableRef extends TableRef {
         sb.append(" Join " + tblName + " as " + alias + " ON "
             + onClause.toSql());
     }
-
     return sb.toString();
+  }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    return onClause.involveSdbEncrytedCol();
   }
 
 }

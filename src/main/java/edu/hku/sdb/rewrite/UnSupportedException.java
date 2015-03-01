@@ -13,32 +13,20 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *
  *******************************************************************************/
 
 package edu.hku.sdb.rewrite;
 
-import edu.hku.sdb.catalog.DBMeta;
-import edu.hku.sdb.parse.ParseNode;
+public class UnSupportedException extends RewriteException {
 
-public class HiveRewriter extends AbstractRewriter {
-
+  private static final long serialVersionUID = 1L;
+  private static final String message = "Current rewritter cannot support"
+      + " %s!";
+  
   /**
-   * @param dbMeta
+   * @param fieldName
    */
-  public HiveRewriter(DBMeta dbMeta) {
-    super(dbMeta);
+  public UnSupportedException(String fieldName) {
+    super(String.format(message, fieldName));
   }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * edu.hku.sdb.rewrite.AbstractRewriter#rewrite(edu.hku.sdb.parse.QueryStmt)
-   */
-  @Override
-  public ParseNode rewrite(ParseNode query) {
-    return query;
-  }
-
 }

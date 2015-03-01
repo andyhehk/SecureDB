@@ -18,7 +18,6 @@
 package edu.hku.sdb.rewrite;
 
 import edu.hku.sdb.parse.*;
-import edu.hku.sdb.rewrite.HiveRewriter;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;

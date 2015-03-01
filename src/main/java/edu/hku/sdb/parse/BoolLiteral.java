@@ -47,4 +47,13 @@ public class BoolLiteral extends LiteralExpr {
   public String toSql() {
     return Boolean.toString(value);
   }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    // TODO Auto-generated method stub
+    return false;
+  }
 }
