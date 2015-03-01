@@ -19,6 +19,4 @@ package edu.hku.sdb.parse;
 
 public abstract class QueryStmt extends StatementBase {
 
-
-
 }

@@ -20,14 +20,12 @@ package edu.hku.sdb.parse;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.parse.BinaryPredicate.BinOperator;
 import edu.hku.sdb.parse.NormalArithmeticExpr.Operator;
 
 public class SemanticAnalyzer extends BasicSemanticAnalyzer {
 
-  private DBMeta dbMeta;
   private final MetaStore metaDB;
 
   public SemanticAnalyzer(MetaStore metaDB) {
@@ -60,7 +58,8 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       parseTree = buildStmt(tree);
     }
 
-    parseTree.analyze(metaDB, (ParseNode) null);
+    if (parseTree != null)
+      parseTree.analyze(metaDB, (ParseNode) null);
 
     return parseTree;
   }
@@ -359,7 +358,8 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         binPred.addChild(buildDotExpr(child));
         continue;
       case HiveParser.TOK_TABLE_OR_COL:
-        binPred.addChild(new FieldLiteral("", child.getChild(0).getText(), null));
+        binPred
+            .addChild(new FieldLiteral("", child.getChild(0).getText(), null));
         continue;
       case HiveParser.BigintLiteral:
       case HiveParser.SmallintLiteral:
@@ -458,7 +458,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
 
     BaseTableRef baseTbl = new BaseTableRef(tblName, alias);
     baseTbl.setJoinOp(op);
-    
+
     return baseTbl;
   }
 
@@ -499,16 +499,22 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
 
     return onClause;
   }
-  
+
+  /**
+   * Construct a number literal.
+   * 
+   * @param tree
+   * @return
+   */
   private LiteralExpr buildNumLiteral(ASTNode tree) {
     LiteralExpr expr = null;
     String text = tree.getText();
-    
-    if(text.contains(".")) 
+
+    if (text.contains("."))
       expr = new FloatLiteral(text);
     else
       expr = new IntLiteral(text);
-    
+
     return expr;
   }
 }

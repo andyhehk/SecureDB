@@ -32,4 +32,12 @@ public class SdbCartesianExpr extends Expr {
     return null;
   }
 
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    return true;
+  }
+
 }

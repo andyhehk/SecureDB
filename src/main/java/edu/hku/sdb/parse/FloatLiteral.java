@@ -51,4 +51,13 @@ public class FloatLiteral extends LiteralExpr {
   public String toSql() {
     return Float.toString(value);
   }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    // TODO Auto-generated method stub
+    return false;
+  }
 }

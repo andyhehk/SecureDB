@@ -57,7 +57,8 @@ public class InLineViewRef extends TableRef {
    * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
    * )
    */
-  public void analyze(MetaStore metaDB, ParseNode... fieldParent) throws SemanticException {
+  public void analyze(MetaStore metaDB, ParseNode... fieldParent)
+      throws SemanticException {
     // TODO Auto-generated method stub
 
   }
@@ -85,6 +86,17 @@ public class InLineViewRef extends TableRef {
    */
   public void setQueryStmt(QueryStmt queryStmt) {
     this.queryStmt = queryStmt;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    return queryStmt.involveSdbEncrytedCol()
+        || onClause.involveSdbEncrytedCol();
   }
 
 }
