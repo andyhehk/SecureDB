@@ -20,6 +20,7 @@ package edu.hku.sdb.parse;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.hku.sdb.catalog.DBMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -255,6 +256,14 @@ public class SelectStmt extends QueryStmt {
       sb.append("HAVING " + havingExpr.toSql() + "\n");
 
     return sb.toString();
+  }
+
+  @Override
+  public void rewrite(DBMeta dbMeta){
+//    rewrite selectList;
+//    rewrite tableRefs;
+//    rewrite whereClause;
+    return;
   }
 
 }

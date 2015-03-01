@@ -20,6 +20,7 @@ package edu.hku.sdb.parse;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.hku.sdb.catalog.DBMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,4 +87,10 @@ public class SelectionList implements ParseNode {
     return Joiner.on(",").join(items);
     
   }
+
+  @Override
+  public void rewrite(DBMeta dbMeta) {
+
+  }
+
 }

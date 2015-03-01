@@ -17,8 +17,14 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
+import edu.hku.sdb.catalog.DBMeta;
+
 public abstract class QueryStmt extends StatementBase {
 
+  @Override
+  public void rewrite(DBMeta dbMeta){
+    return;
+  };
 
 
 }
