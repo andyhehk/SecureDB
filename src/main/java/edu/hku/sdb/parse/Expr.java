@@ -18,7 +18,6 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.DBMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,8 +46,4 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
       child.analyze(metaDB, fieldSources);
     }
   }
-
-  @Override
-  public void rewrite(DBMeta dbMeta){}
-
 }

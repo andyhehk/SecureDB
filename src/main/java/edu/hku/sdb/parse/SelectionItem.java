@@ -17,7 +17,6 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.DBMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,7 +119,4 @@ public class SelectionItem implements ParseNode {
     else
       return expr.toSql() + "AS" + alias;
   }
-
-  @Override
-  public void rewrite(DBMeta dbMeta){}
 }

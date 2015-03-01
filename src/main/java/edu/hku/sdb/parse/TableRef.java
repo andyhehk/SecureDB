@@ -17,8 +17,6 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.DBMeta;
-
 public abstract class TableRef implements ParseNode {
 
   // represents a table/view name.
@@ -154,8 +152,7 @@ public abstract class TableRef implements ParseNode {
   public void setLeftTblRef(TableRef leftTblRef) {
     this.leftTblRef = leftTblRef;
   }
-
-  @Override
-  public void rewrite(DBMeta dbMeta){}
+  
+  
   
 }

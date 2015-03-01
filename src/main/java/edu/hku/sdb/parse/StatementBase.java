@@ -17,12 +17,7 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.DBMeta;
-
 public abstract class StatementBase implements ParseNode {
 
   protected boolean isExplain = false;
-
-  @Override
-  public void rewrite(DBMeta dbMeta){}
 }

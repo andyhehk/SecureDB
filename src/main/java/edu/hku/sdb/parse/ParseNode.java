@@ -17,7 +17,6 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.MetaStore;
 
 public interface ParseNode {
@@ -43,7 +42,5 @@ public interface ParseNode {
    * @return SQL syntax corresponding to this node
    */
   public String toSql();
-
-  public void rewrite(DBMeta dbMeta);
 
 }
