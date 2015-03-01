@@ -39,4 +39,13 @@ public class UnionStmt extends QueryStmt {
     return null;
   }
 
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
 }

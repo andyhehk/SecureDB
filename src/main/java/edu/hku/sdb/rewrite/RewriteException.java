@@ -13,35 +13,22 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *
  *******************************************************************************/
-package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.MetaStore;
+package edu.hku.sdb.rewrite;
 
-public interface ParseNode {
-
-  /**
-   * Perform semantic analysis of node and all of its children. Throw exception
-   * if any errors found. Two major tasks:
-   * 
-   * 1. Resolve the table name of a field. It may throw ambiguous exception if
-   * the table name cannot be uniquely identified or not found exception if the
-   * table name cannot be resolved.
-   * 
-   * 2. Set the column keys of all sensitive columns.
-   * 
-   * @param metaDB
-   * @param fieldSources
-   * @throws SemanticException
-   */
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
-      throws SemanticException;
+public class RewriteException extends Exception {
 
   /**
-   * @return SQL syntax corresponding to this node
+   * Serial ID
    */
-  public String toSql();
+  private static final long serialVersionUID = 1L;
 
-  public boolean involveSdbEncrytedCol();
+  public RewriteException(String message) {
+    super(message);
+  }
+
+  public RewriteException(String message, Throwable throwable) {
+    super(message, throwable);
+  }
 }
