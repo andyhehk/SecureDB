@@ -314,6 +314,8 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       case HiveParser.TOK_TABLE_OR_COL:
         expr.addChild(new FieldLiteral("", child.getChild(0).getText(), null));
         continue;
+      case HiveParser.Number:
+        expr.addChild(new IntLiteral(child.getText()));
       }
     }
 
