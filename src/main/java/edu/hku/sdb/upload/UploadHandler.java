@@ -11,6 +11,7 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.CryptoPrimitive;
 import java.util.List;
 
 /**
@@ -135,7 +136,7 @@ public class UploadHandler {
     BigInteger p = new BigInteger(dbMeta.getP());
     BigInteger q = new BigInteger(dbMeta.getQ());
     BigInteger g = new BigInteger(dbMeta.getG());
-    BigInteger rowId = generateRandomInt(n);
+    BigInteger rowId = Crypto.generatePositiveRand(Crypto.ONE_THOUSAND_TWENTY_FOUR, n);
 
     for (int columnIndex = 0; columnIndex < columnValues.length; columnIndex++){
 
@@ -162,7 +163,7 @@ public class UploadHandler {
 
     //Adding r column
     int rColumnIndex = columnValues.length + 2;
-    BigInteger randomInt = generateRandomInt(n);
+    BigInteger randomInt = Crypto.generatePositiveRand(Crypto.ONE_THOUSAND_TWENTY_FOUR, n);
     newLine = appendHelperColumn(newLine, randomInt, allCols.get(rColumnIndex), n, p, q, g, rowId, rColumnIndex);
 
     return newLine + "\n";
@@ -212,20 +213,6 @@ public class UploadHandler {
     }
     newLine += plaintext.toString();
     return newLine;
-  }
-
-  /**
-   * Generates a positive random big integer less than n
-   * @param n
-   * @return
-   */
-  private BigInteger generateRandomInt(BigInteger n){
-    BigInteger r = null;
-    while(true){
-      r = Crypto.generatePositiveRand(1024);
-      if (r.compareTo(BigInteger.ZERO) == 1 && r.compareTo(n) == -1) break;
-    }
-    return r;
   }
 
 }

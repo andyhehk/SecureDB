@@ -11,6 +11,7 @@ import thep.paillier.exceptions.BigIntegerClassNotValid;
 public class Crypto {
 
 	public static int defaultCertainty = 10;
+  public static int ONE_THOUSAND_TWENTY_FOUR = 1024;
 
 	/**
 	 * 
@@ -51,6 +52,16 @@ public class Crypto {
 		return new BigInteger(numBits, new SecureRandom());
 	}
 
+  public static BigInteger generatePositiveRand(int numBits, BigInteger upperBound){
+    BigInteger r = null;
+    while(true){
+      r = new BigInteger(numBits, new SecureRandom());
+      //if rand is less than upperBound
+      if (r.compareTo(BigInteger.ZERO) == 1 && r.compareTo(upperBound) == -1) break;
+    }
+    return r;
+  }
+
 	/**
 	 * 
 	 * @param m
@@ -68,7 +79,7 @@ public class Crypto {
 		BigInteger totient = Crypto.evaluateTotient(p, q);
 		BigInteger power = r.multiply(x).mod(totient);
 
-		return g.modPow(power, n).multiply(m).mod(n);
+		return m.multiply(g.modPow(power, n)).mod(n);
 	}
 
 	/**
@@ -133,17 +144,17 @@ public class Crypto {
 		return null;
 	}
 
-	/* This function is not tested yet */
-	public static BigInteger[] keyUpdateClient(BigInteger ma, BigInteger mc,
-			BigInteger ms, BigInteger xa, BigInteger xc, BigInteger xs,
-			BigInteger p, BigInteger q) {
+
+  public static BigInteger[] keyUpdateClient(BigInteger ma, BigInteger mc,
+                                             BigInteger ms, BigInteger xa, BigInteger xc, BigInteger xs,
+                                             BigInteger p, BigInteger q){
 		BigInteger totient = Crypto.evaluateTotient(p, q);
 		BigInteger n = p.multiply(q);
 
 		BigInteger[] newPQ = new BigInteger[2];
-		BigInteger newP = xs.modInverse(n).multiply(xc.subtract(xa))
+		BigInteger newP = xs.modInverse(n).multiply(xc.subtract(xa).mod(totient))
 				.mod(totient);
-		BigInteger newQ = ms.modPow(newP, n).multiply(ma)
+		BigInteger newQ = ms.modPow(newP, n).mod(n).multiply(ma).mod(n)
 				.multiply(mc.modInverse(n)).mod(n);
 		newPQ[0] = newP;
 		newPQ[1] = newQ;

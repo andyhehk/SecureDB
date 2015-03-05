@@ -12,7 +12,7 @@ public class UDFHandler {
 	public static BigInteger keyUpdate(BigInteger a, BigInteger s,
 			BigInteger p, BigInteger q, BigInteger n) {
 
-		BigInteger result = s.modPow(p, n).multiply(a).multiply(q).mod(n);
+		BigInteger result = q.multiply(a).mod(n).multiply(s.modPow(p, n)).mod(n);
 		return result;
 
 	}
