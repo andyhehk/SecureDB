@@ -26,6 +26,7 @@ import org.antlr.stringtemplate.*;
 import edu.hku.sdb.parse.ASTNode;
 import edu.hku.sdb.parse.ParseDriver;
 import edu.hku.sdb.parse.ParseException;
+import edu.hku.sdb.util.TestUtility;
 
 /**
  * Unit test for simple App.

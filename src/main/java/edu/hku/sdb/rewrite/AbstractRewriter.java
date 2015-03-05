@@ -57,24 +57,24 @@ public abstract class AbstractRewriter {
   protected abstract void rewriteSelStmt(SelectStmt selStmt)
       throws UnSupportedException;
 
-  protected abstract void rewriteSelList(SelectionList selList)
-      throws UnSupportedException;
-
-  protected abstract void rewriteTableRefs(List<TableRef> tblRefs)
-      throws UnSupportedException;
-
-  protected abstract void rewriteBaseTblRef(BaseTableRef tblRef)
-      throws UnSupportedException;
-
-  protected abstract void rewriteInLineViewRef(InLineViewRef inlineView)
-      throws UnSupportedException;
-
-  protected abstract void rewriteWhereClause(Expr whereClause)
-      throws UnSupportedException;
-
-  protected abstract void rewriteGroupByExprs(List<Expr> groupExprs)
-      throws UnSupportedException;
-
-  protected abstract void rewriteHavingExpr(Expr havingExpr)
-      throws UnSupportedException;
+//  protected abstract void rewriteSelList(SelectionList selList)
+//      throws UnSupportedException;
+//
+//  protected abstract void rewriteTableRefs(List<TableRef> tblRefs)
+//      throws UnSupportedException;
+//
+//  protected abstract void rewriteBaseTblRef(BaseTableRef tblRef)
+//      throws UnSupportedException;
+//
+//  protected abstract void rewriteInLineViewRef(InLineViewRef inlineView)
+//      throws UnSupportedException;
+//
+//  protected abstract void rewriteWhereClause(Expr whereClause)
+//      throws UnSupportedException;
+//
+//  protected abstract void rewriteGroupByExprs(List<Expr> groupExprs, List<TableRef> tblRefs)
+//      throws UnSupportedException;
+//
+//  protected abstract void rewriteHavingExpr(Expr havingExpr)
+//      throws UnSupportedException;
 }

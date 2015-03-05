@@ -19,5 +19,6 @@ package edu.hku.sdb.catalog;
 
 public enum DataType {
   INT,
-  CHAR
+  CHAR,
+  UNKNOWN
 }

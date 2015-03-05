@@ -154,5 +154,4 @@ public abstract class TableRef implements ParseNode {
   }
   
   
-  
 }
