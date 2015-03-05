@@ -22,7 +22,7 @@ public class HiveRewriterTest {
 
   private SemanticAnalyzer testObj;
   private ParseDriver parser;
-  private HiveRewriter hiveRewriter;
+  private SdbSchemeRewriter sdbSchemeRewriter;
   private MetaStore metaStore;
   private DBMeta dbMeta;
 
