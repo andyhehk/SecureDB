@@ -154,7 +154,7 @@ public class UploadHandler {
       newLine = appendColumnString(newLine, columnIndex, plaintext);
     }
     //Adding rowId column
-    BigInteger encryptedR = Crypto.PailierEncrypt(rowId, p, q);
+    BigInteger encryptedR = Crypto.PaillierEncrypt(rowId, p, q);
     newLine = appendColumnString(newLine, columnValues.length, encryptedR);
 
     //Adding s column
