@@ -204,6 +204,10 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         tblRefs = buildJoinStmt(child,
             ParseUtils.JOIN_OPERATOR_MAP.get(child.getType()));
         continue;
+      //add a BaseTableRef if no join in encountered
+      case HiveParser.TOK_TABREF:
+        tblRefs.add(buildBaseTableRef(child, JoinOperator.NULL_JOIN));
+        continue;
       }
     }
 
@@ -273,7 +277,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         selectItem.setExpr(buildDotExpr(child));
         continue;
       case HiveParser.TOK_TABLE_OR_COL:
-        selectItem.setExpr(new FieldLiteral("", child.getText(), null));
+        selectItem.setExpr(new FieldLiteral("", child.getChildren().get(0).toString(), null));
         continue;
       case HiveLexer.Identifier:
         selectItem.setAlias(child.getText());
@@ -310,6 +314,8 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       case HiveParser.TOK_TABLE_OR_COL:
         expr.addChild(new FieldLiteral("", child.getChild(0).getText(), null));
         continue;
+      case HiveParser.Number:
+        expr.addChild(new IntLiteral(child.getText()));
       }
     }
 

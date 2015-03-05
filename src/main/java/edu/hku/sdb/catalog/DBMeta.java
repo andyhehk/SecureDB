@@ -17,11 +17,11 @@
 
 package edu.hku.sdb.catalog;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.jdo.annotations.Column;
 import javax.jdo.annotations.Join;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.PrimaryKey;
@@ -38,13 +38,24 @@ public class DBMeta {
   private List<TableMeta> tbls = new ArrayList<TableMeta>();
 
   // The big primary number n
-  private BigInteger n = null;
+  @Column(length=1024)
+  private String n = null;
+
+  // The big primary number p to generate n
+  @Column(length=512)
+  private String p = null;
+
+  // The big primary number p to generate n
+  @Column(length=512)
+  private String q = null;
 
   // The secrete number g
-  private BigInteger g = null;
+  @Column(length=1024)
+  private String g = null;
 
   // The random seed to generate row ids
-  private BigInteger seed = null;
+  @Column(length=1024)
+  private String seed = null;
 
   public static class DBPK extends Key {
 
@@ -124,7 +135,7 @@ public class DBMeta {
   /**
    * @return the n
    */
-  public BigInteger getN() {
+  public String getN() {
     return n;
   }
 
@@ -132,14 +143,30 @@ public class DBMeta {
    * @param n
    *          the n to set
    */
-  public void setN(BigInteger n) {
+  public void setN(String n) {
     this.n = n;
+  }
+
+  public String getQ() {
+    return q;
+  }
+
+  public void setQ(String q) {
+    this.q = q;
+  }
+
+  public String getP() {
+    return p;
+  }
+
+  public void setP(String p) {
+    this.p = p;
   }
 
   /**
    * @return the g
    */
-  public BigInteger getG() {
+  public String getG() {
     return g;
   }
 
@@ -147,14 +174,14 @@ public class DBMeta {
    * @param g
    *          the g to set
    */
-  public void setG(BigInteger g) {
+  public void setG(String g) {
     this.g = g;
   }
 
   /**
    * @return the seed
    */
-  public BigInteger getSeed() {
+  public String getSeed() {
     return seed;
   }
 
@@ -162,7 +189,7 @@ public class DBMeta {
    * @param seed
    *          the seed to set
    */
-  public void setSeed(BigInteger seed) {
+  public void setSeed(String seed) {
     this.seed = seed;
   }
 
