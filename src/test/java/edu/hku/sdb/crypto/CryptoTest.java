@@ -179,7 +179,7 @@ public class CryptoTest extends TestCase {
     BigInteger ma = Crypto.generatePositiveRand(1024, n);
     BigInteger xa = Crypto.generatePositiveRand(1024, n);
 
-    BigInteger plaintext = new BigInteger("100");
+    BigInteger plaintext = Crypto.generatePositiveRand(1024, n);
     BigInteger ak = Crypto.generateItemKey(ma,xa,r,g,p,q);
     BigInteger ae = Crypto.encrypt(plaintext,ak, n);
     assertEquals(plaintext, Crypto.decrypt(ae,ak,n));
@@ -219,6 +219,92 @@ public class CryptoTest extends TestCase {
 //    assertEquals(Crypto.decrypt(aPlusB, Crypto.generateItemKey(mc, xc, r, g, p, q), n), new BigInteger("22"));
   }
 
+  public void testKeyUpdateClient(){
+    //A prime number p
+    BigInteger p = new BigInteger("5");
+    //A prime number q
+    BigInteger q = new BigInteger("7");
+    BigInteger n = p.multiply(q);
+
+    //column key for column A
+    BigInteger ma = new BigInteger("2");
+    BigInteger xa = new BigInteger("2");
+
+    //column key for additional column S
+    BigInteger ms = new BigInteger("4");
+    BigInteger xs = new BigInteger("2");
+
+    //new column key C for key update operation
+    BigInteger mc = new BigInteger("6");
+    BigInteger xc = new BigInteger("4");
+
+    //generate new p, q for column A's keyUpdate operation, target column key is columnKey C
+    BigInteger pq_a[] = Crypto.keyUpdateClient(ma, mc, ms, xa, xc, xs, p, q);
+
+    //p = 18 * ( 4 - 2 ) | mod 24 = 18 * 2 | mod 24 = 36 mod 24 = 12
+    //q = 2 * 4^12 * 6 | mod 35 = (2 mod 35) * (1) * (6 mod 35) | mod 35 = 12 mod 35 = 12
+    assertEquals(new BigInteger("12"), pq_a[0]);
+    assertEquals(new BigInteger("12"), pq_a[1]);
+  }
+
+  public void testKeyUpdateClient2(){
+    //A prime number p
+    BigInteger p = new BigInteger("19");
+    //A prime number q
+    BigInteger q = new BigInteger("17");
+    //n = 323
+    BigInteger n = p.multiply(q);
+
+    //column key for column A
+    BigInteger ma = new BigInteger("12");
+    BigInteger xa = new BigInteger("3");
+
+    //column key for additional column S
+    BigInteger ms = new BigInteger("5");
+    BigInteger xs = new BigInteger("8");
+
+    //new column key C for key update operation
+    BigInteger mc = new BigInteger("9");
+    BigInteger xc = new BigInteger("11");
+
+    //generate new p, q for column A's keyUpdate operation, target column key is columnKey C
+    BigInteger pq_a[] = Crypto.keyUpdateClient(ma, mc, ms, xa, xc, xs, p, q);
+
+    //p = 202 * ( 11 - 3 ) | mod 288 = 202 * 8 | mod 288 = 1616 mod 288 = 176
+    //q = 12 * 5^176 * 36 | mod 323 = (12 mod 323) * (256) * (36 mod 323) | mod 323 = 126
+    assertEquals(new BigInteger("176"), pq_a[0]);
+    assertEquals(new BigInteger("126"), pq_a[1]);
+  }
+
+  public void testKeyUpdateClientLarge(){
+    //A prime number p
+    BigInteger p = Crypto.generateRandPrime();
+    //A prime number q
+    BigInteger q = Crypto.generateRandPrime();
+    //n = p * q
+    BigInteger n = p.multiply(q);
+    BigInteger totient = Crypto.evaluateTotient(p,q);
+
+    //column key for column A
+    BigInteger ma = Crypto.generatePositiveRand(1024, n);
+    BigInteger xa = Crypto.generatePositiveRand(1024, n);
+
+    //column key for additional column S
+    BigInteger ms = Crypto.generatePositiveRand(1024, n);
+    BigInteger xs = Crypto.generatePositiveRand(1024, n);
+
+    //new column key C for key update operation
+    BigInteger mc = Crypto.generatePositiveRand(1024, n);
+    BigInteger xc = Crypto.generatePositiveRand(1024, n);
+
+    //generate new p, q for column A's keyUpdate operation, target column key is columnKey C
+    BigInteger pq_a[] = Crypto.keyUpdateClient(ma, mc, ms, xa, xc, xs, p, q);
+
+    assertEquals(xs.modInverse(n).mod(totient).multiply( (xc.subtract(xa)).mod(totient) ).mod(totient) , pq_a[0]);
+    assertEquals(((ma.mod(n)).multiply(  ms.modPow(pq_a[0],n) ).multiply( mc.modInverse(n) )).mod(n), pq_a[1]);
+  }
+
+  //TODO change back to public
   public void testKeyUpdateSimple(){
     //A big prime number
     BigInteger p = new BigInteger("13381418623214727587437247106170095945191359410765179156151809065341458743599113643820767819224626539634002433392648336651723690747518211610218927601568823");
@@ -260,23 +346,23 @@ public class CryptoTest extends TestCase {
     BigInteger aUpdated = UDFHandler.keyUpdate(a, s, pq_a[0], pq_a[1], n);
 
     //abbreviation for numbers in the key update proof
-    //BigInteger grxc = g.modPow(r.multiply(xc).mod(totient),n).mod(n);
-    //BigInteger msp = ms.modPow(pq_a[0],n).mod(n);
-    //BigInteger msInverse = xs.modInverse(n).mod(n);
-    //System.out.println("\nPrint the value in the proof line by line");
-    //System.out.println("Ce * Ck");
-    //System.out.println("1  : " + aUpdated.multiply(ck).mod(n));
-    //System.out.println("3  : " + ma.multiply(msp).multiply(a).multiply(s.modPow(pq_a[0], n)).multiply(grxc).mod(n));
-    //System.out.println("4  : " + ma.multiply(msp).multiply(a).multiply(sk.modInverse(n).modPow(pq_a[0], n)).multiply(grxc).mod(n));
-    //System.out.println("6  : " + ma.multiply(msp).multiply(a).multiply(ms.multiply(g.modPow(r.multiply(xs).mod(totient), n)).modInverse(n).modPow(pq_a[0], n)).multiply(grxc).mod(n));
-    //System.out.println("7  : " + ma.multiply(a).multiply(g.modPow(r.multiply(xs).mod(totient), n).modInverse(n).modPow(pq_a[0], n)).multiply(grxc).mod(n));
-    //System.out.println("8a : " + ma.multiply(a).multiply(g.modPow(r.multiply(xs.multiply(msInverse)).       multiply(xc.subtract(xa)).mod(totient), n).modInverse(n)).multiply(grxc).mod(n));
-    //System.out.println("8b : " + ma.multiply(a).multiply(g.modPow(r.multiply(xs.multiply(msInverse).mod(n)).multiply(xc.subtract(xa)).mod(totient), n).modInverse(n)).multiply(grxc).mod(n));
-    //System.out.println("8c : " + ma.multiply(a).multiply(g.modPow(r.                                         multiply(xc.subtract(xa)).mod(totient), n).modInverse(n)).multiply(grxc).mod(n));
-    //System.out.println("Ae * (ma * grxa) ");
-    //System.out.println("9  : " + a.multiply(ma).mod(n).multiply( g.modPow(r.multiply(xa).mod( totient ), n)).mod(n));
-    //System.out.println("decrypt ae       : " + Crypto.decrypt(a, ak, n));
-    //System.out.println("decrypt updated a: " + Crypto.decrypt(aUpdated, ck, n));
+    BigInteger grxc = g.modPow(r.multiply(xc).mod(totient),n).mod(n);
+    BigInteger msp = ms.modPow(pq_a[0],n).mod(n);
+    BigInteger msInverse = xs.modInverse(n).mod(n);
+    System.out.println("\nPrint the value in the proof line by line");
+    System.out.println("Ce * Ck");
+    System.out.println("1  : " + aUpdated.multiply(ck).mod(n));
+    System.out.println("3  : " + ma.multiply(msp).multiply(a).multiply(s.modPow(pq_a[0], n)).multiply(grxc).mod(n));
+    System.out.println("4  : " + ma.multiply(msp).multiply(a).multiply(sk.modInverse(n).modPow(pq_a[0], n)).multiply(grxc).mod(n));
+    System.out.println("6  : " + ma.multiply(msp).multiply(a).multiply(ms.multiply(g.modPow(r.multiply(xs).mod(totient), n)).modInverse(n).modPow(pq_a[0], n)).multiply(grxc).mod(n));
+    System.out.println("7  : " + ma.multiply(a).multiply(g.modPow(r.multiply(xs).mod(totient), n).modInverse(n).modPow(pq_a[0], n)).multiply(grxc).mod(n));
+    System.out.println("8a : " + ma.multiply(a).multiply(g.modPow(r.multiply(xs.multiply(msInverse)).       multiply(xc.subtract(xa)).mod(totient), n).modInverse(n)).multiply(grxc).mod(n));
+    System.out.println("8b : " + ma.multiply(a).multiply(g.modPow(r.multiply(xs.multiply(msInverse).mod(n)).multiply(xc.subtract(xa)).mod(totient), n).modInverse(n)).multiply(grxc).mod(n));
+    System.out.println("8c : " + ma.multiply(a).multiply(g.modPow(r.                                         multiply(xc.subtract(xa)).mod(totient), n).modInverse(n)).multiply(grxc).mod(n));
+    System.out.println("Ae * (ma * grxa) ");
+    System.out.println("9  : " + a.multiply(ma).mod(n).multiply( g.modPow(r.multiply(xa).mod( totient ), n)).mod(n));
+    System.out.println("decrypt ae       : " + Crypto.decrypt(a, ak, n));
+    System.out.println("decrypt updated a: " + Crypto.decrypt(aUpdated, ck, n));
 
     assertEquals(Crypto.decrypt(a, ak, n), Crypto.decrypt(aUpdated, ck, n));
 
