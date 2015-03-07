@@ -47,7 +47,7 @@ public class BaseTableRefTest {
     // Same left table
     assertEquals(tbl2, tbl3);
     
-    BaseTableRef tbl4 = new BaseTableRef("T4", null);
+    BaseTableRef tbl4 = new BaseTableRef("T4", "");
     tbl3.setLeftTblRef(tbl4);
     
     // Different left table

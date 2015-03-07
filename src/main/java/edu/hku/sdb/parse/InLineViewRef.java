@@ -17,10 +17,19 @@
 
 package edu.hku.sdb.parse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.hku.sdb.catalog.MetaStore;
+
+import static com.google.common.base.Preconditions.*;
 
 public class InLineViewRef extends TableRef {
 
+  private static final Logger LOG = LoggerFactory
+      .getLogger(InLineViewRef.class);
+
+  
   protected QueryStmt queryStmt;
 
   public InLineViewRef() {
@@ -31,8 +40,8 @@ public class InLineViewRef extends TableRef {
    * @param tableName
    * @param alias
    */
-  public InLineViewRef(String alia, QueryStmt queryStmt) {
-    super(null, alia);
+  public InLineViewRef(String alias, QueryStmt queryStmt) {
+    super(null, checkNotNull(alias, "The alias of subquery is null."));
     this.queryStmt = queryStmt;
   }
 
@@ -41,25 +50,36 @@ public class InLineViewRef extends TableRef {
     if (!(obj instanceof InLineViewRef))
       return false;
 
-    if (!super.equals(obj))
-      return false;
-
     InLineViewRef viewObj = (InLineViewRef) obj;
 
-    return queryStmt.equals(viewObj.queryStmt);
+    if(!alias.equals(viewObj.alias)) {
+      String info = "Two alias are not equal for subquery: \n"
+          + "Left: " + toSql() 
+          + "Right: " + viewObj.toSql();
+      LOG.debug(info);
+      return false;
+    }
+    
+    if(!queryStmt.equals(viewObj.queryStmt)) {
+      String info = "Two subquery are not equal: \n"
+          + "Left: " + toSql() 
+          + "Right: " + viewObj.toSql();
+      LOG.debug(info);
+      return false;
+    }
+    
+    return true;
   }
 
-  /*
-   * (non-Javadoc)
+  /**
    * 
    * @see
    * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
    * )
    */
-  public void analyze(MetaStore metaDB, ParseNode... fieldParent)
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
       throws SemanticException {
-    // TODO Auto-generated method stub
-
+    queryStmt.analyze(metaDB, fieldSources);
   }
 
   /*
@@ -68,8 +88,11 @@ public class InLineViewRef extends TableRef {
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    StringBuffer sb = new StringBuffer();
+    
+    sb.append("(\n" + queryStmt.toSql() + ")" + " " + alias);
+    
+    return sb.toString();
   }
 
   /**

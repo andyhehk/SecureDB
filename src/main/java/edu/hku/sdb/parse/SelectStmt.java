@@ -62,9 +62,11 @@ public class SelectStmt extends QueryStmt {
           tableRefs.toArray(new ParseNode[tableRefs.size()]));
 
     // Resolve the table names of the grouping fields
+    // It must be called after selection item resolved their table names.
     if (groupingExprs != null)
       for (Expr expr : groupingExprs) {
-        expr.analyze(metaDB, tableRefs.toArray(new ParseNode[tableRefs.size()]));
+        expr.analyze(metaDB,
+            selectList.itemList.toArray(new ParseNode[tableRefs.size()]));
       }
 
     // Get the table name of the aggregation field.
@@ -91,7 +93,7 @@ public class SelectStmt extends QueryStmt {
     }
 
     SelectStmt selObj = (SelectStmt) obj;
-    
+
     // TODO Too verbose. Can we have better way to debug.
     if ((whereClause == null) != (selObj.whereClause == null)) {
       String info = (whereClause == null) ? "Left where clause is null, while "
@@ -146,8 +148,21 @@ public class SelectStmt extends QueryStmt {
         return false;
       }
 
-      return selectList.equals(selObj.selectList)
-          && tableRefs.equals(selObj.tableRefs);
+      if (!selectList.equals(selObj.selectList)) {
+        String info = "Two selection lists are not equal for SQLs: \n"
+            + "Left: " + toSql() + "Right: " + selObj.toSql();
+        LOG.debug(info);
+        return false;
+      }
+
+      if (!tableRefs.equals(selObj.tableRefs)) {
+        String info = "Two table lists are not equal for SQLs: \n" + "Left: "
+            + toSql() + "Right: " + selObj.toSql();
+        LOG.debug(info);
+        return false;
+      }
+
+      return true;
     }
   }
 
@@ -237,7 +252,13 @@ public class SelectStmt extends QueryStmt {
       tables.add(tbl.toSql());
     }
 
-    sb.append("FROM " + Joiner.on(" ").join(tables) + "\n");
+    String tblList = Joiner.on(" ").join(tables);
+    // In the case that there is only on table, the separator "," should be
+    // ignored.
+    if (tblList.charAt(tblList.length() - 1) == ',') {
+      tblList = tblList.substring(0, tblList.length() - 2);
+    }
+    sb.append("FROM " + tblList + "\n");
 
     if (whereClause != null)
       sb.append("WHERE " + whereClause.toSql() + "\n");
@@ -258,33 +279,35 @@ public class SelectStmt extends QueryStmt {
     return sb.toString();
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
    */
   @Override
   public boolean involveSdbEncrytedCol() {
-    if(selectList.involveSdbEncrytedCol()) {
+    if (selectList.involveSdbEncrytedCol()) {
       return true;
     }
-    
-    for(TableRef tblRef : tableRefs) {
-      if(tblRef.involveSdbEncrytedCol())
+
+    for (TableRef tblRef : tableRefs) {
+      if (tblRef.involveSdbEncrytedCol())
         return true;
     }
-    
-    if(whereClause.involveSdbEncrytedCol()) {
+
+    if (whereClause.involveSdbEncrytedCol()) {
       return true;
     }
-    
-    for(Expr group : groupingExprs) {
-      if(group.involveSdbEncrytedCol()) 
+
+    for (Expr group : groupingExprs) {
+      if (group.involveSdbEncrytedCol())
         return true;
     }
-    
-    if(havingExpr.involveSdbEncrytedCol()) {
+
+    if (havingExpr.involveSdbEncrytedCol()) {
       return true;
     }
-    
+
     return false;
   }
 
