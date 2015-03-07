@@ -12,13 +12,14 @@ public class Crypto {
 
 	public static int defaultCertainty = 10;
   public static int ONE_THOUSAND_TWENTY_FOUR = 1024;
+  public static int TWO_THOUSAND_FORTY_EIGHT = 2048;
 
 	/**
 	 * 
 	 * @return a random prime number with bit length = 512, certainty = 10
 	 */
 	public static BigInteger generateRandPrime() {
-		return generateRandPrime(512, defaultCertainty);
+		return generateRandPrime(ONE_THOUSAND_TWENTY_FOUR, defaultCertainty);
 	}
 
 	/**
@@ -48,24 +49,27 @@ public class Crypto {
 	 * @param numBits
 	 * @return a positive random number with specified number of bits
 	 */
-	public static BigInteger generatePositiveRand(int numBits) {
+	private static BigInteger generatePositiveRand(int numBits) {
 		return new BigInteger(numBits, new SecureRandom());
 	}
 
   /**
-   * Generates a positive random number, which is less than n and co-prime with n.
-   * @param numBits default usage: 1024 bits
-   * @param n
-   * @return a random positive big integer co-prime with n
+   * Generates a positive random number of 2048 bits, which is less than n, and co-prime with both n and totient(n).
+   * @param p
+   * @param q
+   * @return a random positive big integer co-prime with p,q & totient(p,q)
    */
-  public static BigInteger generatePositiveRand(int numBits, BigInteger n){
+  public static BigInteger generatePositiveRand(BigInteger p, BigInteger q){
+    BigInteger n = p.multiply(q);
+    BigInteger totient = Crypto.evaluateTotient(p, q);
     BigInteger r = null;
     while(true){
-      r = new BigInteger(numBits, new SecureRandom());
+      r = generatePositiveRand(TWO_THOUSAND_FORTY_EIGHT);
       try{
-        BigInteger rReverse = r.modInverse(n);
+        BigInteger rReverseN = r.modInverse(n);
+        BigInteger rReverseTotient = r.modInverse(totient);
       } catch (ArithmeticException e){
-        //r is not co-prime with n
+        //r is not co-prime with n or totient(n)
         continue;
       }
       //r is less than n and positive
@@ -131,7 +135,7 @@ public class Crypto {
 	public static BigInteger PaillierEncrypt(BigInteger plaintext, BigInteger p,
 			BigInteger q) {
 		try {
-			return new EncryptedInteger(plaintext, new PublicKey(1024,
+			return new EncryptedInteger(plaintext, new PublicKey(TWO_THOUSAND_FORTY_EIGHT,
 					p.multiply(q))).getCipherVal();
 		} catch (BigIntegerClassNotValid e) {
 			e.printStackTrace();
@@ -148,7 +152,7 @@ public class Crypto {
 	 */
 	public static BigInteger PaillierDecrypt(BigInteger ciphertext,
 			BigInteger p, BigInteger q) {
-		PrivateKey privateKey = new PrivateKey(1024, p, q);
+		PrivateKey privateKey = new PrivateKey(TWO_THOUSAND_FORTY_EIGHT, p, q);
 		try {
 			return new EncryptedInteger(ciphertext).decrypt(privateKey);
 		} catch (BigIntegerClassNotValid e) {
@@ -177,7 +181,7 @@ public class Crypto {
 		BigInteger n = p.multiply(q);
 
     //prepare numbers for p
-    BigInteger xsInverse = xs.modInverse(n).mod(totient);
+    BigInteger xsInverse = xs.modInverse(totient);
     BigInteger xcMinusXa = xc.subtract(xa).mod(totient);
 		BigInteger newP = (xsInverse.multiply(xcMinusXa)).mod(totient);
 

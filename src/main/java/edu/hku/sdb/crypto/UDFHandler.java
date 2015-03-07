@@ -65,8 +65,8 @@ public class UDFHandler {
    * @param b
    * @return a + b
    */
-	public static BigInteger integerAdd(BigInteger a, BigInteger b) {
-		return a.add(b);
+	public static BigInteger integerAdd(BigInteger a, BigInteger b, BigInteger n) {
+		return a.add(b).mod(n);
 	}
 	
 	
