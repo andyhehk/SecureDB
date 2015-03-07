@@ -117,7 +117,7 @@ public class SelectionItem implements ParseNode {
     if (alias.equals(""))
       return expr.toSql();
     else
-      return expr.toSql() + "AS" + alias;
+      return expr.toSql() + " AS " + alias;
   }
 
   /* (non-Javadoc)

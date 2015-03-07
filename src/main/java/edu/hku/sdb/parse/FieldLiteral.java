@@ -38,17 +38,18 @@ public class FieldLiteral extends LiteralExpr {
   private String tblName = "";
   private final String name;
   private DataType type;
-  private boolean isSen;
+  private boolean isSen = false;
+  private boolean isUp2date = false;
   private ColumnKey colKey;
 
   // It will be set after the analyze function is called.
   // It is used for query rewriting.
-  private Expr referedExpr;
+  private Expr referExpr;
 
   public FieldLiteral(String name, DataType type) {
     this.name = checkNotNull(name, "Field name is null.");
     // this.name.trim();
-    this.type = type;
+    this.type = checkNotNull(type, "Field type is null.");
     isSen = false;
   }
 
@@ -57,7 +58,7 @@ public class FieldLiteral extends LiteralExpr {
     this.tblName = checkNotNull(tbl, "Table name is null.");
     // this.name.trim();
     // this.tbl.trim();
-    this.type = type;
+    this.type = checkNotNull(type, "Field type is null.");
     isSen = false;
   }
 
@@ -65,7 +66,7 @@ public class FieldLiteral extends LiteralExpr {
       ColumnKey colKey) {
     this.name = checkNotNull(name, "Field name is null.");
     this.tblName = checkNotNull(tbl, "Table name is null.");
-    this.type = type;
+    this.type = checkNotNull(type, "Field type is null.");
     this.isSen = isSen;
     this.colKey = colKey;
   }
@@ -79,7 +80,12 @@ public class FieldLiteral extends LiteralExpr {
   @Override
   public void analyze(MetaStore metaDB, ParseNode... fieldSources)
       throws SemanticException {
-    // A field may refer to a selection item if it is in the having clause
+    // The analyze function has been called unless it is field from base table.
+    if (referExpr != null)
+      return;
+
+    // A field may refer to a selection item if it is in the group by or having
+    // clause
     List<SelectionItem> itemList = new ArrayList<SelectionItem>();
     // A field may refer to a column of a base table
     List<BaseTableRef> baseTbls = new ArrayList<BaseTableRef>();
@@ -102,40 +108,53 @@ public class FieldLiteral extends LiteralExpr {
       count += resolve(item);
 
       // This field is ambiguous.
-      if (count > 1)
-        throw new AmbiguousException(name);
+      if (count > 1) {
+        AmbiguousException e = new AmbiguousException(name);
+        LOG.error("One or more fields are ambiguous!", e);
+        throw e;
+      }
     }
 
     for (BaseTableRef tbl : baseTbls) {
       if (tblName.equals(""))
         count += resolve(metaDB, tbl.tblName, tbl.alias);
-      
+
       // When table name is specified.
       else if (tblName.equals(tbl.tblName))
         count += resolve(metaDB, tbl.tblName, tbl.alias);
 
       // This field is ambiguous.
-      if (count > 1)
-        throw new AmbiguousException(name);
+      if (count > 1) {
+        AmbiguousException e = new AmbiguousException(name);
+        LOG.error("One or more fields are ambiguous!", e);
+        throw e;
+      }
     }
 
     for (InLineViewRef view : inlineViews) {
       if (tblName.equals(""))
-        count += resolve(((SelectStmt) view.queryStmt).getSelectList().itemList);
-      
+        count += resolve(
+            ((SelectStmt) view.queryStmt).getSelectList().itemList, view.alias);
+
       // When table name is specified.
       else if (tblName.equals(view.alias))
-        count += resolve(((SelectStmt) view.queryStmt).getSelectList().itemList);
-      
+        count += resolve(
+            ((SelectStmt) view.queryStmt).getSelectList().itemList, view.alias);
+
       // This field is ambiguous.
-      if (count > 1)
-        throw new AmbiguousException(name);
+      if (count > 1) {
+        AmbiguousException e = new AmbiguousException(name);
+        LOG.error("One or more fields are ambiguous!", e);
+        throw e;
+      }
     }
 
     // Cannot resolve this field.
-    if (count == 0)
-      throw new UnableResolveException(name);
-
+    if (count == 0) {
+      UnableResolveException e = new UnableResolveException(name);
+      LOG.error("One or more fields cannot find its referred table!", e);
+      throw e;
+    }
   }
 
   /**
@@ -157,7 +176,7 @@ public class FieldLiteral extends LiteralExpr {
       type = colMeta.getType();
       isSen = colMeta.isSensitive();
       colKey = colMeta.getColkey();
-
+      isUp2date = true;
       count++;
     }
 
@@ -170,12 +189,16 @@ public class FieldLiteral extends LiteralExpr {
    * @param itemList
    * @return
    */
-  private int resolve(List<SelectionItem> itemList) {
+  private int resolve(List<SelectionItem> itemList, String viewAlias) {
     int count = 0;
 
     for (SelectionItem item : itemList) {
       count += resolve(item);
     }
+
+    // This field is referring to a selection item of the inline view.
+    if (count > 0)
+      tblName = viewAlias;
 
     return count;
   }
@@ -199,8 +222,12 @@ public class FieldLiteral extends LiteralExpr {
           type = field.type;
           isSen = field.isSen;
           colKey = field.colKey;
+
+          // remember the refer-relationship, it is used for query rewrite
+          isUp2date = true;
+          referExpr = field;
+          referExpr.addReferredBy(this);
           count++;
-          referedExpr = field;
         }
       }
     }
@@ -215,11 +242,18 @@ public class FieldLiteral extends LiteralExpr {
           type = field.type;
           isSen = field.isSen;
           colKey = field.colKey;
-          referedExpr = field;
+
+          // remember the refer-relationship, it is used for query rewrite
+          isUp2date = true;
+          referExpr = field;
+          referExpr.addReferredBy(this);
         }
       } else {
         // It is not a field literal, cannot determine if it is sensitive now.
-        referedExpr = item.getExpr();
+        // remember the refer-relationship, it is used for query rewrite
+        type = DataType.UNKNOWN;
+        referExpr = item.getExpr();
+        referExpr.addReferredBy(this);
       }
     }
 
@@ -233,10 +267,20 @@ public class FieldLiteral extends LiteralExpr {
 
     FieldLiteral fieldobj = (FieldLiteral) obj;
 
+    // Log messages are used for debug.
     if ((colKey == null) != (fieldobj.colKey == null)) {
       String err = (colKey == null) ? "Left column key is null, while "
           + "right column key is: " + fieldobj.colKey : "Left column is: "
           + colKey + ", while right column key is null";
+      LOG.debug(err);
+      return false;
+    }
+
+    if ((referExpr == null) != (fieldobj.referExpr == null)) {
+      String err = (referExpr == null) ? "Left referred field is null, while "
+          + "right referred field is: " + fieldobj.referExpr
+          : "Left referred field is: " + referExpr
+              + ", while right referred field is null";
       LOG.debug(err);
       return false;
     }
@@ -250,8 +294,18 @@ public class FieldLiteral extends LiteralExpr {
       }
     }
 
+    if (referExpr != null) {
+      if (!referExpr.equals(fieldobj.referExpr)) {
+        String err = "Left referred field is: " + referExpr
+            + ";Right referred field is: " + fieldobj.referExpr;
+        LOG.debug(err);
+        return false;
+      }
+    }
+
     return tblName.equals(fieldobj.getTbl()) && name.equals(fieldobj.getName())
-        && type.equals(fieldobj.getType()) && isSen == fieldobj.isSen();
+        && type.equals(fieldobj.getType()) && isSen == fieldobj.isSen()
+        && isUp2date == fieldobj.isUp2date();
   }
 
   /**
@@ -286,6 +340,13 @@ public class FieldLiteral extends LiteralExpr {
   }
 
   /**
+   * @return the type
+   */
+  public void setType(DataType type) {
+    this.type = checkNotNull(type, "Field type is null.");
+  }
+
+  /**
    * @return the isSen
    */
   public boolean isSen() {
@@ -301,10 +362,35 @@ public class FieldLiteral extends LiteralExpr {
   }
 
   /**
+   * @return the isUp2date
+   */
+  public boolean isUp2date() {
+    return isUp2date;
+  }
+
+  /**
+   * @param isUp2date
+   *          the isUp2date to set
+   */
+  public void setUp2date(boolean isUp2date) {
+    this.isUp2date = isUp2date;
+  }
+
+  /**
    * @return the colKey
    */
+  @Override
   public ColumnKey getColKey() {
     return colKey;
+  }
+
+  /**
+   * Update the column key if it is not up to date.
+   */
+  public void updateColKey() {
+    if (!isUp2date)
+      colKey = checkNotNull(referExpr, "Referred expression is null")
+          .getColKey();
   }
 
   /**
@@ -319,7 +405,7 @@ public class FieldLiteral extends LiteralExpr {
    * @return the referedExpr
    */
   public Expr getReferedExpr() {
-    return referedExpr;
+    return referExpr;
   }
 
   /**
@@ -327,7 +413,7 @@ public class FieldLiteral extends LiteralExpr {
    *          the referedExpr to set
    */
   public void setReferedExpr(Expr referedExpr) {
-    this.referedExpr = referedExpr;
+    this.referExpr = referedExpr;
   }
 
   /*
@@ -347,11 +433,17 @@ public class FieldLiteral extends LiteralExpr {
         + ";" + "Column Key: " + colKey;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see edu.hku.sdb.parse.Expr#involveSdbCol()
    */
   @Override
   public boolean involveSdbEncrytedCol() {
     return isSen;
+  }
+
+  public void notifyField() {
+    isUp2date = false;
   }
 }

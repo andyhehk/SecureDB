@@ -18,11 +18,68 @@
 
 package edu.hku.sdb.parse;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.MetaStore;
 
 public abstract class Expr extends TreeNode<Expr> implements ParseNode {
 
-  
+  // The list of field that refer to this expr. It is used for query rewrite.
+  protected List<FieldLiteral> referredByList = new ArrayList<FieldLiteral>();
+
+  /**
+   * @return the referredByList
+   */
+  public List<FieldLiteral> getReferredByList() {
+    return referredByList;
+  }
+
+  /**
+   * @param referredByList
+   *          the referredByList to set
+   */
+  public void setReferredByList(List<FieldLiteral> referredByList) {
+    this.referredByList = referredByList;
+  }
+
+  /**
+   * Add a new field refers to this expr.
+   * 
+   * @param field
+   */
+  public void addReferredBy(FieldLiteral field) {
+    referredByList.add(field);
+  }
+
+  /**
+   * Add a new field refers to this expr.
+   * 
+   * @param field
+   */
+  public void removeReferredBy(FieldLiteral field) {
+    for (Iterator<FieldLiteral> iter = referredByList.listIterator(); iter
+        .hasNext();) {
+      FieldLiteral a = iter.next();
+      if (a == field) {
+        iter.remove();
+        return;
+      }
+    }
+  }
+
+  /**
+   * Notify all fields refer to this expr that something has been changed.
+   */
+  public void notifyAllFields() {
+    for (FieldLiteral field : referredByList) {
+      field.setReferedExpr(this);
+      field.notifyField();
+    }
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof Expr))
@@ -36,12 +93,16 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
    * 
    */
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+      throws SemanticException {
     // Analyze each child
     for (Expr child : getChildren()) {
       child.analyze(metaDB, fieldSources);
     }
   }
-  
+
+  public ColumnKey getColKey() {
+    return null;
+  }
 
 }

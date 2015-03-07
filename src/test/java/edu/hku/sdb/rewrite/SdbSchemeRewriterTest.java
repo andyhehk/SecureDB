@@ -13,11 +13,9 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
+ *    
  *******************************************************************************/
-
-package edu.hku.sdb.parse;
-
-import static org.junit.Assert.*;
+package edu.hku.sdb.rewrite;
 
 import java.math.BigInteger;
 import java.sql.DriverManager;
@@ -30,30 +28,29 @@ import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 
+import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.ColumnMeta;
+import edu.hku.sdb.catalog.DataType;
+import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.parse.ParseNode;
+import edu.hku.sdb.parse.SemanticAnalyzer;
+import edu.hku.sdb.util.TestQuery;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.catalog.ColumnMeta;
-import edu.hku.sdb.catalog.DBMeta;
-import edu.hku.sdb.catalog.DataType;
-import edu.hku.sdb.catalog.MetaStore;
-import edu.hku.sdb.catalog.TableMeta;
-import edu.hku.sdb.parse.BinaryPredicate.BinOperator;
-import edu.hku.sdb.parse.NormalArithmeticExpr.Operator;
-import edu.hku.sdb.util.TestQuery;
-import edu.hku.sdb.util.TestUtility;
+/**
+ * Unit test for the rewriter based on sdb encryption scheme.
+ */
+public class SdbSchemeRewriterTest {
 
-public class SemanticAnalyzerTest {
-
-  private SemanticAnalyzer testObj;
-  private ParseDriver parser;
-
+  private AbstractRewriter testObj;
+  
   private String driver = "org.apache.derby.jdbc.EmbeddedDriver";
   private PersistenceManagerFactory pmf;
   private PersistenceManager pm;
-  
+
   public MetaStore prepareTestDB() {
     MetaStore metadb;
     try {
@@ -63,13 +60,37 @@ public class SemanticAnalyzerTest {
       e.printStackTrace();
     }
 
-    Properties properties = TestUtility.createProperty();
+    Properties properties = new Properties();
+    properties.setProperty("javax.jdo.option.ConnectionURL",
+        "jdbc:derby:memory:test_db;create=true");
+    properties.setProperty("javax.jdo.option.ConnectionDriverName",
+        "org.apache.derby.jdbc.EmbeddedDriver");
+    properties.setProperty("javax.jdo.option.ConnectionUserName", "");
+    properties.setProperty("javax.jdo.option.ConnectionPassword", "");
+    properties.setProperty("datanucleus.schema.autoCreateSchema", "true");
+    properties.setProperty("datanucleus.schema.autoCreateTables", "true");
+    properties.setProperty("datanucleus.schema.validateTables", "false");
+    properties.setProperty("datanucleus.schema.validateConstraints", "false");
 
     pmf = JDOHelper.getPersistenceManagerFactory(properties);
     pm = pmf.getPersistenceManager();
 
-    String dbName = TestQuery.dbName;
-    List<ColumnMeta> cols = TestQuery.createColMeta();
+    String dbName = "dummy_db";
+    List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
+
+    ColumnMeta col1 = new ColumnMeta(dbName, "T1", "id", DataType.INT, true,
+        new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+    ColumnMeta col2 = new ColumnMeta(dbName, "T1", "a", DataType.INT, true,
+        new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+    ColumnMeta col3 = new ColumnMeta(dbName, "T2", "id", DataType.INT, true,
+        new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+    ColumnMeta col4 = new ColumnMeta(dbName, "T2", "b", DataType.INT, true,
+        new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+
+    cols.add(col1);
+    cols.add(col2);
+    cols.add(col3);
+    cols.add(col4);
 
     metadb = new MetaStore(dbName, pm);
     metadb.addCols(cols);
@@ -83,8 +104,7 @@ public class SemanticAnalyzerTest {
   @Before
   public void prepare() {
     MetaStore metadb = prepareTestDB();
-    testObj = new SemanticAnalyzer(metadb);
-    parser = new ParseDriver();
+    testObj = new SdbSchemeRewriter(metadb.getDB("dummy_db"));
   }
 
   /**
@@ -104,61 +124,13 @@ public class SemanticAnalyzerTest {
   }
 
   @Test
-  public void testAnalyzeJoin() {
-    String command = "SELECT a + b FROM T1 JOIN T2 ON T1.id = T2.id WHERE a > 1.0";
-
+  public void testRewriteJoinGroupBy() {
+    ParseNode candidateTree = TestQuery.prepareAnsJoinGroupBy();
     try {
-      ASTNode astTree = parser.parse(command);
-
-      ParseNode resultTree;
-
-      ParseNode ansTree = TestQuery.prepareAnsJoin();
-      resultTree = testObj.analyze(astTree);
-
-      assertEquals(ansTree, resultTree);
-    } catch (Exception e) {
+      testObj.rewrite(candidateTree);
+    } catch (UnSupportedException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
-
-  @Test
-  public void testAnalyzeJoinGroupby() {
-    String command = "SELECT a, count(*) FROM T1 JOIN T2 ON T1.id = T2.id WHERE" +
-    		" b > 1.0 GROUP BY a";
-
-    try {
-      ASTNode astTree = parser.parse(command);
-
-      ParseNode resultTree;
-
-      ParseNode ansTree = TestQuery.prepareAnsJoinGroupBy();
-      resultTree = testObj.analyze(astTree);
-
-      assertEquals(ansTree, resultTree);
-    } catch (Exception e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-  }
-
-  @Test
-  public void testAnalyzeNested() {
-    String command = "SELECT a + b FROM (SELECT id, a*a as a FROM T1) temp1 "
-        + "JOIN T2 ON temp1.id = T2.id WHERE a > 1.0";
-
-    try {
-      ASTNode astTree = parser.parse(command);
-
-      ParseNode resultTree;
-
-      ParseNode ansTree = TestQuery.prepareAnsNested();
-      resultTree = testObj.analyze(astTree);
-
-      assertEquals(ansTree, resultTree);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
 }

@@ -19,6 +19,7 @@ package edu.hku.sdb.rewrite;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -68,21 +69,33 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   @Override
   protected void rewriteSelStmt(SelectStmt selStmt) throws UnSupportedException {
 
-    // Rewrite all subqueries before rewriting the other clauses.
-    rewriteTableRefs(selStmt.getTableRefs());
+    /***********************************************************************
+     * The rewrite steps are: 1. Rewrite sub-queries if any, also propagate the
+     * key updates to all fields in the outer query that refer to selection
+     * items in the sub queries.
+     * 
+     * 2. Check if there are join in the from clause. If yes, do key update for
+     * all fields in selection list and where clause if necessary. Also
+     * propagate the key update to the group by fields.
+     * 
+     * 3. Do rewrite for all selection items and exprs in where clause. The key
+     * update will propagate to the outer query if it is a sub query.
+     * 
+     * 4. Do rewrite for all group by exprs.
+     * 
+     * 5. Not support having clause, orderby clause at this moment.
+     * 
+     **********************************************************************/
+
+    rewriteTableRefs(selStmt.getTableRefs(), selStmt.getSelectList(),
+        selStmt.getWhereClause(), selStmt.getGroupingExprs());
+    rewriteWhereClause(selStmt.getWhereClause());
+    rewriteGroupByExprs(selStmt.getGroupingExprs(), selStmt.getTableRefs());
 
     rewriteSelList(selStmt.getSelectList());
-    rewriteWhereClause(selStmt.getWhereClause());
-    rewriteGroupByExprs(selStmt.getGroupingExprs());
     rewriteHavingExpr(selStmt.getHavingExpr());
   }
 
-  /**
-   * 
-   * @see edu.hku.sdb.rewrite.AbstractRewriter#rewriteSelList(edu.hku.sdb.parse.
-   *      SelectionList)
-   */
-  @Override
   protected void rewriteSelList(SelectionList selList)
       throws UnSupportedException {
     if (selList.involveSdbEncrytedCol()) {
@@ -90,32 +103,38 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     }
   }
 
-  /**
-   * 
-   * @see edu.hku.sdb.rewrite.AbstractRewriter#rewriteTableRefs(java.util.List)
-   */
-  @Override
-  protected void rewriteTableRefs(List<TableRef> tblRefs)
+  protected void rewriteTableRefs(List<TableRef> tblRefs,
+      SelectionList selList, Expr whereClause, List<Expr> groupExprs)
       throws UnSupportedException {
 
+    List<BaseTableRef> baseRefs = new ArrayList<BaseTableRef>();
+    List<InLineViewRef> inlineviews = new ArrayList<InLineViewRef>();
+    
     for (TableRef tblRef : tblRefs) {
       if (tblRef instanceof BaseTableRef) {
-        rewriteBaseTblRef((BaseTableRef) tblRef);
+        baseRefs.add((BaseTableRef) tblRef);
       } else if (tblRef instanceof InLineViewRef) {
-        rewriteInLineViewRef((InLineViewRef) tblRef);
+        inlineviews.add((InLineViewRef) tblRef);
       }
     }
+    
+    // Rewrite inlineview first.
+    for (InLineViewRef view : inlineviews) {
+      rewriteInLineViewRef(view);
+    }
+    
+    // Rewrite base table.
+    for (BaseTableRef baseTbl : baseRefs) {
+      rewriteBaseTblRef(baseTbl);
+    }
+    
   }
 
-  /**
-   * @throws UnSupportedException
-   * @see edu.hku.sdb.rewrite.AbstractRewriter#rewriteBaseTblRef(edu.hku.sdb.parse.BaseTableRef)
-   */
-  @Override
   protected void rewriteBaseTblRef(BaseTableRef tblRef)
       throws UnSupportedException {
     Expr onClause = tblRef.getOnClause();
 
+    // rewrite the join clause is any
     if (onClause != null) {
       if (onClause instanceof NormalBinPredicate) {
         tblRef
@@ -124,44 +143,32 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     }
   }
 
-  /**
-   * @see edu.hku.sdb.rewrite.AbstractRewriter#rewriteInLineViewRef(edu.hku.sdb.parse.InLineViewRef)
-   */
-  @Override
   protected void rewriteInLineViewRef(InLineViewRef inlineView)
       throws UnSupportedException {
     if (inlineView.involveSdbEncrytedCol()) {
-
+      rewriteSelStmt((SelectStmt)inlineView.getQueryStmt());
+      Expr onClause = inlineView.getOnClause();
+      
+      // rewrite the join clause is any
+      if (onClause != null) {
+        if (onClause instanceof NormalBinPredicate) {
+          inlineView
+              .setOnClause(rewriteNorBinPredicate((NormalBinPredicate) onClause));
+        }
+      }
     }
   }
 
-  /**
-   * 
-   * @see edu.hku.sdb.rewrite.AbstractRewriter#rewriteWhereClause(edu.hku.sdb.parse
-   *      .Expr)
-   */
-  @Override
   protected void rewriteWhereClause(Expr whereClause)
       throws UnSupportedException {
     // TODO Auto-generated method stub
   }
 
-  /**
-   * 
-   * @see edu.hku.sdb.rewrite.AbstractRewriter#rewriteGroupByExprs(java.util.List)
-   */
-  @Override
-  protected void rewriteGroupByExprs(List<Expr> groupExprs)
-      throws UnSupportedException {
+  protected void rewriteGroupByExprs(List<Expr> groupExprs,
+      List<TableRef> tblRefs) throws UnSupportedException {
     // TODO Auto-generated method stub
   }
 
-  /**
-   * 
-   * @see edu.hku.sdb.rewrite.AbstractRewriter#rewriteHavingExpr(edu.hku.sdb.parse
-   *      .Expr)
-   */
-  @Override
   protected void rewriteHavingExpr(Expr havingExpr) throws UnSupportedException {
     // TODO Auto-generated method stub
   }
@@ -177,12 +184,24 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
     // TODO support nested arithmetic expression.
     if (checkNotNull(left).hasChild(1) || checkNotNull(right).hasChild(1)) {
-      throw new UnSupportedException("nested arithmetic expression!");
+      UnSupportedException e = new UnSupportedException(
+          "nested arithmetic expression!");
+      LOG.error("There is unsupported expression!", e);
+      throw e;
     }
 
     // EE mode
     if (left.involveSdbEncrytedCol() && right.involveSdbEncrytedCol()) {
-
+      switch (arithExpr.getOp()) {
+      case MULTIPLY:
+        break;
+      case ADD:
+        break;
+      case SUBTRACT:
+        break;
+      default:
+        break;
+      }
     }
 
     // EC mode
@@ -204,7 +223,10 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
     // TODO support nested binary predicate.
     if (checkNotNull(left).hasChild(1) || checkNotNull(right).hasChild(1)) {
-      throw new UnSupportedException("nested binary predicate!");
+      UnSupportedException e = new UnSupportedException(
+          "nested binary predicate!");
+      LOG.error("There is unsupported expression!", e);
+      throw e;
     }
 
     SdbArithmeticExpr sdbArithExpr = new SdbArithmeticExpr();

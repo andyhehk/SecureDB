@@ -74,12 +74,12 @@ public class BaseTableRef extends TableRef {
     } else {
       if (onClause == null) {
         if(joinOp == null)
-          sb.append(tblName + " as " + alias +",");
+          sb.append(tblName + " AS " + alias +",");
         else
-          sb.append(tblName + " as " + alias);
+          sb.append(tblName + " AS " + alias);
       }
       else
-        sb.append(" Join " + tblName + " as " + alias + " ON "
+        sb.append("JOIN " + tblName + " AS " + alias + " ON "
             + onClause.toSql());
     }
     return sb.toString();
