@@ -53,7 +53,7 @@ public class SemanticAnalyzerTest {
   private String driver = "org.apache.derby.jdbc.EmbeddedDriver";
   private PersistenceManagerFactory pmf;
   private PersistenceManager pm;
-  
+
   public MetaStore prepareTestDB() {
     MetaStore metadb;
     try {
@@ -117,7 +117,6 @@ public class SemanticAnalyzerTest {
 
       assertEquals(ansTree, resultTree);
     } catch (Exception e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
