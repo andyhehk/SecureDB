@@ -45,7 +45,7 @@ public class StringLiteral extends LiteralExpr {
    */
   @Override
   public String toSql() {
-    return value;
+    return "\"" + value + "\"";
   }
 
   /* (non-Javadoc)
@@ -53,7 +53,6 @@ public class StringLiteral extends LiteralExpr {
    */
   @Override
   public boolean involveSdbEncrytedCol() {
-    // TODO Auto-generated method stub
     return false;
   }
 

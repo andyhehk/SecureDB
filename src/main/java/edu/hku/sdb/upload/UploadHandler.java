@@ -136,7 +136,7 @@ public class UploadHandler {
     BigInteger p = new BigInteger(dbMeta.getP());
     BigInteger q = new BigInteger(dbMeta.getQ());
     BigInteger g = new BigInteger(dbMeta.getG());
-    BigInteger rowId = Crypto.generatePositiveRand(Crypto.ONE_THOUSAND_TWENTY_FOUR, n);
+    BigInteger rowId = Crypto.generatePositiveRand(p, q);
 
     for (int columnIndex = 0; columnIndex < columnValues.length; columnIndex++){
 
@@ -163,7 +163,7 @@ public class UploadHandler {
 
     //Adding r column
     int rColumnIndex = columnValues.length + 2;
-    BigInteger randomInt = Crypto.generatePositiveRand(Crypto.ONE_THOUSAND_TWENTY_FOUR, n);
+    BigInteger randomInt = Crypto.generatePositiveRand(p, q);
     newLine = appendHelperColumn(newLine, randomInt, allCols.get(rColumnIndex), n, p, q, g, rowId, rColumnIndex);
 
     return newLine + "\n";

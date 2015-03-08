@@ -13,32 +13,58 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- *    
  *******************************************************************************/
+
 package edu.hku.sdb.parse;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import org.antlr.runtime.tree.*;
-import org.antlr.stringtemplate.*;
+import java.util.List;
 
-import edu.hku.sdb.parse.ASTNode;
+public class StarLiteral extends LiteralExpr {
 
-/**
- * Unit test for simple App.
- */
-public class TestUtility {
-  private ASTNode tree;
-
-  public TestUtility(ASTNode tree) {
-    this.tree = tree;
+  private final String name = "*";
+  private List<TableRef> tblRefs;
+  
+  public StarLiteral(List<TableRef> tblRefs) {
+    this.setTblRefs(tblRefs);
+  }
+  
+  /**
+   * @return the tblRefs
+   */
+  public List<TableRef> getTblRefs() {
+    return tblRefs;
   }
 
-  public String visualize() {
-    DOTTreeGenerator gen = new DOTTreeGenerator();
-    StringTemplate st = gen.toDOT(tree);
-    return st.toString();
+  /**
+   * @param tblRefs the tblRefs to set
+   */
+  public void setTblRefs(List<TableRef> tblRefs) {
+    this.tblRefs = tblRefs;
+  }
+
+  /**
+   * @return the name
+   */
+  public String getName() {
+    return name;
+  }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#toSql()
+   */
+  @Override
+  public String toSql() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  /* (non-Javadoc)
+   * @see edu.hku.sdb.parse.ParseNode#involveSdbEncrytedCol()
+   */
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    // TODO Auto-generated method stub
+    return false;
   }
 
 }

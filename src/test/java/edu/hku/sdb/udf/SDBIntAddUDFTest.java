@@ -19,7 +19,7 @@ public class SDBIntAddUDFTest extends TestCase {
 
 	public void testEvaluate1() {
 		assertEquals(new Text("25"),
-				udf.evaluate(new Text("9"), new Text("16")));
+				udf.evaluate(new Text("9"), new Text("16"), new Text("35")));
 	}
 
 }

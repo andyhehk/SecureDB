@@ -2,6 +2,7 @@ package edu.hku.sdb.rewrite;
 
 import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.parse.ParseDriver;
+import edu.hku.sdb.parse.ParseNode;
 import edu.hku.sdb.parse.SemanticAnalyzer;
 import org.junit.After;
 import org.junit.Before;
@@ -25,10 +26,15 @@ public class HiveRewriterTest {
   private SdbSchemeRewriter sdbSchemeRewriter;
   private MetaStore metaStore;
   private DBMeta dbMeta;
+  private SemanticAnalyzer semanticAnalyzer;
 
   private String driver = "org.apache.derby.jdbc.EmbeddedDriver";
   private PersistenceManagerFactory pmf;
   private PersistenceManager pm;
+
+  private String simpleSQL1 = "SELECT b FROM T2";
+  private String simpleSQLMulEE = "SELECT b * id AS C FROM T2";
+  private String simpleSQLMulEC = "SELECT b * 10 AS C FROM T2";
 
   /**
    * Prepare a in-memory database for testing
@@ -60,30 +66,35 @@ public class HiveRewriterTest {
     String dbName = "dummy_db";
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
-    ColumnMeta col1 = new ColumnMeta(dbName, "T1", "id", DataType.INT, true,
-            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta col2 = new ColumnMeta(dbName, "T1", "a", DataType.INT, true,
-            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
     ColumnMeta col3 = new ColumnMeta(dbName, "T2", "id", DataType.INT, true,
-            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+            new ColumnKey(new BigInteger("2"), new BigInteger("2")));
     ColumnMeta col4 = new ColumnMeta(dbName, "T2", "b", DataType.INT, true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
     ColumnMeta col5 = new ColumnMeta(dbName, "T2", "c");
 
-    cols.add(col1);
-    cols.add(col2);
     cols.add(col3);
     cols.add(col4);
     cols.add(col5);
 
+    String tableName = "T2";
+    TableMeta tableMeta = new TableMeta(dbName, tableName);
+    tableMeta.setCols(cols);
+    List<TableMeta> tbls = new ArrayList<TableMeta>();
+    tbls.add(tableMeta);
+
+    dbMeta = new DBMeta(dbName);
+    dbMeta.setTbls(tbls);
+    dbMeta.setN("35");
+    dbMeta.setP("5");
+    dbMeta.setQ("7");
+    dbMeta.setG("2");
+
     metaStore = new MetaStore(dbName, pm);
     metaStore.addCols(cols);
 
-
     testObj = new SemanticAnalyzer(metaStore);
     parser = new ParseDriver();
-//    hiveRewriter = new HiveRewriter(metadb);
-
+    sdbSchemeRewriter = new SdbSchemeRewriter(dbMeta);
   }
 
   @After

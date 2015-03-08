@@ -46,11 +46,11 @@ public class BaseTableRefTest {
     
     // Same left table
     assertEquals(tbl2, tbl3);
-    //TODO: fix this error.
-//    BaseTableRef tbl4 = new BaseTableRef("T4", null);
-//    tbl3.setLeftTblRef(tbl4);
-    
+
+    BaseTableRef tbl4 = new BaseTableRef("T4", "");
+    tbl3.setLeftTblRef(tbl4);
+
     // Different left table
-//    assertNotEquals(tbl2, tbl3);
+    assertNotEquals(tbl2, tbl3);
   }
 }

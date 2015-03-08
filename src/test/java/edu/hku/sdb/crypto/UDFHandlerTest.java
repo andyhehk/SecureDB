@@ -81,10 +81,10 @@ public class UDFHandlerTest extends TestCase {
     BigInteger q = Crypto.generateRandPrime();
     BigInteger n = q.multiply(p);
 
-    BigInteger new_p = Crypto.generatePositiveRand(1024, n);
-    BigInteger new_q = Crypto.generatePositiveRand(1024, n);
-    BigInteger ae = Crypto.generatePositiveRand(1024, n);
-    BigInteger se = Crypto.generatePositiveRand(1024, n);
+    BigInteger new_p = Crypto.generatePositiveRand(p, q);
+    BigInteger new_q = Crypto.generatePositiveRand(p, q);
+    BigInteger ae = Crypto.generatePositiveRand(p, q);
+    BigInteger se = Crypto.generatePositiveRand(p, q);
 
     assertEquals( ( (new_q.mod(n)).multiply (ae.mod(n)).multiply (se.modPow(new_p, n)) ).mod(n) , UDFHandler.keyUpdate(ae,se,new_p,new_q,n));
   }

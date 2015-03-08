@@ -44,7 +44,14 @@ public class SelectionList implements ParseNode {
       return false;
 
     SelectionList listObj = (SelectionList) obj;
-    return itemList.equals(listObj.itemList);
+    
+    boolean equal = itemList.equals(listObj.itemList);
+    
+    if(!equal) {
+      LOG.debug("Two selection lists are not equal!");
+    }
+    return equal;
+    
   }
 
   /**
@@ -86,7 +93,7 @@ public class SelectionList implements ParseNode {
       items.add(item.toSql());
     }
 
-    return Joiner.on(",").join(items);
+    return Joiner.on(", ").join(items);
 
   }
 

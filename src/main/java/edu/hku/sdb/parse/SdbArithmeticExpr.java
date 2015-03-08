@@ -17,6 +17,12 @@
 
 package edu.hku.sdb.parse;
 
+import com.google.common.base.Joiner;
+import edu.hku.sdb.catalog.ColumnKey;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class SdbArithmeticExpr extends Expr {
 
   public enum Operator {
@@ -39,6 +45,16 @@ public class SdbArithmeticExpr extends Expr {
 
   private Operator op;
 
+  private ColumnKey columnKey;
+
+  public ColumnKey getColumnKey() {
+    return columnKey;
+  }
+
+  public void setColumnKey(ColumnKey columnKey) {
+    this.columnKey = columnKey;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof SdbArithmeticExpr))
@@ -55,8 +71,11 @@ public class SdbArithmeticExpr extends Expr {
    */
   @Override
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    List<String> items = new ArrayList<String>();
+    for (Expr child : children) {
+      items.add(child.toSql());
+    }
+    return op + "(" + Joiner.on(",").join(items) + ")";
   }
 
   /**
