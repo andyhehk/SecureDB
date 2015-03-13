@@ -352,7 +352,6 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         expr.addChild(buildDotExpr(child));
         continue;
       case HiveParser.TOK_TABLE_OR_COL:
-        expr.addChild(new FieldLiteral("", child.getChild(0).getText(), null));
         expr.addChild(new FieldLiteral("", child.getChild(0).getText(),
             DataType.UNKNOWN));
         continue;

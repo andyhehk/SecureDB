@@ -19,30 +19,22 @@ package edu.hku.sdb.rewrite;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.hku.sdb.catalog.*;
+import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.parse.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.hku.sdb.catalog.DBMeta;
-import edu.hku.sdb.parse.BaseTableRef;
-import edu.hku.sdb.parse.Expr;
-import edu.hku.sdb.parse.InLineViewRef;
-import edu.hku.sdb.parse.NormalArithmeticExpr;
-import edu.hku.sdb.parse.NormalBinPredicate;
-import edu.hku.sdb.parse.ParseNode;
-import edu.hku.sdb.parse.SdbArithmeticExpr;
-import edu.hku.sdb.parse.SdbBinPredicate;
-import edu.hku.sdb.parse.SdbKeyUpdateExpr;
-import edu.hku.sdb.parse.SelectStmt;
-import edu.hku.sdb.parse.SelectionList;
-import edu.hku.sdb.parse.TableRef;
 
 public class SdbSchemeRewriter extends AbstractRewriter {
 
   private static final Logger LOG = LoggerFactory
       .getLogger(SdbSchemeRewriter.class);
+  private static final String ROW_ID_COLUMN_NAME = "row_id";
+  private static final String S_COLUMN_NAME = "s";
 
   /**
    * @param dbMeta
@@ -98,7 +90,15 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
   protected void rewriteSelList(SelectionList selList)
       throws UnSupportedException {
+
     if (selList.involveSdbEncrytedCol()) {
+
+      for (SelectionItem selItem : selList.getItemList()){
+        Expr expr = selItem.getExpr();
+        if (expr instanceof NormalArithmeticExpr) {
+          selItem.setExpr(rewriteNorArithExpr((NormalArithmeticExpr) expr));
+        }
+      }
 
     }
   }
@@ -127,14 +127,29 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     for (BaseTableRef baseTbl : baseRefs) {
       rewriteBaseTblRef(baseTbl);
     }
-    
+
+    //Add row-id field in selectionItem List
+    if (baseRefs.size() == 1){
+      SelectionItem selectionItem = new SelectionItem();
+      Expr expr = new FieldLiteral(baseRefs.get(0).getTableName(), ROW_ID_COLUMN_NAME, DataType.INT);
+      selectionItem.setExpr(expr);
+      selList.getItemList().add(selectionItem);
+    }
+    else {
+      //TODO in case of join, propagate keyUpdate to selList and whereClause
+      UnSupportedException e = new UnSupportedException(
+              "unsupported query when rewriting tableRefs(Join)!");
+      LOG.error("There is unsupported expression!", e);
+      throw e;
+    }
+
   }
 
   protected void rewriteBaseTblRef(BaseTableRef tblRef)
       throws UnSupportedException {
     Expr onClause = tblRef.getOnClause();
 
-    // rewrite the join clause is any
+    // rewrite the join clause if any
     if (onClause != null) {
       if (onClause instanceof NormalBinPredicate) {
         tblRef
@@ -173,6 +188,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     // TODO Auto-generated method stub
   }
 
+  //TODO method not tested yet
   protected Expr rewriteNorArithExpr(NormalArithmeticExpr arithExpr)
       throws UnSupportedException {
     // No SDB encrypted column.
@@ -193,10 +209,14 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     // EE mode
     if (left.involveSdbEncrytedCol() && right.involveSdbEncrytedCol()) {
       switch (arithExpr.getOp()) {
-      case MULTIPLY:
-        break;
-      case ADD:
-        break;
+      //SDB_MUL EE Mode
+      case MULTIPLY: {
+        return rewriteMultiEE(arithExpr);
+      }
+      //SDB_ADD EE Mode
+      case ADD:{
+        return rewriteAddEE(arithExpr);
+      }
       case SUBTRACT:
         break;
       default:
@@ -204,12 +224,43 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       }
     }
 
-    // EC mode
+    // EC mode or EP mode
     else if (left.involveSdbEncrytedCol() || right.involveSdbEncrytedCol()) {
+      if (arithExpr.getOp() == NormalArithmeticExpr.Operator.MULTIPLY){
+        //EC mode
+        if (left instanceof IntLiteral || right instanceof IntLiteral){
+          FieldLiteral fieldLiteral = (FieldLiteral) (left instanceof FieldLiteral ? left : right);
+          Integer u =  (left instanceof IntLiteral ? ((IntLiteral) left).getValue() : ((IntLiteral) right).getValue());
+          BigInteger m = fieldLiteral.getColKey().getM();
+          ColumnKey columnKey = new ColumnKey(m.multiply(new BigInteger(String.valueOf(u))), fieldLiteral.getColKey().getX());
+          fieldLiteral.setColKey(columnKey);
+          return fieldLiteral;
+        }
+        //EP mode
+        else {
+          //TODO: EP mode to be implemented
+          UnSupportedException e = new UnSupportedException(
+                  "EP mode in normal arithmetic expression!");
+          LOG.error("There is unsupported expression!", e);
+          throw e;
+        }
+      }
 
     }
 
     return null;
+  }
+
+  private ColumnKey sdbMultiGetColumnKeyEE(FieldLiteral left, FieldLiteral right) {
+    ColumnKey columnKey;
+    ColumnKey leftColumnKey =  left.getColKey();
+    ColumnKey rightColumnKey = right.getColKey();
+    BigInteger p = new BigInteger(dbMeta.getP());
+    BigInteger q = new BigInteger(dbMeta.getQ());
+    BigInteger m = leftColumnKey.getM().multiply(rightColumnKey.getM()).mod(new BigInteger(dbMeta.getN()));
+    BigInteger x = leftColumnKey.getX().add(rightColumnKey.getX()).mod(Crypto.evaluateTotient(p, q));
+    columnKey = new ColumnKey(m,x);
+    return columnKey;
   }
 
   protected Expr rewriteNorBinPredicate(NormalBinPredicate binPred)
@@ -258,6 +309,99 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
   private ParseNode rewriteEquiJoinEE(ParseNode parseTree) {
     return null;
+  }
+
+  private Expr rewriteMultiEE(NormalArithmeticExpr arithExpr){
+    Expr left = arithExpr.getChild(0);
+    Expr right = arithExpr.getChild(1);
+
+    SdbArithmeticExpr sdbArithmeticExpr = new SdbArithmeticExpr();
+    //set operator to sdb_mul
+    sdbArithmeticExpr.setOp(SdbArithmeticExpr.Operator.SDB_MUL);
+
+    //Key update for sdb_mul
+    ColumnKey columnKey = null;
+    if (left instanceof FieldLiteral && right instanceof FieldLiteral) {
+      columnKey = sdbMultiGetColumnKeyEE((FieldLiteral) left, (FieldLiteral) right);
+    }
+
+    //set parameter for sdb_mul
+    StringLiteral n = new StringLiteral(dbMeta.getN());
+    sdbArithmeticExpr.addChild(left);
+    sdbArithmeticExpr.addChild(right);
+    sdbArithmeticExpr.addChild(n);
+    sdbArithmeticExpr.setColumnKey(columnKey);
+    return sdbArithmeticExpr;
+  }
+
+  private Expr rewriteAddEE(NormalArithmeticExpr arithExpr) throws UnSupportedException {
+    Expr left = arithExpr.getChild(0);
+    Expr right = arithExpr.getChild(1);
+
+    SdbArithmeticExpr sdbArithmeticExpr = new SdbArithmeticExpr();
+    //set operator to sdb_add
+    sdbArithmeticExpr.setOp(SdbArithmeticExpr.Operator.SDB_ADD);
+    //generate a new column key for c
+    BigInteger p = new BigInteger(dbMeta.getP());
+    BigInteger q = new BigInteger(dbMeta.getQ());
+    BigInteger mc = Crypto.generatePositiveRand(p, q);
+    BigInteger xc = Crypto.generatePositiveRand(p, q);
+    ColumnKey columnKeyC = new ColumnKey(mc, xc);
+
+    if (left instanceof FieldLiteral && right instanceof FieldLiteral){
+      BigInteger ma = ((FieldLiteral) left).getColKey().getM();
+      BigInteger xa = ((FieldLiteral) left).getColKey().getX();
+      BigInteger mb = ((FieldLiteral) right).getColKey().getM();
+      BigInteger xb = ((FieldLiteral) right).getColKey().getX();
+      ColumnKey columnKeyS = getColumnKeyS(((FieldLiteral) right).getTbl());
+      BigInteger xs = columnKeyS.getX();
+      BigInteger ms = columnKeyS.getM();
+
+      //execute key update client protocol
+      BigInteger pq_a[] = Crypto.keyUpdateClient(ma, mc, ms, xa, xc, xs, p, q);
+      BigInteger pq_b[] = Crypto.keyUpdateClient(mb, mc, ms, xb, xc, xs, p, q);
+
+      //prepare parameter for sdb_add
+      Expr sField = new FieldLiteral(((FieldLiteral) left).getTbl(), S_COLUMN_NAME, DataType.INT, true, columnKeyS);
+      StringLiteral p_a = new StringLiteral(pq_a[0].toString());
+      StringLiteral q_a = new StringLiteral(pq_a[1].toString());
+      StringLiteral p_b = new StringLiteral(pq_b[0].toString());
+      StringLiteral q_b = new StringLiteral(pq_b[1].toString());
+      StringLiteral n = new StringLiteral(dbMeta.getN());
+
+      //set parameter for sdb_add(ae,be,se,pa,qa,pb,qb,n);
+      sdbArithmeticExpr.addChild(left);
+      sdbArithmeticExpr.addChild(right);
+      sdbArithmeticExpr.addChild(sField);
+      sdbArithmeticExpr.addChild(p_a);
+      sdbArithmeticExpr.addChild(q_a);
+      sdbArithmeticExpr.addChild(p_b);
+      sdbArithmeticExpr.addChild(q_b);
+      sdbArithmeticExpr.addChild(n);
+      sdbArithmeticExpr.setColumnKey(columnKeyC);
+      return sdbArithmeticExpr;
+    }
+    UnSupportedException e = new UnSupportedException(
+            "unsupported query when rewriting add EE!");
+    LOG.error("There is unsupported expression!", e);
+    throw e;
+  }
+
+  private ColumnKey getColumnKeyS(String tableName) {
+    ColumnKey columnKeyS = null;
+    for (TableMeta tableMeta : dbMeta.getTbls()){
+      if (tableMeta.getTblName().equals(tableName)){
+        for (ColumnMeta columnMeta: tableMeta.getCols()){
+          if (columnMeta.getColName().equals(S_COLUMN_NAME)){
+            BigInteger ms = columnMeta.getColkey().getM();
+            BigInteger xs = columnMeta.getColkey().getX();
+            columnKeyS = new ColumnKey(ms, xs);
+            break;
+          }
+        }
+      }
+    }
+    return columnKeyS;
   }
 
 }

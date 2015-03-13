@@ -30,7 +30,7 @@ public abstract class TableRef implements ParseNode {
   protected TableRef leftTblRef;
 
   public TableRef(String tblName, String alias) {
-    this.tblName = tblName;
+    this.tblName = tblName.toLowerCase();
     this.alias = alias;
   }
 

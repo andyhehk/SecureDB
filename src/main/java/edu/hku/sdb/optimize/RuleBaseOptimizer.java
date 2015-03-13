@@ -35,7 +35,10 @@ public class RuleBaseOptimizer extends Optimizer {
    * @see edu.hku.sdb.optimize.Optimizer#optimize(edu.hku.sdb.parse.ParseNode)
    */
   public PlanNode optimize(ParseNode parseTree) {
-    // TODO Auto-generated method stub
+    return optimizeInternal(parseTree);
+  }
+
+  private PlanNode optimizeInternal(ParseNode parseTree){
     return null;
   }
 
