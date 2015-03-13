@@ -17,6 +17,8 @@
 
 package edu.hku.sdb.plan;
 
+import edu.hku.sdb.exec.RowDesc;
+
 public class LocalDecryptDesc extends PlanNodeDesc {
 
 }

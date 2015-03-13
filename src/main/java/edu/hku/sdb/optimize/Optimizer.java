@@ -17,6 +17,23 @@
 
 package edu.hku.sdb.optimize;
 
+import edu.hku.sdb.exec.PlanNode;
+import edu.hku.sdb.parse.ParseNode;
+import edu.hku.sdb.parse.SelectStmt;
+import edu.hku.sdb.rewrite.UnSupportedException;
+
 public abstract class Optimizer {
+
+  abstract public PlanNode optimize(ParseNode parseTree) throws UnSupportedException;
+
+  protected PlanNode optimizeInternal(ParseNode parseTree) throws UnSupportedException {
+    if (parseTree instanceof SelectStmt) {
+      return optimizeSelStmt((SelectStmt) parseTree);
+    }
+    throw new UnSupportedException("unsupported parseTree to optimize");
+  }
+
+  protected abstract PlanNode optimizeSelStmt(SelectStmt selStmt)
+          throws UnSupportedException;
 
 }

@@ -19,17 +19,26 @@ package edu.hku.sdb.exec;
 
 import edu.hku.sdb.plan.RemoteSQLDesc;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
 
+  public RemoteSQL(String query, Connection connection, RowDesc rowDesc) {
+    nodeDesc.setRowDesc(rowDesc);
+    nodeDesc.setQuery(query);
+    nodeDesc.setConnection(connection);
+  }
+
   /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#init()
-   */
+     * (non-Javadoc)
+     *
+     * @see edu.hku.sdb.exec.PlanNode#init()
+     */
   @Override
   public void init() {
-    // TODO Auto-generated method stub
-
+    nodeDesc.init();
   }
 
   /*
@@ -39,8 +48,19 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
    */
   @Override
   public BasicTupleSlot nextTuple() {
-    // TODO Auto-generated method stub
-    return null;
+    TupleSlot tupleSlot = null;
+    try {
+      if (nodeDesc.getResultSet().next()) {
+        tupleSlot = new TupleSlot();
+        ArrayList<Object> row = new ArrayList<Object>();
+        for (BasicColumnDesc columnDesc : nodeDesc.getRowDesc().getSignature())
+          row.add(nodeDesc.getResultSet().getObject(columnDesc.getName()));
+        tupleSlot.setRow(row);
+      }
+    } catch (SQLException e1) {
+      e1.printStackTrace();
+    }
+    return tupleSlot;
   }
 
   /*
@@ -50,8 +70,17 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
    */
   @Override
   public void close() {
-    // TODO Auto-generated method stub
-
+    nodeDesc.close();
   }
 
+  @Override
+  public boolean equals(Object object){
+    if (!(object instanceof RemoteSQL)){
+      return false;
+    }
+    if (!nodeDesc.equals(((RemoteSQL) object).nodeDesc)){
+      return false;
+    }
+    return true;
+  }
 }

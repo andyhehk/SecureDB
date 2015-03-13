@@ -27,7 +27,6 @@ public class HiveRewriterTest {
   private SdbSchemeRewriter sdbSchemeRewriter;
   private MetaStore metaStore;
   private DBMeta dbMeta;
-  private SemanticAnalyzer semanticAnalyzer;
 
   private String driver = "org.apache.derby.jdbc.EmbeddedDriver";
   private PersistenceManagerFactory pmf;

@@ -17,9 +17,20 @@
 
 package edu.hku.sdb.exec;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class RowDesc {
 
-  private ArrayList<ColumnDesc> signature;
+  private List<BasicColumnDesc> signature;
+
+  public List<BasicColumnDesc> getSignature() {
+    return signature;
+  }
+
+  public void setSignature(List<BasicColumnDesc> signature) {
+    this.signature = signature;
+  }
+
+
+
 }

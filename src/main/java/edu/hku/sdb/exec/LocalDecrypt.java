@@ -17,9 +17,32 @@
 
 package edu.hku.sdb.exec;
 
+import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.crypto.Crypto;
 import edu.hku.sdb.plan.LocalDecryptDesc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
+
+  private static final Logger LOG = LoggerFactory
+          .getLogger(LocalDecrypt.class);
+
+  PlanNode child;
+
+  public PlanNode getChild() {
+    return child;
+  }
+
+  public void setChild(PlanNode child) {
+    this.child = child;
+  }
+
+  public LocalDecrypt(RowDesc rowDesc){
+    nodeDesc.setRowDesc(rowDesc);
+  }
 
   /*
    * (non-Javadoc)
@@ -39,8 +62,20 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
    */
   @Override
   public BasicTupleSlot nextTuple() {
-    // TODO Auto-generated method stub
-    return null;
+    BasicTupleSlot tupleSlot = child.nextTuple();
+
+    if (tupleSlot != null) {
+      List<Object> row = tupleSlot.nextTuple();
+      for (BasicColumnDesc columnDesc : nodeDesc.getRowDesc().getSignature()) {
+
+        //Decrypt with columnKey if sensitive
+        if (((ColumnDesc) columnDesc).isSensitive()) {
+          ColumnKey columnKey = ((ColumnDesc) columnDesc).getColumnKey();
+          //TODO: decrypt with rowId
+        }
+      }
+    }
+    return tupleSlot;
   }
 
   /*
@@ -54,4 +89,17 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
 
   }
 
+  @Override
+  public boolean equals(Object object){
+    if (!(object instanceof LocalDecrypt)){
+      return false;
+    }
+    else if ( (((LocalDecrypt) object).getChild() == null) != (this.getChild() == null)){
+      return false;
+    }
+    else if (! ((LocalDecrypt) object).getChild().equals(this.getChild())){
+      return false;
+    }
+    return true;
+  }
 }

@@ -17,24 +17,43 @@
 
 package edu.hku.sdb.exec;
 
-import java.util.ArrayList;
-import java.util.List;
+public class BasicColumnDesc {
 
-public class TupleSlot extends BasicTupleSlot {
+  protected String name;
+  protected String alias;
+  protected Class clazz;
 
-  private ArrayList<Object> row;
-
-  public void setRow(ArrayList<Object> row) {
-    this.row = row;
+  public String getName() {
+    return name;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.BasicTupleSlot#nextTuple()
-   */
-  @Override
-  public List<Object> nextTuple() {
-    return row;
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getAlias() {
+    return alias;
+  }
+
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
+
+  public Class getClazz() {
+    return clazz;
+  }
+
+  public void setClazz(Class clazz) {
+    this.clazz = clazz;
+  }
+
+  public BasicColumnDesc() {
+
+  }
+
+  public BasicColumnDesc(String name, String alias, Class clazz) {
+    this.name = name;
+    this.alias = alias;
+    this.clazz = clazz;
   }
 }

@@ -19,6 +19,8 @@ package edu.hku.sdb.optimize;
 
 import edu.hku.sdb.exec.PlanNode;
 import edu.hku.sdb.parse.ParseNode;
+import edu.hku.sdb.parse.SelectStmt;
+import edu.hku.sdb.rewrite.UnSupportedException;
 
 public class RuleBaseOptimizer extends Optimizer {
 
@@ -34,12 +36,15 @@ public class RuleBaseOptimizer extends Optimizer {
    * 
    * @see edu.hku.sdb.optimize.Optimizer#optimize(edu.hku.sdb.parse.ParseNode)
    */
-  public PlanNode optimize(ParseNode parseTree) {
+  public PlanNode optimize(ParseNode parseTree) throws UnSupportedException {
     return optimizeInternal(parseTree);
   }
 
-  private PlanNode optimizeInternal(ParseNode parseTree){
+  @Override
+  protected PlanNode optimizeSelStmt(SelectStmt selStmt) throws UnSupportedException {
+    //TODO: simple case: return LocalDecrypt PlanNode.
     return null;
   }
+
 
 }
