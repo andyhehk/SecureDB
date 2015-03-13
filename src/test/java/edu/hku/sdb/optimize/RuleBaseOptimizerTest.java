@@ -53,9 +53,10 @@ public class RuleBaseOptimizerTest {
 
     // prepare remoteSQL plan node
     prepareTestDBConnection();
-    String query = "SELECT t1.id from t1".toLowerCase();
-    RemoteSQL remoteSQL = new RemoteSQL(query, connection, rowDesc1);
-
+    String query = "SELECT t2.id \n" +
+            "from t2";
+    RemoteSQL remoteSQL = new RemoteSQL(query.toLowerCase(), rowDesc1);
+    remoteSQL.setConnection(connection);
 
 
     // prepare row descriptor for local decrypt
@@ -81,7 +82,8 @@ public class RuleBaseOptimizerTest {
     ColumnKey columnKey1 = new ColumnKey("2", "2");
     Expr expr1 = new FieldLiteral("t2", "id", DataType.INT, true, columnKey1);
     String alias1 = null;
-    SelectionItem selectionItem1 = new SelectionItem(expr1, alias1);
+    SelectionItem selectionItem1 = new SelectionItem();
+    selectionItem1.setExpr(expr1);
     selectionItemList.add(selectionItem1);
 
     // set [fieldLiteral] as selectionList
@@ -92,7 +94,8 @@ public class RuleBaseOptimizerTest {
 
     // t2 tableref field
     List<TableRef> tableRefList = new ArrayList<TableRef>();
-    TableRef tableRef1 = new BaseTableRef("t2", null);
+    //@See SelectStatemetn#toSql
+    TableRef tableRef1 = new BaseTableRef("t2 ", "");
     tableRefList.add(tableRef1);
     // set tableRef for select statement
     selectStmt.setTableRefs(tableRefList);
@@ -102,7 +105,7 @@ public class RuleBaseOptimizerTest {
 
   @After
   public void tearDown() throws Exception {
-    DriverManager.getConnection("jdbc:derby:memory:test_db;drop=true");
+
   }
 
   @Test

@@ -17,12 +17,18 @@
 
 package edu.hku.sdb.plan;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class RemoteSQLDesc extends PlanNodeDesc {
+
+  private static final Logger LOG = LoggerFactory
+          .getLogger(RemoteSQLDesc.class);
 
   private String query;
   private Connection connection;
@@ -84,9 +90,11 @@ public class RemoteSQLDesc extends PlanNodeDesc {
     if (!(object instanceof RemoteSQLDesc)){
       return false;
     }
-    if (!query.equals( ((RemoteSQLDesc) object).getQuery() )){
-      return false;
-    }
+//    if (!   query.replace("\n","").replace("\r","").equals( ((RemoteSQLDesc) object).getQuery().replace("\n","").replace("\r",""))){
+      LOG.debug("Comparing query\n" + query + " with:\n" + ((RemoteSQLDesc) object).getQuery());
+//      return false;
+//    }
+    //TODO: compare rowDescriptor
     return true;
   }
 

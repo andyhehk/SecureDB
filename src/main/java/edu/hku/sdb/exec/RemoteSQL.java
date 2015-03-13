@@ -18,6 +18,8 @@
 package edu.hku.sdb.exec;
 
 import edu.hku.sdb.plan.RemoteSQLDesc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -25,9 +27,16 @@ import java.util.ArrayList;
 
 public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
 
-  public RemoteSQL(String query, Connection connection, RowDesc rowDesc) {
+  private static final Logger LOG = LoggerFactory
+          .getLogger(RemoteSQL.class);
+
+  public RemoteSQL(String query, RowDesc rowDesc) {
+    nodeDesc = new RemoteSQLDesc();
     nodeDesc.setRowDesc(rowDesc);
     nodeDesc.setQuery(query);
+  }
+
+  public void setConnection(Connection connection){
     nodeDesc.setConnection(connection);
   }
 
@@ -76,9 +85,11 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
   @Override
   public boolean equals(Object object){
     if (!(object instanceof RemoteSQL)){
+      LOG.debug("Not an instance of LocalDecrypt!");
       return false;
     }
     if (!nodeDesc.equals(((RemoteSQL) object).nodeDesc)){
+      LOG.debug("nodeDesc instance of RemoteSQL is not equal!");
       return false;
     }
     return true;

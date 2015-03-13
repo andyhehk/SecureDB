@@ -17,12 +17,23 @@
 
 package edu.hku.sdb.optimize;
 
-import edu.hku.sdb.exec.PlanNode;
+import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.exec.*;
+import edu.hku.sdb.parse.Expr;
 import edu.hku.sdb.parse.ParseNode;
 import edu.hku.sdb.parse.SelectStmt;
+import edu.hku.sdb.parse.SelectionItem;
 import edu.hku.sdb.rewrite.UnSupportedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RuleBaseOptimizer extends Optimizer {
+
+  private static final Logger LOG = LoggerFactory
+          .getLogger(RuleBaseOptimizer.class);
 
   /**
    * 
@@ -42,8 +53,36 @@ public class RuleBaseOptimizer extends Optimizer {
 
   @Override
   protected PlanNode optimizeSelStmt(SelectStmt selStmt) throws UnSupportedException {
-    //TODO: simple case: return LocalDecrypt PlanNode.
-    return null;
+
+    String query = selStmt.toSql().toLowerCase();
+    RowDesc remoteRowDesc = new RowDesc();
+    RowDesc localDecryptRowDesc = new RowDesc();
+
+    List<BasicColumnDesc> basicColumnDescList = new ArrayList<BasicColumnDesc>();
+    List<BasicColumnDesc> columnDescList = new ArrayList<BasicColumnDesc>();
+
+    for (SelectionItem selectionItem : selStmt.getSelectList().getItemList()){
+      String alias = selectionItem.getAlias();
+      Expr expr = selectionItem.getExpr();
+      //TODO: get column name & clazz
+      String columnName = null;
+      Class clazz = String.class;
+      BasicColumnDesc basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
+      basicColumnDescList.add(basicColumnDesc);
+
+      ColumnKey columnKey = expr.getColKey();
+      boolean isSensitive = expr.involveSdbEncrytedCol();
+      ColumnDesc columnDesc = new ColumnDesc(columnName, alias, clazz, isSensitive, columnKey);
+      columnDescList.add(columnDesc);
+    }
+
+    remoteRowDesc.setSignature(basicColumnDescList);
+    localDecryptRowDesc.setSignature(columnDescList);
+
+    RemoteSQL remoteSQL = new RemoteSQL(query, remoteRowDesc);
+    LocalDecrypt localDecrypt = new LocalDecrypt(localDecryptRowDesc);
+    localDecrypt.setChild(remoteSQL);
+    return localDecrypt;
   }
 
 

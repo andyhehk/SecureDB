@@ -49,7 +49,8 @@ public class FieldLiteral extends LiteralExpr {
   public FieldLiteral(String name, DataType type) {
     this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
     // this.name.trim();
-    this.type = checkNotNull(type, "Field type is null.");
+    //this.type = checkNotNull(type, "Field type is null.");
+    this.type = type;
     isSen = false;
   }
 
@@ -58,7 +59,8 @@ public class FieldLiteral extends LiteralExpr {
     this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
     // this.name.trim();
     // this.tbl.trim();
-    this.type = checkNotNull(type, "Field type is null.");
+    //this.type = checkNotNull(type, "Field type is null.");
+    this.type = type;
     isSen = false;
   }
 
@@ -66,7 +68,8 @@ public class FieldLiteral extends LiteralExpr {
       ColumnKey colKey) {
     this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
     this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
-    this.type = checkNotNull(type, "Field type is null.");
+    //this.type = checkNotNull(type, "Field type is null.");
+    this.type = type;
     this.isSen = isSen;
     this.colKey = colKey;
   }

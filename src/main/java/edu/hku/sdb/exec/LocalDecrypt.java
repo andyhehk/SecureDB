@@ -41,6 +41,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
   }
 
   public LocalDecrypt(RowDesc rowDesc){
+    nodeDesc = new LocalDecryptDesc();
     nodeDesc.setRowDesc(rowDesc);
   }
 
@@ -92,12 +93,15 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
   @Override
   public boolean equals(Object object){
     if (!(object instanceof LocalDecrypt)){
+      LOG.debug("Not an instance of LocalDecrypt!");
       return false;
     }
     else if ( (((LocalDecrypt) object).getChild() == null) != (this.getChild() == null)){
+      LOG.debug("child instance of LocalDecrypt is not equal (one of them is null)!");
       return false;
     }
     else if (! ((LocalDecrypt) object).getChild().equals(this.getChild())){
+      LOG.debug("child instance of LocalDecrypt is not equal!");
       return false;
     }
     return true;

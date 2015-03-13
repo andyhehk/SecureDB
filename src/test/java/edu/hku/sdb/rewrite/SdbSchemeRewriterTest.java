@@ -129,7 +129,6 @@ public class SdbSchemeRewriterTest {
     try {
       testObj.rewrite(candidateTree);
     } catch (UnSupportedException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
