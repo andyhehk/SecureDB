@@ -17,11 +17,29 @@
 
 package edu.hku.sdb.exec;
 
-import edu.hku.sdb.connect.ResultSet;
+import edu.hku.sdb.connect.SdbResultSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class Executor {
 
-  public void execute(PlanNode plan, ExecutionState eState, ResultSet resultSet) {
+  private static final Logger LOG = LoggerFactory
+          .getLogger(Executor.class);
+
+  public void execute(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
+
+    List<Object[]> resultList = resultSet.getTuple();
+
+    while (plan.nextTuple() != null){
+      BasicTupleSlot basicTupleSlot = plan.nextTuple();
+      resultList.add(basicTupleSlot.nextTuple().toArray());
+    }
+
+    resultSet.setTuple(resultList);
+
+    LOG.debug(resultList.size() + " records computed, saved in resultSet");
 
   }
 }

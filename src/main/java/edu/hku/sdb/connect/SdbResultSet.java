@@ -20,6 +20,7 @@ package edu.hku.sdb.connect;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -27,21 +28,41 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
     Serializable {
 
   private static final long serialVersionUID = 127L;
-  private List<String[]> tuple;
+
+  public List<Object[]> getTuple() {
+    return tuple;
+  }
+
+  public void setTuple(List<Object[]> tuple) {
+    this.tuple = tuple;
+  }
+
+  private List<Object[]> tuple;
+  private int index;
 
   public SdbResultSet() throws RemoteException {
     super();
-    // TODO auto generated code
+    tuple = new ArrayList<>();
+    index = 0;
   }
 
-  // TODO to be implemented
-  public void next() throws RemoteException {
-    return;
+  public boolean next() throws RemoteException {
+    if (index >= tuple.size()){
+      return false;
+    }
+    else{
+      index ++;
+    }
+    return true;
   };
 
   // TODO to be implemented
   public void close() throws RemoteException {
     return;
   };
+
+  public String getString(int columnIndex) throws RemoteException{
+    return (String) tuple.get(index)[columnIndex];
+  }
 
 }

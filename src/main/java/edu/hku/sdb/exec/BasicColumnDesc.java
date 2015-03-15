@@ -17,7 +17,12 @@
 
 package edu.hku.sdb.exec;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class BasicColumnDesc {
+
+  private static final Logger LOG = LoggerFactory.getLogger(BasicColumnDesc.class);
 
   protected String name;
   protected String alias;
@@ -47,13 +52,31 @@ public class BasicColumnDesc {
     this.clazz = clazz;
   }
 
-  public BasicColumnDesc() {
-
-  }
-
   public BasicColumnDesc(String name, String alias, Class clazz) {
     this.name = name;
     this.alias = alias;
     this.clazz = clazz;
+  }
+
+  @Override
+  public boolean equals(Object object){
+    if (!(object instanceof BasicColumnDesc)){
+      LOG.debug(object.getClass() + " object is not an instance of " + this.getClass());
+      return  false;
+    }
+
+    if (!name.equals(((BasicColumnDesc) object).getName())){
+      LOG.debug("name is not equal!");
+      return false;
+    }
+    if (!clazz.equals(((BasicColumnDesc) object).getClazz())){
+      LOG.debug("clazz is not equal!");
+      return false;
+    }
+    if (!alias.equals(((BasicColumnDesc) object).getAlias())) {
+      LOG.debug("alias is not equal!");
+      return false;
+    }
+    return true;
   }
 }

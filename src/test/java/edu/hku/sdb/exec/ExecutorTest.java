@@ -1,6 +1,7 @@
 package edu.hku.sdb.exec;
 
 import edu.hku.sdb.connect.ResultSet;
+import edu.hku.sdb.connect.SdbResultSet;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,9 +18,12 @@ public class ExecutorTest {
   @Test
   public void testExecute() throws Exception {
     PlanNode planNode = null;
-    ResultSet resultSet = null;
-    ExecutionState eState = null;
+    SdbResultSet resultSet = new SdbResultSet();
+    ExecutionState eState = new ExecutionState();
     executor.execute(planNode, eState, resultSet);
+
+
+
 
   }
 }

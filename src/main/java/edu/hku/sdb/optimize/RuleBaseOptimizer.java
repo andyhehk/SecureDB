@@ -18,11 +18,9 @@
 package edu.hku.sdb.optimize;
 
 import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.DataType;
 import edu.hku.sdb.exec.*;
-import edu.hku.sdb.parse.Expr;
-import edu.hku.sdb.parse.ParseNode;
-import edu.hku.sdb.parse.SelectStmt;
-import edu.hku.sdb.parse.SelectionItem;
+import edu.hku.sdb.parse.*;
 import edu.hku.sdb.rewrite.UnSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,8 +63,16 @@ public class RuleBaseOptimizer extends Optimizer {
       String alias = selectionItem.getAlias();
       Expr expr = selectionItem.getExpr();
       //TODO: get column name & clazz
-      String columnName = null;
+      String columnName = "";
       Class clazz = String.class;
+      //Only obtain columnName in case of FieldLiteral
+      if (expr instanceof FieldLiteral){
+        columnName = ((FieldLiteral) expr).getName();
+        if (((FieldLiteral) expr).getType().equals(DataType.INT)){
+          clazz = Integer.class;
+        }
+      }
+
       BasicColumnDesc basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
       basicColumnDescList.add(basicColumnDesc);
 

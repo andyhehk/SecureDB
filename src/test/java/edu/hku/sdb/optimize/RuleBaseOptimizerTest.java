@@ -45,11 +45,10 @@ public class RuleBaseOptimizerTest {
 
     // prepare row descriptor for remote SQL plan node
     List<BasicColumnDesc> columnDescList1 = new ArrayList<BasicColumnDesc>();
-    BasicColumnDesc columnDesc1 = new BasicColumnDesc("id", null, String.class);
+    BasicColumnDesc columnDesc1 = new BasicColumnDesc("id", "", Integer.class);
     columnDescList1.add(columnDesc1);
     RowDesc rowDesc1 = new RowDesc();
     rowDesc1.setSignature(columnDescList1);
-
 
     // prepare remoteSQL plan node
     prepareTestDBConnection();
@@ -62,7 +61,7 @@ public class RuleBaseOptimizerTest {
     // prepare row descriptor for local decrypt
     List<BasicColumnDesc> columnDescList2 = new ArrayList<BasicColumnDesc>();
     ColumnKey columnKey = new ColumnKey("2", "2");
-    ColumnDesc columnDesc2 = new ColumnDesc("id", null, String.class, true, columnKey);
+    ColumnDesc columnDesc2 = new ColumnDesc("id", "", Integer.class, true, columnKey);
     columnDescList2.add(columnDesc2);
     RowDesc rowDesc2 = new RowDesc();
     rowDesc2.setSignature(columnDescList2);
@@ -81,7 +80,7 @@ public class RuleBaseOptimizerTest {
     // t2.id field
     ColumnKey columnKey1 = new ColumnKey("2", "2");
     Expr expr1 = new FieldLiteral("t2", "id", DataType.INT, true, columnKey1);
-    String alias1 = null;
+    String alias1 = "";
     SelectionItem selectionItem1 = new SelectionItem();
     selectionItem1.setExpr(expr1);
     selectionItemList.add(selectionItem1);
@@ -111,6 +110,5 @@ public class RuleBaseOptimizerTest {
   @Test
   public void testOptimize() throws Exception {
     assertEquals(localDecrypt, optimizer.optimize(selectStmt));
-
   }
 }

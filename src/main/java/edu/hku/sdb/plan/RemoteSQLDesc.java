@@ -90,11 +90,13 @@ public class RemoteSQLDesc extends PlanNodeDesc {
     if (!(object instanceof RemoteSQLDesc)){
       return false;
     }
-//    if (!   query.replace("\n","").replace("\r","").equals( ((RemoteSQLDesc) object).getQuery().replace("\n","").replace("\r",""))){
-      LOG.debug("Comparing query\n" + query + " with:\n" + ((RemoteSQLDesc) object).getQuery());
-//      return false;
-//    }
-    //TODO: compare rowDescriptor
+    LOG.debug("Comparing query\n" + query + "\nwith:\n" + ((RemoteSQLDesc) object).getQuery());
+    //TODO: compare if query is equal
+
+    if (!rowDesc.equals(((RemoteSQLDesc) object).getRowDesc())){
+      LOG.debug("rowDesc of RemoteSQLDesc is not equal!");
+      return false;
+    }
     return true;
   }
 

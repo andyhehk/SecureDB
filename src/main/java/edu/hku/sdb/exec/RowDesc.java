@@ -17,9 +17,15 @@
 
 package edu.hku.sdb.exec;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
 public class RowDesc {
+
+  private static final Logger LOG = LoggerFactory
+          .getLogger(RowDesc.class);
 
   private List<BasicColumnDesc> signature;
 
@@ -32,5 +38,16 @@ public class RowDesc {
   }
 
 
+  @Override
+  public boolean equals(Object object){
+    if (!(object instanceof RowDesc)){
+      return false;
+    }
+    if (!signature.equals(((RowDesc) object).getSignature())){
+      LOG.debug("signature of RowDesc is not equal!");
+      return false;
+    };
+    return true;
+  }
 
 }

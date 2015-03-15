@@ -88,7 +88,7 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
       LOG.debug("Not an instance of LocalDecrypt!");
       return false;
     }
-    if (!nodeDesc.equals(((RemoteSQL) object).nodeDesc)){
+    if (!nodeDesc.equals((RemoteSQLDesc) ((RemoteSQL) object).nodeDesc)){
       LOG.debug("nodeDesc instance of RemoteSQL is not equal!");
       return false;
     }
