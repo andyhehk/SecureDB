@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -59,11 +60,13 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
   public BasicTupleSlot nextTuple() {
     TupleSlot tupleSlot = null;
     try {
-      if (nodeDesc.getResultSet().next()) {
+      ResultSet resultSet = nodeDesc.getResultSet();
+      if (resultSet.next()) {
         tupleSlot = new TupleSlot();
         ArrayList<Object> row = new ArrayList<Object>();
-        for (BasicColumnDesc columnDesc : nodeDesc.getRowDesc().getSignature())
-          row.add(nodeDesc.getResultSet().getObject(columnDesc.getName()));
+        for (BasicColumnDesc columnDesc : nodeDesc.getRowDesc().getSignature()){
+          row.add(resultSet.getObject(columnDesc.getName()));
+        }
         tupleSlot.setRow(row);
       }
     } catch (SQLException e1) {

@@ -43,11 +43,11 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
   public SdbResultSet() throws RemoteException {
     super();
     tuple = new ArrayList<>();
-    index = 0;
+    index = -1;
   }
 
   public boolean next() throws RemoteException {
-    if (index >= tuple.size()){
+    if (index == tuple.size()-1 ){
       return false;
     }
     else{
@@ -62,7 +62,19 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
   };
 
   public String getString(int columnIndex) throws RemoteException{
-    return (String) tuple.get(index)[columnIndex];
+    //column index starts from 1 in JDBC
+    return (String) tuple.get(index)[columnIndex - 1];
+  }
+
+  /**
+   * Get the integer at column index
+   * @param columnIndex the index of column, starting from 1
+   * @return integer at specified column
+   * @throws RemoteException
+   */
+  public Integer getInteger(int columnIndex) throws RemoteException{
+    //column index starts from 1 in JDBC
+    return (Integer) tuple.get(index)[columnIndex - 1];
   }
 
 }

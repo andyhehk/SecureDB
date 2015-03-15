@@ -25,6 +25,7 @@ import edu.hku.sdb.rewrite.UnSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,12 +46,12 @@ public class RuleBaseOptimizer extends Optimizer {
    * 
    * @see edu.hku.sdb.optimize.Optimizer#optimize(edu.hku.sdb.parse.ParseNode)
    */
-  public PlanNode optimize(ParseNode parseTree) throws UnSupportedException {
-    return optimizeInternal(parseTree);
+  public PlanNode optimize(ParseNode parseTree, Connection connection) throws UnSupportedException {
+    return optimizeInternal(parseTree, connection);
   }
 
   @Override
-  protected PlanNode optimizeSelStmt(SelectStmt selStmt) throws UnSupportedException {
+  protected PlanNode optimizeSelStmt(SelectStmt selStmt, Connection connection) throws UnSupportedException {
 
     String query = selStmt.toSql().toLowerCase();
     RowDesc remoteRowDesc = new RowDesc();
@@ -62,14 +63,17 @@ public class RuleBaseOptimizer extends Optimizer {
     for (SelectionItem selectionItem : selStmt.getSelectList().getItemList()){
       String alias = selectionItem.getAlias();
       Expr expr = selectionItem.getExpr();
-      //TODO: get column name & clazz
       String columnName = "";
-      Class clazz = String.class;
+      Class clazz = Integer.class;
       //Only obtain columnName in case of FieldLiteral
       if (expr instanceof FieldLiteral){
         columnName = ((FieldLiteral) expr).getName();
+        //Obtain clazz information
         if (((FieldLiteral) expr).getType().equals(DataType.INT)){
           clazz = Integer.class;
+        }
+        else if (((FieldLiteral) expr).getType().equals(DataType.CHAR)){
+          clazz = String.class;
         }
       }
 
@@ -86,6 +90,7 @@ public class RuleBaseOptimizer extends Optimizer {
     localDecryptRowDesc.setSignature(columnDescList);
 
     RemoteSQL remoteSQL = new RemoteSQL(query, remoteRowDesc);
+    remoteSQL.setConnection(connection);
     LocalDecrypt localDecrypt = new LocalDecrypt(localDecryptRowDesc);
     localDecrypt.setChild(remoteSQL);
     return localDecrypt;

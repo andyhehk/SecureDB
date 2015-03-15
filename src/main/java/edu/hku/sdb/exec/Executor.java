@@ -31,10 +31,10 @@ public class Executor {
   public void execute(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
 
     List<Object[]> resultList = resultSet.getTuple();
-
-    while (plan.nextTuple() != null){
-      BasicTupleSlot basicTupleSlot = plan.nextTuple();
+    BasicTupleSlot basicTupleSlot = plan.nextTuple();
+    while (basicTupleSlot != null){
       resultList.add(basicTupleSlot.nextTuple().toArray());
+      basicTupleSlot = plan.nextTuple();
     }
 
     resultSet.setTuple(resultList);

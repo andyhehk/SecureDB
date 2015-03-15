@@ -2,14 +2,17 @@ package edu.hku.sdb.optimize;
 
 import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.DataType;
+import edu.hku.sdb.connect.SdbResultSet;
 import edu.hku.sdb.exec.*;
 import edu.hku.sdb.parse.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.beans.Statement;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +33,15 @@ public class RuleBaseOptimizerTest {
     try {
       Class.forName(driver).newInstance();
       connection = DriverManager.getConnection(dbURL);
+      java.sql.Statement statement = connection.createStatement();
+      statement.executeUpdate("CREATE TABLE t2 (ID INT)");
+      statement.executeUpdate("INSERT INTO t2 VALUES (100)");
+      statement.executeUpdate("INSERT INTO t2 VALUES (200)");
+      ResultSet resultSet = statement.executeQuery("select id from t2");
+      if (resultSet.next()){
+        assert(resultSet.getInt(1) < 300);
+      }
+
     } catch (Exception except){
       except.printStackTrace();
     }
@@ -109,6 +121,19 @@ public class RuleBaseOptimizerTest {
 
   @Test
   public void testOptimize() throws Exception {
-    assertEquals(localDecrypt, optimizer.optimize(selectStmt));
+    //Test optimizer
+    PlanNode planNode = optimizer.optimize(selectStmt, connection);
+    assertEquals(localDecrypt, planNode);
+
+    //Test executor
+    Executor executor = new Executor();
+    SdbResultSet resultSet = new SdbResultSet();
+    ExecutionState eState = new ExecutionState();
+    executor.execute(planNode, eState, resultSet);
+
+    while (resultSet.next()){
+      System.out.println(resultSet.getInteger(1));
+    }
+
   }
 }

@@ -31,6 +31,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
           .getLogger(LocalDecrypt.class);
 
   PlanNode child;
+  boolean initialized = false;
 
   public PlanNode getChild() {
     return child;
@@ -52,8 +53,8 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
    */
   @Override
   public void init() {
-    // TODO Auto-generated method stub
-
+    child.init();
+    initialized = true;
   }
 
   /*
@@ -63,6 +64,14 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
    */
   @Override
   public BasicTupleSlot nextTuple() {
+    return getNextTupleInternal();
+  }
+
+  private BasicTupleSlot getNextTupleInternal() {
+    if (!initialized){
+      init();
+    }
+
     BasicTupleSlot tupleSlot = child.nextTuple();
 
     if (tupleSlot != null) {
@@ -79,6 +88,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
     return tupleSlot;
   }
 
+
   /*
    * (non-Javadoc)
    * 
@@ -86,8 +96,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
    */
   @Override
   public void close() {
-    // TODO Auto-generated method stub
-
+    child.close();
   }
 
   @Override

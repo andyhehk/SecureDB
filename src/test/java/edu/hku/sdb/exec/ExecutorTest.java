@@ -23,7 +23,5 @@ public class ExecutorTest {
     executor.execute(planNode, eState, resultSet);
 
 
-
-
   }
 }

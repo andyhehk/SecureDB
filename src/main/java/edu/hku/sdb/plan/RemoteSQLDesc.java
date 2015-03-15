@@ -70,6 +70,7 @@ public class RemoteSQLDesc extends PlanNodeDesc {
   public void init(){
     try {
       statement = connection.createStatement();
+      LOG.debug("Initialize RemoteSQLDesc with sql " + query);
       resultSet = statement.executeQuery(query);
     } catch (SQLException e) {
       e.printStackTrace();
@@ -92,7 +93,6 @@ public class RemoteSQLDesc extends PlanNodeDesc {
     }
     LOG.debug("Comparing query\n" + query + "\nwith:\n" + ((RemoteSQLDesc) object).getQuery());
     //TODO: compare if query is equal
-
     if (!rowDesc.equals(((RemoteSQLDesc) object).getRowDesc())){
       LOG.debug("rowDesc of RemoteSQLDesc is not equal!");
       return false;
