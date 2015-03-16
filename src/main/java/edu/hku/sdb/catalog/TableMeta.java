@@ -23,6 +23,7 @@ import java.util.StringTokenizer;
 
 import javax.jdo.annotations.Join;
 import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(objectIdClass = TableMeta.TablePK.class)
@@ -34,9 +35,12 @@ public class TableMeta {
   @PrimaryKey
   private String tblName;
 
-  // TODO add foreign key relationship
+  @Persistent(mappedBy="tableMeta")
   @Join
   private List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
+
+  @Persistent
+  private DBMeta dbMeta;
 
   public static class TablePK extends Key {
 

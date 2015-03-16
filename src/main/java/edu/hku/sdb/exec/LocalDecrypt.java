@@ -18,11 +18,14 @@
 package edu.hku.sdb.exec;
 
 import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.parse.FieldLiteral;
 import edu.hku.sdb.plan.LocalDecryptDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
@@ -76,12 +79,25 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
 
     if (tupleSlot != null) {
       List<Object> row = tupleSlot.nextTuple();
-      for (BasicColumnDesc columnDesc : nodeDesc.getRowDesc().getSignature()) {
+      Object rowId = null;
+      BigInteger p = nodeDesc.getP();
+      BigInteger q = nodeDesc.getP();
+      BigInteger g = nodeDesc.getG();
+      List<BasicColumnDesc> columnDescList = nodeDesc.getRowDesc().getSignature();
+
+      for (int index = columnDescList.size() - 1; index >= 0; index-- ) {
+        BasicColumnDesc columnDesc = columnDescList.get(index);
+        if (columnDesc.getName().equals(FieldLiteral.ROW_ID_COLUMN_NAME)){
+          BigInteger rowIdEncrypted = new BigInteger((String) row.get(index));
+
+          rowId = Crypto.PaillierDecrypt(rowIdEncrypted, p, q);
+        }
 
         //Decrypt with columnKey if sensitive
         if (((ColumnDesc) columnDesc).isSensitive()) {
           ColumnKey columnKey = ((ColumnDesc) columnDesc).getColumnKey();
-          //TODO: decrypt with rowId
+          BigInteger itemKey = Crypto.generateItemKey(columnKey.getM(), columnKey.getX(), (BigInteger) rowId, g, p, q);
+          //TODO: decrypt with itemKey
         }
       }
     }
@@ -114,5 +130,12 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
       return false;
     }
     return true;
+  }
+
+  public void setCredential(BigInteger p, BigInteger q, BigInteger n, BigInteger g) {
+    nodeDesc.setP(p);
+    nodeDesc.setP(q);
+    nodeDesc.setP(n);
+    nodeDesc.setP(g);
   }
 }

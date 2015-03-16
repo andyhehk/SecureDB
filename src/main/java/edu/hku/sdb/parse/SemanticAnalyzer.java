@@ -17,9 +17,11 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.DataType;
 import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.parse.BinaryPredicate.BinOperator;
@@ -191,6 +193,15 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         throw new SemanticException("Unsupported selection element!");
       }
     }
+
+
+    //TODO get DbMeta according to DBName
+    //set global p, q, n, g
+    DBMeta dbMeta = metaDB.getDB(DBMeta.defaultDbName);
+    selectStmt.setP(new BigInteger(dbMeta.getP()));
+    selectStmt.setQ(new BigInteger(dbMeta.getQ()));
+    selectStmt.setN(new BigInteger(dbMeta.getN()));
+    selectStmt.setG(new BigInteger(dbMeta.getG()));
 
     selectStmt.setSelectList(selectList);
 

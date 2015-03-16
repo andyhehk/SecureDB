@@ -20,6 +20,7 @@ package edu.hku.sdb.catalog;
 import java.util.StringTokenizer;
 
 import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(objectIdClass = ColumnMeta.ColumnPK.class)
@@ -37,6 +38,9 @@ public class ColumnMeta {
   private DataType type;
   private boolean isSensitive = false;
   private ColumnKey colKey;
+
+  @Persistent
+  private TableMeta tableMeta;
 
   public static class ColumnPK extends Key {
 

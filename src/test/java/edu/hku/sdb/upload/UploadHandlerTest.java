@@ -43,8 +43,6 @@ public class UploadHandlerTest {
   private BigInteger g;
   private BigInteger p;
   private BigInteger q;
-  private BigInteger m1;
-  private BigInteger x1;
   /**
    * Prepare a in-memory database for testing
    */
@@ -97,15 +95,10 @@ public class UploadHandlerTest {
 
   public void prepareMetaDB() throws Exception {
 
-//    n = new BigInteger("35");
-//    g = new BigInteger("2");
-//    p = new BigInteger("7");
-//    q = new BigInteger("5");
-    n = (new BigInteger("91056390710389826661362945896125780562083120966028947466819744421480611063788891569681707503066914102268385452352368991831195586814279365402707955380475412720505658218035093486944255102433792593309438648993776412638716311098144165230321872380587410143867387942045612725519865341003363677330210531214120466111"));
-    g = (new BigInteger("526631133645616033980"));
-    p = (new BigInteger("13381418623214727587437247106170095945191359410765179156151809065341458743599113643820767819224626539634002433392648336651723690747518211610218927601568823"));
-    q = (new BigInteger("6804688895422554648792548642105479511973881515271617258279580587887409482982376538544184457823535138084697746276682826853000739663322061212950993288918457"));
-
+    p = Crypto.generateRandPrime();
+    q = Crypto.generateRandPrime();
+    n = p.multiply(q);
+    g = Crypto.generatePositiveRand(p ,q);
 
     uploadHandler = new UploadHandler();
     uploadHandler.setHDFS_URL("file:///");
@@ -162,17 +155,10 @@ public class UploadHandlerTest {
     col5.setType(DataType.INT);
     col6.setType(DataType.INT);
 
-    //TODO: test with another set of column keys
-    /*col3.setColkey(new ColumnKey("20686139707", "3949673333612"));
-    col4.setColkey(new ColumnKey("20686139707", "3949673333612"));
-    col5.setColkey(new ColumnKey("20686139707", "3949673333612"));
-    col6.setColkey(new ColumnKey("20686139707", "3949673333612"));*/
-    m1 = new BigInteger("2");
-    x1 = new BigInteger("2");
-    col3.setColkey(new ColumnKey(m1, x1));
-    col4.setColkey(new ColumnKey("2", "2"));
-    col5.setColkey(new ColumnKey("2", "2"));
-    col6.setColkey(new ColumnKey("2", "2"));
+    col3.setColkey(new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
+    col4.setColkey(new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
+    col5.setColkey(new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
+    col6.setColkey(new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
 
     col1.setSensitive(false);
     col2.setSensitive(false);

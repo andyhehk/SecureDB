@@ -33,8 +33,6 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
   private static final Logger LOG = LoggerFactory
       .getLogger(SdbSchemeRewriter.class);
-  private static final String ROW_ID_COLUMN_NAME = "row_id";
-  private static final String S_COLUMN_NAME = "s";
 
   /**
    * @param dbMeta
@@ -128,10 +126,10 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       rewriteBaseTblRef(baseTbl);
     }
 
-    //Add row-id field in selectionItem List
+    //Insert row-id field at the end of selectionItem list
     if (baseRefs.size() == 1){
       SelectionItem selectionItem = new SelectionItem();
-      Expr expr = new FieldLiteral(baseRefs.get(0).getTableName(), ROW_ID_COLUMN_NAME, DataType.INT);
+      Expr expr = new FieldLiteral(baseRefs.get(0).getTableName(), FieldLiteral.ROW_ID_COLUMN_NAME, DataType.INT);
       selectionItem.setExpr(expr);
       selList.getItemList().add(selectionItem);
     }
@@ -362,7 +360,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       BigInteger pq_b[] = Crypto.keyUpdateClient(mb, mc, ms, xb, xc, xs, p, q);
 
       //prepare parameter for sdb_add
-      Expr sField = new FieldLiteral(((FieldLiteral) left).getTbl(), S_COLUMN_NAME, DataType.INT, true, columnKeyS);
+      Expr sField = new FieldLiteral(((FieldLiteral) left).getTbl(), FieldLiteral.S_COLUMN_NAME, DataType.INT, true, columnKeyS);
       StringLiteral p_a = new StringLiteral(pq_a[0].toString());
       StringLiteral q_a = new StringLiteral(pq_a[1].toString());
       StringLiteral p_b = new StringLiteral(pq_b[0].toString());
@@ -392,7 +390,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     for (TableMeta tableMeta : dbMeta.getTbls()){
       if (tableMeta.getTblName().equals(tableName)){
         for (ColumnMeta columnMeta: tableMeta.getCols()){
-          if (columnMeta.getColName().equals(S_COLUMN_NAME)){
+          if (columnMeta.getColName().equals(FieldLiteral.S_COLUMN_NAME)){
             BigInteger ms = columnMeta.getColkey().getM();
             BigInteger xs = columnMeta.getColkey().getX();
             columnKeyS = new ColumnKey(ms, xs);

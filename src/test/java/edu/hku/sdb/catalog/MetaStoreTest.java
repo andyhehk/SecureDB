@@ -19,6 +19,7 @@ package edu.hku.sdb.catalog;
 
 import static org.junit.Assert.*;
 
+import java.math.BigInteger;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -27,6 +28,7 @@ import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 
+import edu.hku.sdb.crypto.Crypto;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,23 +96,34 @@ public class MetaStoreTest {
     DBMeta db1 = new DBMeta(dbName1);
     DBMeta db2 = new DBMeta(dbName2.toUpperCase());
 
+    BigInteger p = Crypto.generateRandPrime();
+    BigInteger q = Crypto.generateRandPrime();
+    db1.setP(p.toString());
+    db1.setQ(q.toString());
+
     metaDB.addDB(db1);
     metaDB.addDB(db2);
 
     assertEquals(db1, metaDB.getDB(dbName1.toUpperCase()));
     assertEquals(db2, metaDB.getDB(dbName2));
+    assertEquals(p.toString(), metaDB.getDB(dbName1.toUpperCase()).getP());
+    assertEquals(2, metaDB.getAllDBs().size());
 
     String tblName1 = "dummy_tbl1";
     String tblName2 = "dummy_tbl2";
+    String tblName3 = "dummy_tbl3";
 
     TableMeta tbl1 = new TableMeta(dbName1, tblName1.toUpperCase());
     TableMeta tbl2 = new TableMeta(dbName2.toUpperCase(), tblName2);
+    TableMeta tbl3 = new TableMeta(dbName2, tblName3);
 
     metaDB.addTbl(tbl1);
     metaDB.addTbl(tbl2);
+    metaDB.addTbl(tbl3);
 
     assertEquals(tbl1, metaDB.getTbl(dbName1.toUpperCase(), tblName1));
     assertEquals(tbl2, metaDB.getTbl(dbName2, tblName2.toUpperCase()));
+    assertEquals(tbl3, metaDB.getTbl(dbName2, tblName3));
 
     String colName1 = "dummy_col1";
     String colName2 = "dummy_col2";

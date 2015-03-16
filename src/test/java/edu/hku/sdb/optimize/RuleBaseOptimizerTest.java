@@ -1,8 +1,10 @@
 package edu.hku.sdb.optimize;
 
 import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.DataType;
 import edu.hku.sdb.connect.SdbResultSet;
+import edu.hku.sdb.crypto.Crypto;
 import edu.hku.sdb.exec.*;
 import edu.hku.sdb.parse.*;
 import org.junit.After;
@@ -10,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.beans.Statement;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -22,8 +25,13 @@ public class RuleBaseOptimizerTest {
 
   SelectStmt selectStmt = new SelectStmt();
   Optimizer optimizer = new RuleBaseOptimizer();
-  LocalDecrypt localDecrypt;
+  public static LocalDecrypt localDecrypt;
   Connection connection;
+  DBMeta dbMeta;
+  BigInteger p;
+  BigInteger q;
+  BigInteger n;
+  BigInteger g;
 
   private String driver = "org.apache.derby.jdbc.EmbeddedDriver";
   private static String dbURL = "jdbc:derby:memory:test_db;create=true";
@@ -34,10 +42,10 @@ public class RuleBaseOptimizerTest {
       Class.forName(driver).newInstance();
       connection = DriverManager.getConnection(dbURL);
       java.sql.Statement statement = connection.createStatement();
-      statement.executeUpdate("CREATE TABLE t2 (ID INT)");
-      statement.executeUpdate("INSERT INTO t2 VALUES (100)");
-      statement.executeUpdate("INSERT INTO t2 VALUES (200)");
-      ResultSet resultSet = statement.executeQuery("select id from t2");
+      statement.executeUpdate("CREATE TABLE t2 (ID VARCHAR(2048) , ROW_ID VARCHAR(2048))");
+      statement.executeUpdate("INSERT INTO t2 VALUES ('100', '1')");
+      statement.executeUpdate("INSERT INTO t2 VALUES ('200', '2')");
+      ResultSet resultSet = statement.executeQuery("select row_id, id from t2");
       if (resultSet.next()){
         assert(resultSet.getInt(1) < 300);
       }
@@ -49,39 +57,74 @@ public class RuleBaseOptimizerTest {
 
   @Before
   public void setUp() throws Exception {
+
     prepareParseTree();
+    prepareDbMeta();
     preparePlanTree();
   }
 
-  private void preparePlanTree(){
+  private void prepareDbMeta() {
+    dbMeta = new DBMeta("sdbclient");
+    p = Crypto.generateRandPrime();
+    q = Crypto.generateRandPrime();
+    n = p.multiply(q);
+    g = Crypto.generatePositiveRand(p, q);
 
+    dbMeta.setP(p.toString());
+    dbMeta.setQ(q.toString());
+    dbMeta.setN(n.toString());
+    dbMeta.setG(g.toString());
+  }
+
+  private void preparePlanTree(){
+    RemoteSQL remoteSQL = getRemoteSQL();
+    prepareLocalDecrypt(remoteSQL);
+  }
+
+  private void prepareLocalDecrypt(RemoteSQL remoteSQL) {
+    // prepare row descriptor for local decrypt
+    List<BasicColumnDesc> columnDescListLocalDecrypt = new ArrayList<BasicColumnDesc>();
+
+    // column descriptor for id
+    ColumnKey columnKey = new ColumnKey("2", "2");
+    ColumnDesc columnDescId = new ColumnDesc("id", "", Integer.class, true, columnKey);
+    columnDescListLocalDecrypt.add(columnDescId);
+    // column descriptor for row_id
+    ColumnKey columnKeyRowId = new ColumnKey("3", "3");
+    ColumnDesc columnDescRowId = new ColumnDesc("row_id", "", Integer.class, true, columnKeyRowId);
+    columnDescListLocalDecrypt.add(columnDescRowId);
+
+    // set column signature for rowDesc
+    RowDesc rowDesc2 = new RowDesc();
+    rowDesc2.setSignature(columnDescListLocalDecrypt);
+
+    // prepare local decrypt plan node
+    localDecrypt = new LocalDecrypt(rowDesc2);
+    localDecrypt.setCredential(p, q, n, g);
+    localDecrypt.setChild(remoteSQL);
+  }
+
+  private RemoteSQL getRemoteSQL() {
     // prepare row descriptor for remote SQL plan node
     List<BasicColumnDesc> columnDescList1 = new ArrayList<BasicColumnDesc>();
-    BasicColumnDesc columnDesc1 = new BasicColumnDesc("id", "", Integer.class);
-    columnDescList1.add(columnDesc1);
+    // column descriptor for id
+    BasicColumnDesc columnDescId = new BasicColumnDesc("id", "", Integer.class);
+    columnDescList1.add(columnDescId);
+    // column descriptor for row_id
+    BasicColumnDesc columnDescRowId = new BasicColumnDesc("row_id", "", Integer.class);
+    columnDescList1.add(columnDescRowId);
+
+    //set rowDescriptor column signatures
     RowDesc rowDesc1 = new RowDesc();
     rowDesc1.setSignature(columnDescList1);
 
     // prepare remoteSQL plan node
     prepareTestDBConnection();
-    String query = "SELECT t2.id \n" +
+    String query = "SELECT t2.id, t2.row_id\n" +
             "from t2";
     RemoteSQL remoteSQL = new RemoteSQL(query.toLowerCase(), rowDesc1);
     remoteSQL.setConnection(connection);
-
-
-    // prepare row descriptor for local decrypt
-    List<BasicColumnDesc> columnDescList2 = new ArrayList<BasicColumnDesc>();
-    ColumnKey columnKey = new ColumnKey("2", "2");
-    ColumnDesc columnDesc2 = new ColumnDesc("id", "", Integer.class, true, columnKey);
-    columnDescList2.add(columnDesc2);
-    RowDesc rowDesc2 = new RowDesc();
-    rowDesc2.setSignature(columnDescList2);
-
-    // prepare local decrypt plan node
-    localDecrypt = new LocalDecrypt(rowDesc2);
-    localDecrypt.setChild(remoteSQL);
-
+    return remoteSQL;
   }
 
   private void prepareParseTree() {
@@ -89,19 +132,31 @@ public class RuleBaseOptimizerTest {
     SelectionList selectionList = new SelectionList();
     List<SelectionItem> selectionItemList = new ArrayList<SelectionItem>();
 
+
     // t2.id field
     ColumnKey columnKey1 = new ColumnKey("2", "2");
-    Expr expr1 = new FieldLiteral("t2", "id", DataType.INT, true, columnKey1);
-    String alias1 = "";
-    SelectionItem selectionItem1 = new SelectionItem();
-    selectionItem1.setExpr(expr1);
-    selectionItemList.add(selectionItem1);
+    Expr exprId = new FieldLiteral("t2", "id", DataType.INT, true, columnKey1);
+    SelectionItem selectionItemId = new SelectionItem();
+    selectionItemId.setExpr(exprId);
 
-    // set [fieldLiteral] as selectionList
+    // t2.row-id field
+    ColumnKey columnKeyRowId = new ColumnKey("3", "3");
+    Expr exprRow = new FieldLiteral("t2", "row_id", DataType.INT, true, columnKeyRowId);
+    SelectionItem selectionItemRowId = new SelectionItem();
+    selectionItemRowId.setExpr(exprRow);
+
+    // add field literals to selectionList
+    selectionItemList.add(selectionItemId);
+    selectionItemList.add(selectionItemRowId);
+
+    // set [fieldLiteral, fieldLiteral] as selectionList
     selectionList.setItemList(selectionItemList);
     // set selectList for select statement
     selectStmt.setSelectList(selectionList);
-
+    selectStmt.setP(p);
+    selectStmt.setQ(q);
+    selectStmt.setN(n);
+    selectStmt.setG(g);
 
     // t2 tableref field
     List<TableRef> tableRefList = new ArrayList<TableRef>();
@@ -120,7 +175,7 @@ public class RuleBaseOptimizerTest {
   }
 
   @Test
-  public void testOptimize() throws Exception {
+  public void testOptimizeSimple() throws Exception {
     //Test optimizer
     PlanNode planNode = optimizer.optimize(selectStmt, connection);
     assertEquals(localDecrypt, planNode);
@@ -132,8 +187,7 @@ public class RuleBaseOptimizerTest {
     executor.execute(planNode, eState, resultSet);
 
     while (resultSet.next()){
-      System.out.println(resultSet.getInteger(1));
+      System.out.println(resultSet.getString(1) + " " + resultSet.getString(2));
     }
-
   }
 }

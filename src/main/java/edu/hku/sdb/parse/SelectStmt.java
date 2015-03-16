@@ -17,6 +17,7 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +40,43 @@ public class SelectStmt extends QueryStmt {
 
   // havingClause with aliases and agg output resolved
   protected Expr havingPred;
+
+  private BigInteger p;
+  private BigInteger q;
+  private BigInteger n;
+  private BigInteger g;
+
+  public BigInteger getP() {
+    return p;
+  }
+
+  public void setP(BigInteger p) {
+    this.p = p;
+  }
+
+  public BigInteger getQ() {
+    return q;
+  }
+
+  public void setQ(BigInteger q) {
+    this.q = q;
+  }
+
+  public BigInteger getN() {
+    return n;
+  }
+
+  public void setN(BigInteger n) {
+    this.n = n;
+  }
+
+  public BigInteger getG() {
+    return g;
+  }
+
+  public void setG(BigInteger g) {
+    this.g = g;
+  }
 
   /**
    * @see edu.hku.sdb.parse.ParseNode#analyze()
@@ -93,6 +131,13 @@ public class SelectStmt extends QueryStmt {
     }
 
     SelectStmt selObj = (SelectStmt) obj;
+
+    //TODO check if p, q, n, g are null
+    if (!(p.equals(selObj.getP()) && q.equals(selObj.getQ()) && n.equals(selObj.getN()) && g.equals(selObj.getG()))) {
+      String info = "p, q, n, g are not equal!";
+      LOG.debug(info);
+      return false;
+    }
 
     // TODO Too verbose. Can we have better way to debug.
     if ((whereClause == null) != (selObj.whereClause == null)) {

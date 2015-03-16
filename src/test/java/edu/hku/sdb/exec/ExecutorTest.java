@@ -17,11 +17,6 @@ public class ExecutorTest {
 
   @Test
   public void testExecute() throws Exception {
-    PlanNode planNode = null;
-    SdbResultSet resultSet = new SdbResultSet();
-    ExecutionState eState = new ExecutionState();
-    executor.execute(planNode, eState, resultSet);
-
 
   }
 }

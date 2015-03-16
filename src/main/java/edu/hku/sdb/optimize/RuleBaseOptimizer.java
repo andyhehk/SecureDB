@@ -29,6 +29,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import static edu.hku.sdb.catalog.DataType.*;
+
 public class RuleBaseOptimizer extends Optimizer {
 
   private static final Logger LOG = LoggerFactory
@@ -61,40 +63,46 @@ public class RuleBaseOptimizer extends Optimizer {
     List<BasicColumnDesc> columnDescList = new ArrayList<BasicColumnDesc>();
 
     for (SelectionItem selectionItem : selStmt.getSelectList().getItemList()){
+
+      // default columnName is ""
+      String columnName = "";
+      // default column clazz is Integer
+      Class clazz = Integer.class;
       String alias = selectionItem.getAlias();
       Expr expr = selectionItem.getExpr();
-      String columnName = "";
-      Class clazz = Integer.class;
-      //Only obtain columnName in case of FieldLiteral
+      // obtain columnName in case of FieldLiteral
       if (expr instanceof FieldLiteral){
         columnName = ((FieldLiteral) expr).getName();
-        //Obtain clazz information
-        if (((FieldLiteral) expr).getType().equals(DataType.INT)){
-          clazz = Integer.class;
-        }
-        else if (((FieldLiteral) expr).getType().equals(DataType.CHAR)){
-          clazz = String.class;
+        // obtain clazz information
+        switch (((FieldLiteral) expr).getType()){
+          case CHAR: clazz = String.class; break;
+          case INT:
+          default:  clazz = Integer.class;
         }
       }
-
+      // create column desc for remoteSQL
       BasicColumnDesc basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
       basicColumnDescList.add(basicColumnDesc);
 
+      // get column keys for sensitive columns for localDecrypt
       ColumnKey columnKey = expr.getColKey();
       boolean isSensitive = expr.involveSdbEncrytedCol();
+      // add column descriptor for localDecrypt
       ColumnDesc columnDesc = new ColumnDesc(columnName, alias, clazz, isSensitive, columnKey);
       columnDescList.add(columnDesc);
     }
 
+    // create remoteSQL Node
     remoteRowDesc.setSignature(basicColumnDescList);
-    localDecryptRowDesc.setSignature(columnDescList);
-
     RemoteSQL remoteSQL = new RemoteSQL(query, remoteRowDesc);
     remoteSQL.setConnection(connection);
+
+    // create localDecrypt Node
+    localDecryptRowDesc.setSignature(columnDescList);
     LocalDecrypt localDecrypt = new LocalDecrypt(localDecryptRowDesc);
     localDecrypt.setChild(remoteSQL);
+    localDecrypt.setCredential(selStmt.getP(), selStmt.getQ(), selStmt.getN(), selStmt.getG());
     return localDecrypt;
   }
-
 
 }

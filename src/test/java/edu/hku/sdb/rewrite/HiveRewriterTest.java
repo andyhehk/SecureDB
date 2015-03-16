@@ -64,7 +64,7 @@ public class HiveRewriterTest {
     pmf = JDOHelper.getPersistenceManagerFactory(properties);
     pm = pmf.getPersistenceManager();
 
-    String dbName = "dummy_db";
+    String dbName = "default";
     dbMeta = new DBMeta(dbName);
 
     BigInteger p = Crypto.generateRandPrime();
@@ -101,6 +101,7 @@ public class HiveRewriterTest {
 
     metaStore = new MetaStore(dbName, pm);
     metaStore.addCols(cols);
+    metaStore.addDB(dbMeta);
 
     testObj = new SemanticAnalyzer(metaStore);
     parser = new ParseDriver();
@@ -114,7 +115,11 @@ public class HiveRewriterTest {
 
   @Test
   public void testRewrite() throws Exception {
-    ParseNode parseNode = testObj.analyze(parser.parse(simpleSQLMulEE));
+    ParseNode parseNode = testObj.analyze(parser.parse(simpleSQL1));
+    sdbSchemeRewriter.rewrite(parseNode);
+    System.out.println(parseNode.toSql());
+
+    parseNode = testObj.analyze(parser.parse(simpleSQLMulEE));
     sdbSchemeRewriter.rewrite(parseNode);
     System.out.println(parseNode.toSql());
 
