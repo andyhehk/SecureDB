@@ -18,7 +18,9 @@
 package edu.hku.sdb.catalog;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
+import java.math.BigInteger;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -27,6 +29,7 @@ import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 
+import edu.hku.sdb.crypto.Crypto;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -93,41 +96,73 @@ public class MetaStoreTest {
 
     DBMeta db1 = new DBMeta(dbName1);
     DBMeta db2 = new DBMeta(dbName2.toUpperCase());
+    BigInteger p = Crypto.generateRandPrime();
+    BigInteger q = Crypto.generateRandPrime();
+    db1.setP(p.toString());
+    db1.setQ(q.toString());
+    metaDB.addDB(db1);
+    metaDB.addDB(db2);
+
+    String tblName1 = "dummy_tbl1";
+    String tblName2 = "dummy_tbl2";
+    String tblName3 = "dummy_tbl3";
+
+    TableMeta tbl1 = new TableMeta(dbName1, tblName1.toUpperCase());
+    tbl1.setDbMeta(db1);
+    TableMeta tbl2 = new TableMeta(dbName2.toUpperCase(), tblName2);
+    tbl1.setDbMeta(db2);
+    TableMeta tbl3 = new TableMeta(dbName2, tblName3);
+    tbl1.setDbMeta(db2);
+    metaDB.addTbl(tbl1);
+    metaDB.addTbl(tbl2);
+    metaDB.addTbl(tbl3);
+
+    db1.getTbls().add(tbl1);
+    db2.getTbls().add(tbl2);
+    db2.getTbls().add(tbl3);
 
     metaDB.addDB(db1);
     metaDB.addDB(db2);
 
     assertEquals(db1, metaDB.getDB(dbName1.toUpperCase()));
     assertEquals(db2, metaDB.getDB(dbName2));
-
-    String tblName1 = "dummy_tbl1";
-    String tblName2 = "dummy_tbl2";
-
-    TableMeta tbl1 = new TableMeta(dbName1, tblName1.toUpperCase());
-    TableMeta tbl2 = new TableMeta(dbName2.toUpperCase(), tblName2);
-
-    metaDB.addTbl(tbl1);
-    metaDB.addTbl(tbl2);
-
-    assertEquals(tbl1, metaDB.getTbl(dbName1.toUpperCase(), tblName1));
-    assertEquals(tbl2, metaDB.getTbl(dbName2, tblName2.toUpperCase()));
+    assertEquals(p.toString(), metaDB.getDB(dbName1.toUpperCase()).getP());
+    assertEquals(2, metaDB.getAllDBs().size());
 
     String colName1 = "dummy_col1";
     String colName2 = "dummy_col2";
 
     ColumnMeta col1 = new ColumnMeta(dbName1.toUpperCase(),
         tblName1.toUpperCase(), colName1);
+    col1.setTableMeta(tbl1);
     ColumnMeta col2 = new ColumnMeta(dbName2, tblName2.toUpperCase(),
-        colName2.toUpperCase());
+        colName2.toUpperCase(), DataType.CHAR, true, new ColumnKey("2", "2"));
+    col1.setTableMeta(tbl2);
 
     metaDB.addCol(col1);
     metaDB.addCol(col2);
 
-    assertEquals(col1,
-        metaDB.getCol(dbName1, tblName1.toUpperCase(), colName1.toUpperCase()));
-    assertEquals(col2,
-        metaDB.getCol(dbName2.toUpperCase(), tblName2.toUpperCase(), colName2));
+    tbl1.getCols().add(col1);
+    tbl2.getCols().add(col2);
 
+    metaDB.addTbl(tbl1);
+    metaDB.addTbl(tbl2);
+    metaDB.addTbl(tbl3);
+
+    assertEquals(tbl1, metaDB.getTbl(dbName1.toUpperCase(), tblName1));
+    assertEquals(tbl2, metaDB.getTbl(dbName2, tblName2.toUpperCase()));
+    assertEquals(tbl3, metaDB.getTbl(dbName2, tblName3));
+
+    assertEquals(col1,
+            metaDB.getCol(dbName1, tblName1.toUpperCase(), colName1.toUpperCase()));
+    assertEquals(col2,
+            metaDB.getCol(dbName2.toUpperCase(), tblName2.toUpperCase(), colName2));
+
+    assertEquals(1,metaDB.getTbl(dbName2, tblName2).getCols().size());
+
+    assertEquals(metaDB.getCol(dbName2.toUpperCase(), tblName2.toUpperCase(), colName2).getColkey(), new ColumnKey("2", "2"));
+    assertEquals(metaDB.getDB("dummy_db1").getTbls().size(), 1);
+    assertEquals(metaDB.getDB("dummy_db1").getTbls().get(0).getCols().size(), 1);
   }
 
 }

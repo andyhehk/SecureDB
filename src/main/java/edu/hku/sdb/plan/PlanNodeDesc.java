@@ -17,6 +17,19 @@
 
 package edu.hku.sdb.plan;
 
+import edu.hku.sdb.exec.RowDesc;
+
 public abstract class PlanNodeDesc {
+
+  protected RowDesc rowDesc;
+
+  public RowDesc getRowDesc() {
+    return rowDesc;
+  }
+
+  public void setRowDesc(RowDesc rowDesc) {
+    this.rowDesc = rowDesc;
+  }
+
 
 }

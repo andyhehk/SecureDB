@@ -17,6 +17,44 @@
 
 package edu.hku.sdb.plan;
 
+import java.math.BigInteger;
+
 public class LocalDecryptDesc extends PlanNodeDesc {
 
+  BigInteger p;
+  BigInteger q;
+  BigInteger n;
+  BigInteger g;
+
+  public BigInteger getP() {
+    return p;
+  }
+
+  public void setP(BigInteger p) {
+    this.p = p;
+  }
+
+  public BigInteger getQ() {
+    return q;
+  }
+
+  public void setQ(BigInteger q) {
+    this.q = q;
+  }
+
+  public BigInteger getN() {
+    return n;
+  }
+
+  public void setN(BigInteger n) {
+    this.n = n;
+  }
+
+  public BigInteger getG() {
+    return g;
+  }
+
+  public void setG(BigInteger g) {
+    this.g = g;
+  }
 }

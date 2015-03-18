@@ -17,6 +17,25 @@
 
 package edu.hku.sdb.optimize;
 
+import edu.hku.sdb.exec.PlanNode;
+import edu.hku.sdb.parse.ParseNode;
+import edu.hku.sdb.parse.SelectStmt;
+import edu.hku.sdb.rewrite.UnSupportedException;
+
+import java.sql.Connection;
+
 public abstract class Optimizer {
+
+  abstract public PlanNode optimize(ParseNode parseTree, Connection connection) throws UnSupportedException;
+
+  protected PlanNode optimizeInternal(ParseNode parseTree, Connection connection) throws UnSupportedException {
+    if (parseTree instanceof SelectStmt) {
+      return optimizeSelStmt((SelectStmt) parseTree, connection);
+    }
+    throw new UnSupportedException("unsupported parseTree to optimize");
+  }
+
+  protected abstract PlanNode optimizeSelStmt(SelectStmt selStmt, Connection connection)
+          throws UnSupportedException;
 
 }

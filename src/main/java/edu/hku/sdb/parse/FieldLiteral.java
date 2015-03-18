@@ -33,6 +33,10 @@ import static com.google.common.base.Preconditions.*;
 public class FieldLiteral extends LiteralExpr {
 
   private static final Logger LOG = LoggerFactory.getLogger(FieldLiteral.class);
+  public static final String ROW_ID_COLUMN_NAME = "row_id";
+  public static final String S_COLUMN_NAME = "s";
+  public static final String R_COLUMN_NAME = "r";
+
 
   // Make sure the tbl is not null.
   private String tblName = "";
@@ -47,26 +51,29 @@ public class FieldLiteral extends LiteralExpr {
   private Expr referExpr;
 
   public FieldLiteral(String name, DataType type) {
-    this.name = checkNotNull(name, "Field name is null.");
+    this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
     // this.name.trim();
-    this.type = checkNotNull(type, "Field type is null.");
+    //this.type = checkNotNull(type, "Field type is null.");
+    this.type = type;
     isSen = false;
   }
 
   public FieldLiteral(String tbl, String name, DataType type) {
-    this.name = checkNotNull(name, "Field name is null.");
-    this.tblName = checkNotNull(tbl, "Table name is null.");
+    this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
+    this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
     // this.name.trim();
     // this.tbl.trim();
-    this.type = checkNotNull(type, "Field type is null.");
+    //this.type = checkNotNull(type, "Field type is null.");
+    this.type = type;
     isSen = false;
   }
 
   public FieldLiteral(String tbl, String name, DataType type, boolean isSen,
       ColumnKey colKey) {
-    this.name = checkNotNull(name, "Field name is null.");
-    this.tblName = checkNotNull(tbl, "Table name is null.");
-    this.type = checkNotNull(type, "Field type is null.");
+    this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
+    this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
+    //this.type = checkNotNull(type, "Field type is null.");
+    this.type = type;
     this.isSen = isSen;
     this.colKey = colKey;
   }

@@ -20,34 +20,63 @@ package edu.hku.sdb.exec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+public class BasicColumnDesc {
 
-public class RowDesc {
+  private static final Logger LOG = LoggerFactory.getLogger(BasicColumnDesc.class);
 
-  private static final Logger LOG = LoggerFactory
-          .getLogger(RowDesc.class);
+  protected String name;
+  protected String alias;
+  protected Class clazz;
 
-  private List<BasicColumnDesc> signature;
-
-  public List<BasicColumnDesc> getSignature() {
-    return signature;
+  public String getName() {
+    return name;
   }
 
-  public void setSignature(List<BasicColumnDesc> signature) {
-    this.signature = signature;
+  public void setName(String name) {
+    this.name = name;
   }
 
+  public String getAlias() {
+    return alias;
+  }
+
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
+
+  public Class getClazz() {
+    return clazz;
+  }
+
+  public void setClazz(Class clazz) {
+    this.clazz = clazz;
+  }
+
+  public BasicColumnDesc(String name, String alias, Class clazz) {
+    this.name = name;
+    this.alias = alias;
+    this.clazz = clazz;
+  }
 
   @Override
   public boolean equals(Object object){
-    if (!(object instanceof RowDesc)){
+    if (!(object instanceof BasicColumnDesc)){
+      LOG.debug(object.getClass() + " object is not an instance of " + this.getClass());
+      return  false;
+    }
+
+    if (!name.equals(((BasicColumnDesc) object).getName())){
+      LOG.debug("name is not equal!");
       return false;
     }
-    if (!signature.equals(((RowDesc) object).getSignature())){
-      LOG.debug("signature of RowDesc is not equal!");
+    if (!clazz.equals(((BasicColumnDesc) object).getClazz())){
+      LOG.debug("clazz is not equal!");
       return false;
-    };
+    }
+    if (!alias.equals(((BasicColumnDesc) object).getAlias())) {
+      LOG.debug("alias is not equal!");
+      return false;
+    }
     return true;
   }
-
 }

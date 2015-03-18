@@ -17,9 +17,11 @@
  *******************************************************************************/
 package edu.hku.sdb.parse;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.DataType;
 import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.parse.BinaryPredicate.BinOperator;
@@ -192,6 +194,15 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       }
     }
 
+
+    //TODO get DbMeta according to DBName
+    //set global p, q, n, g
+    DBMeta dbMeta = metaDB.getDB(DBMeta.defaultDbName);
+    selectStmt.setP(new BigInteger(dbMeta.getP()));
+    selectStmt.setQ(new BigInteger(dbMeta.getQ()));
+    selectStmt.setN(new BigInteger(dbMeta.getN()));
+    selectStmt.setG(new BigInteger(dbMeta.getG()));
+
     selectStmt.setSelectList(selectList);
 
     return selectStmt;
@@ -315,7 +326,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         selectItem.setExpr(buildDotExpr(child));
         continue;
       case HiveParser.TOK_TABLE_OR_COL:
-        selectItem.setExpr(new FieldLiteral("", child.getChildren().get(0).toString(), null));
+        selectItem.setExpr(new FieldLiteral(child.getChildren().get(0).toString(), null));
         continue;
       case HiveLexer.Identifier:
         selectItem.setAlias(child.getText());
@@ -352,7 +363,6 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         expr.addChild(buildDotExpr(child));
         continue;
       case HiveParser.TOK_TABLE_OR_COL:
-        expr.addChild(new FieldLiteral("", child.getChild(0).getText(), null));
         expr.addChild(new FieldLiteral("", child.getChild(0).getText(),
             DataType.UNKNOWN));
         continue;

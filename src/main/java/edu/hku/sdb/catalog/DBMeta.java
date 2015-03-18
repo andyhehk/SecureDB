@@ -21,32 +21,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.jdo.annotations.Column;
-import javax.jdo.annotations.Join;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.*;
 
 
 @PersistenceCapable(objectIdClass = DBMeta.DBPK.class)
 public class DBMeta {
 
+  public static String  defaultDbName = "default";
+
   @PrimaryKey
   private String dbName = null;
 
-  // TODO add foreign key relationship
+  @Persistent(mappedBy="dbMeta")
   @Join
   private List<TableMeta> tbls = new ArrayList<TableMeta>();
 
   // The big primary number n
-  @Column(length=1024)
+  @Column(length=2048)
   private String n = null;
 
   // The big primary number p to generate n
-  @Column(length=512)
+  @Column(length=1024)
   private String p = null;
 
   // The big primary number p to generate n
-  @Column(length=512)
+  @Column(length=1024)
   private String q = null;
 
   // The secrete number g
@@ -54,7 +53,7 @@ public class DBMeta {
   private String g = null;
 
   // The random seed to generate row ids
-  @Column(length=1024)
+  @Column(length=2048)
   private String seed = null;
 
   public static class DBPK extends Key {

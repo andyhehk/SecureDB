@@ -19,6 +19,7 @@ package edu.hku.sdb.parse;
 
 import static org.junit.Assert.*;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,6 +69,11 @@ public class SelectStmtTest {
     stmt.setSelectList(selectList);
     stmt.setTableRefs(tblRefs);
     stmt.setWhereClause(whereClause);
+
+    stmt.setP(new BigInteger("7"));
+    stmt.setQ(new BigInteger("5"));
+    stmt.setN(new BigInteger("35"));
+    stmt.setG(new BigInteger("2"));
 
     return stmt;
   }

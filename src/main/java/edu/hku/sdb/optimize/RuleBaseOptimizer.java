@@ -17,10 +17,24 @@
 
 package edu.hku.sdb.optimize;
 
-import edu.hku.sdb.exec.PlanNode;
-import edu.hku.sdb.parse.ParseNode;
+import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.DataType;
+import edu.hku.sdb.exec.*;
+import edu.hku.sdb.parse.*;
+import edu.hku.sdb.rewrite.UnSupportedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+
+import static edu.hku.sdb.catalog.DataType.*;
 
 public class RuleBaseOptimizer extends Optimizer {
+
+  private static final Logger LOG = LoggerFactory
+          .getLogger(RuleBaseOptimizer.class);
 
   /**
    * 
@@ -34,9 +48,61 @@ public class RuleBaseOptimizer extends Optimizer {
    * 
    * @see edu.hku.sdb.optimize.Optimizer#optimize(edu.hku.sdb.parse.ParseNode)
    */
-  public PlanNode optimize(ParseNode parseTree) {
-    // TODO Auto-generated method stub
-    return null;
+  public PlanNode optimize(ParseNode parseTree, Connection connection) throws UnSupportedException {
+    return optimizeInternal(parseTree, connection);
+  }
+
+  @Override
+  protected PlanNode optimizeSelStmt(SelectStmt selStmt, Connection connection) throws UnSupportedException {
+
+    String query = selStmt.toSql().toLowerCase();
+    RowDesc remoteRowDesc = new RowDesc();
+    RowDesc localDecryptRowDesc = new RowDesc();
+
+    List<BasicColumnDesc> basicColumnDescList = new ArrayList<BasicColumnDesc>();
+    List<BasicColumnDesc> columnDescList = new ArrayList<BasicColumnDesc>();
+
+    for (SelectionItem selectionItem : selStmt.getSelectList().getItemList()){
+
+      // default columnName is ""
+      String columnName = "";
+      // default column clazz is Integer
+      Class clazz = Integer.class;
+      String alias = selectionItem.getAlias();
+      Expr expr = selectionItem.getExpr();
+      // obtain columnName in case of FieldLiteral
+      if (expr instanceof FieldLiteral){
+        columnName = ((FieldLiteral) expr).getName();
+        // obtain clazz information
+        switch (((FieldLiteral) expr).getType()){
+          case CHAR: clazz = String.class; break;
+          case INT:
+          default:  clazz = Integer.class;
+        }
+      }
+      // create column desc for remoteSQL
+      BasicColumnDesc basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
+      basicColumnDescList.add(basicColumnDesc);
+
+      // get column keys for sensitive columns for localDecrypt
+      ColumnKey columnKey = expr.getColKey();
+      boolean isSensitive = expr.involveSdbEncrytedCol();
+      // add column descriptor for localDecrypt
+      ColumnDesc columnDesc = new ColumnDesc(columnName, alias, clazz, isSensitive, columnKey);
+      columnDescList.add(columnDesc);
+    }
+
+    // create remoteSQL Node
+    remoteRowDesc.setSignature(basicColumnDescList);
+    RemoteSQL remoteSQL = new RemoteSQL(query, remoteRowDesc);
+    remoteSQL.setConnection(connection);
+
+    // create localDecrypt Node
+    localDecryptRowDesc.setSignature(columnDescList);
+    LocalDecrypt localDecrypt = new LocalDecrypt(localDecryptRowDesc);
+    localDecrypt.setChild(remoteSQL);
+    localDecrypt.setCredential(selStmt.getP(), selStmt.getQ(), selStmt.getN(), selStmt.getG());
+    return localDecrypt;
   }
 
 }

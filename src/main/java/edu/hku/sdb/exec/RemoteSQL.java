@@ -18,18 +18,37 @@
 package edu.hku.sdb.exec;
 
 import edu.hku.sdb.plan.RemoteSQLDesc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
 
+  private static final Logger LOG = LoggerFactory
+          .getLogger(RemoteSQL.class);
+
+  public RemoteSQL(String query, RowDesc rowDesc) {
+    nodeDesc = new RemoteSQLDesc();
+    nodeDesc.setRowDesc(rowDesc);
+    nodeDesc.setQuery(query);
+  }
+
+  public void setConnection(Connection connection){
+    nodeDesc.setConnection(connection);
+  }
+
   /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#init()
-   */
+     * (non-Javadoc)
+     *
+     * @see edu.hku.sdb.exec.PlanNode#init()
+     */
   @Override
   public void init() {
-    // TODO Auto-generated method stub
-
+    nodeDesc.init();
   }
 
   /*
@@ -39,8 +58,21 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
    */
   @Override
   public BasicTupleSlot nextTuple() {
-    // TODO Auto-generated method stub
-    return null;
+    TupleSlot tupleSlot = null;
+    try {
+      ResultSet resultSet = nodeDesc.getResultSet();
+      if (resultSet.next()) {
+        tupleSlot = new TupleSlot();
+        ArrayList<Object> row = new ArrayList<Object>();
+        for (BasicColumnDesc columnDesc : nodeDesc.getRowDesc().getSignature()){
+          row.add(resultSet.getObject(columnDesc.getName()));
+        }
+        tupleSlot.setRow(row);
+      }
+    } catch (SQLException e1) {
+      e1.printStackTrace();
+    }
+    return tupleSlot;
   }
 
   /*
@@ -50,8 +82,19 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
    */
   @Override
   public void close() {
-    // TODO Auto-generated method stub
-
+    nodeDesc.close();
   }
 
+  @Override
+  public boolean equals(Object object){
+    if (!(object instanceof RemoteSQL)){
+      LOG.debug("Not an instance of LocalDecrypt!");
+      return false;
+    }
+    if (!nodeDesc.equals((RemoteSQLDesc) ((RemoteSQL) object).nodeDesc)){
+      LOG.debug("nodeDesc instance of RemoteSQL is not equal!");
+      return false;
+    }
+    return true;
+  }
 }

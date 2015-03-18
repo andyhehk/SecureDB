@@ -24,6 +24,10 @@ public class TupleSlot extends BasicTupleSlot {
 
   private ArrayList<Object> row;
 
+  public void setRow(ArrayList<Object> row) {
+    this.row = row;
+  }
+
   /*
    * (non-Javadoc)
    * 

@@ -129,7 +129,7 @@ public class UploadHandler {
     String[] columnValues = line.split(";");
 
     //TODO: should programatically get db name
-    DBMeta dbMeta = metaStore.getDB("sdbclient");
+    DBMeta dbMeta = metaStore.getAllDBs().get(0);
     //TODO: should get the specific columns of that table instead of columns
     List<ColumnMeta> allCols = metaStore.getAllCols();
     BigInteger n = new BigInteger(dbMeta.getN());

@@ -23,6 +23,7 @@ import java.util.StringTokenizer;
 
 import javax.jdo.annotations.Join;
 import javax.jdo.annotations.PersistenceCapable;
+import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 @PersistenceCapable(objectIdClass = TableMeta.TablePK.class)
@@ -34,16 +35,19 @@ public class TableMeta {
   @PrimaryKey
   private String tblName;
 
-  // TODO add foreign key relationship
+  @Persistent(mappedBy="tableMeta")
   @Join
   private List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
+
+  @Persistent
+  private DBMeta dbMeta;
 
   public static class TablePK extends Key {
 
     private static final long serialVersionUID = 1L;
+
     public String dbName;
     public String tblName;
-
     public TablePK() {
     }
 
@@ -85,6 +89,14 @@ public class TableMeta {
     // name should be case insensitive
     this.setDbName(dbName.toLowerCase());
     this.setTblName(tblName.toLowerCase());
+  }
+
+  public DBMeta getDbMeta() {
+    return dbMeta;
+  }
+
+  public void setDbMeta(DBMeta dbMeta) {
+    this.dbMeta = dbMeta;
   }
 
   /**
