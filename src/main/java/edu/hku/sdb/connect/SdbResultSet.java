@@ -18,6 +18,7 @@
 package edu.hku.sdb.connect;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -74,7 +75,16 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
    */
   public Integer getInteger(int columnIndex) throws RemoteException{
     //column index starts from 1 in JDBC
-    return (Integer) tuple.get(index)[columnIndex - 1];
+    Object columnData = tuple.get(index)[columnIndex - 1];
+    if (columnData instanceof BigInteger){
+      return Integer.valueOf(columnData.toString());
+    }
+    if (columnData instanceof String){
+      return Integer.valueOf((String) columnData);
+    }
+    return (Integer) columnData;
   }
+
+
 
 }

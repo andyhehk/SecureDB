@@ -29,11 +29,7 @@ public class ConnectionManager {
     ConnectionService connectionService = null;
     try {
       connectionService = (ConnectionService) Naming.lookup(databaseUrl);
-    } catch (NotBoundException e) {
-      e.printStackTrace();
-    } catch (MalformedURLException e) {
-      e.printStackTrace();
-    } catch (RemoteException e) {
+    } catch (NotBoundException | MalformedURLException | RemoteException e) {
       e.printStackTrace();
     }
     try {

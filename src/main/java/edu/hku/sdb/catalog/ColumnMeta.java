@@ -45,10 +45,10 @@ public class ColumnMeta {
   public static class ColumnPK extends Key {
 
     private static final long serialVersionUID = 1L;
+
     public String dbName;
     public String tblName;
     public String colName;
-
     public ColumnPK() {
     }
 
@@ -70,7 +70,7 @@ public class ColumnMeta {
       }
       ColumnPK c = (ColumnPK) obj;
 
-      
+
       return dbName.equals(c.dbName) && tblName.equals(c.tblName)
           && colName.equals(c.colName);
     }
@@ -106,6 +106,14 @@ public class ColumnMeta {
     this.type = type;
     this.isSensitive = isSen;
     this.setColkey(colKey);
+  }
+
+  public TableMeta getTableMeta() {
+    return tableMeta;
+  }
+
+  public void setTableMeta(TableMeta tableMeta) {
+    this.tableMeta = tableMeta;
   }
 
   /**

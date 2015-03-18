@@ -81,7 +81,8 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
       List<Object> row = tupleSlot.nextTuple();
       Object rowId = null;
       BigInteger p = nodeDesc.getP();
-      BigInteger q = nodeDesc.getP();
+      BigInteger q = nodeDesc.getQ();
+      BigInteger n = nodeDesc.getN();
       BigInteger g = nodeDesc.getG();
       List<BasicColumnDesc> columnDescList = nodeDesc.getRowDesc().getSignature();
 
@@ -89,21 +90,21 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
         BasicColumnDesc columnDesc = columnDescList.get(index);
         if (columnDesc.getName().equals(FieldLiteral.ROW_ID_COLUMN_NAME)){
           BigInteger rowIdEncrypted = new BigInteger((String) row.get(index));
-
           rowId = Crypto.PaillierDecrypt(rowIdEncrypted, p, q);
         }
 
-        //Decrypt with columnKey if sensitive
-        if (((ColumnDesc) columnDesc).isSensitive()) {
+        // Decrypt with columnKey if sensitive
+        else if (((ColumnDesc) columnDesc).isSensitive()) {
           ColumnKey columnKey = ((ColumnDesc) columnDesc).getColumnKey();
           BigInteger itemKey = Crypto.generateItemKey(columnKey.getM(), columnKey.getX(), (BigInteger) rowId, g, p, q);
-          //TODO: decrypt with itemKey
+          BigInteger cipherText = new BigInteger ((String) row.get(index));
+          BigInteger plainText = Crypto.decrypt(cipherText, itemKey, n);
+          row.set(index, plainText);
         }
       }
     }
     return tupleSlot;
   }
-
 
   /*
    * (non-Javadoc)
@@ -134,8 +135,8 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
 
   public void setCredential(BigInteger p, BigInteger q, BigInteger n, BigInteger g) {
     nodeDesc.setP(p);
-    nodeDesc.setP(q);
-    nodeDesc.setP(n);
-    nodeDesc.setP(g);
+    nodeDesc.setQ(q);
+    nodeDesc.setN(n);
+    nodeDesc.setG(g);
   }
 }

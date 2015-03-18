@@ -11,7 +11,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.beans.Statement;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -57,9 +56,8 @@ public class RuleBaseOptimizerTest {
 
   @Before
   public void setUp() throws Exception {
-
-    prepareParseTree();
     prepareDbMeta();
+    prepareParseTree();
     preparePlanTree();
   }
 

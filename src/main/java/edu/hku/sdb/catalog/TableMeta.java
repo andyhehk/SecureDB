@@ -45,9 +45,9 @@ public class TableMeta {
   public static class TablePK extends Key {
 
     private static final long serialVersionUID = 1L;
+
     public String dbName;
     public String tblName;
-
     public TablePK() {
     }
 
@@ -89,6 +89,14 @@ public class TableMeta {
     // name should be case insensitive
     this.setDbName(dbName.toLowerCase());
     this.setTblName(tblName.toLowerCase());
+  }
+
+  public DBMeta getDbMeta() {
+    return dbMeta;
+  }
+
+  public void setDbMeta(DBMeta dbMeta) {
+    this.dbMeta = dbMeta;
   }
 
   /**
