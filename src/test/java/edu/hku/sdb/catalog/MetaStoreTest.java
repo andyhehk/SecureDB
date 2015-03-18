@@ -18,6 +18,7 @@
 package edu.hku.sdb.catalog;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.math.BigInteger;
 import java.sql.DriverManager;
@@ -135,7 +136,7 @@ public class MetaStoreTest {
         tblName1.toUpperCase(), colName1);
     col1.setTableMeta(tbl1);
     ColumnMeta col2 = new ColumnMeta(dbName2, tblName2.toUpperCase(),
-        colName2.toUpperCase());
+        colName2.toUpperCase(), DataType.CHAR, true, new ColumnKey("2", "2"));
     col1.setTableMeta(tbl2);
 
     metaDB.addCol(col1);
@@ -157,10 +158,11 @@ public class MetaStoreTest {
     assertEquals(col2,
             metaDB.getCol(dbName2.toUpperCase(), tblName2.toUpperCase(), colName2));
 
-
     assertEquals(1,metaDB.getTbl(dbName2, tblName2).getCols().size());
 
+    assertEquals(metaDB.getCol(dbName2.toUpperCase(), tblName2.toUpperCase(), colName2).getColkey(), new ColumnKey("2", "2"));
     assertEquals(metaDB.getDB("dummy_db1").getTbls().size(), 1);
+    assertEquals(metaDB.getDB("dummy_db1").getTbls().get(0).getCols().size(), 1);
   }
 
 }

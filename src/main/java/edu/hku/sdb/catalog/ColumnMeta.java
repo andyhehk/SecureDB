@@ -19,6 +19,7 @@ package edu.hku.sdb.catalog;
 
 import java.util.StringTokenizer;
 
+import javax.jdo.annotations.Column;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -35,9 +36,14 @@ public class ColumnMeta {
   @PrimaryKey
   private String colName;
 
+  @Persistent
   private DataType type;
+  @Persistent
   private boolean isSensitive = false;
-  private ColumnKey colKey;
+  @Column(length=2048)
+  private String m;
+  @Column(length=2048)
+  private String x;
 
   @Persistent
   private TableMeta tableMeta;
@@ -192,7 +198,9 @@ public class ColumnMeta {
    * @return the colkey
    */
   public ColumnKey getColkey() {
-    return colKey;
+    if (m != null && x != null)
+      return new ColumnKey(m,x);
+    return null;
   }
 
   /**
@@ -200,7 +208,8 @@ public class ColumnMeta {
    *          the colkey to set
    */
   public void setColkey(ColumnKey colkey) {
-    this.colKey = colkey;
+    this.m = colkey.getM().toString();
+    this.x = colkey.getX().toString();
   }
 
 }
