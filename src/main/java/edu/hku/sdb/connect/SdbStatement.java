@@ -17,11 +17,22 @@
 
 package edu.hku.sdb.connect;
 
+import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.conf.ConnectionConf;
+import edu.hku.sdb.exec.ExecutionState;
+import edu.hku.sdb.exec.Executor;
+import edu.hku.sdb.exec.PlanNode;
+import edu.hku.sdb.optimize.Optimizer;
+import edu.hku.sdb.optimize.RuleBaseOptimizer;
+import edu.hku.sdb.parse.*;
+import edu.hku.sdb.rewrite.SdbSchemeRewriter;
+import edu.hku.sdb.rewrite.UnSupportedException;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.*;
+import java.sql.Connection;
 
 public class SdbStatement extends UnicastRemoteObject implements Statement,
     Serializable {
@@ -29,28 +40,88 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   private static final long serialVersionUID = 427L;
   private static final String SERVICE_NAME = "ResultSet";
 
-  private ConnectionConf connectionConf;
-  private static String serviceUrl;
-  private ResultSet resultSet;
+  private SemanticAnalyzer semanticAnalyzer;
+  private ParseDriver parser;
+  private SdbSchemeRewriter sdbSchemeRewriter;
+  private Optimizer optimizer;
+  private Executor executor;
 
-  public SdbStatement(ConnectionConf connectionConf) throws RemoteException {
+  private MetaStore metaDb;
+  private Connection serverConnection;
+
+  public SdbStatement(MetaStore metaDb, Connection serverConnection) throws RemoteException{
     super();
-    setConnectionConf(connectionConf);
+    setMetaDb(metaDb);
+    setServerConnection(serverConnection);
   }
 
-  public ResultSet executeQuery() {
-    return null;
+
+  @Override
+  public ResultSet executeQuery(String query) throws RemoteException  {
+
+    // Parse & analyse
+    System.out.println("Parsing " + query);
+    parser = new ParseDriver();
+    semanticAnalyzer = new SemanticAnalyzer(metaDb);
+    ASTNode parsedNode = null;
+    ParseNode analyzedNode = null;
+    try {
+      parsedNode = parser.parse(query);
+      analyzedNode = semanticAnalyzer.analyze(parsedNode);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    } catch (SemanticException e) {
+      e.printStackTrace();
+      throw new RemoteException(e.getMessage());
+    }
+
+    // Rewrite
+    System.out.println("Rewriting " + analyzedNode.toSql());
+    sdbSchemeRewriter = new SdbSchemeRewriter(metaDb.getAllDBs().get(0));
+    try {
+      sdbSchemeRewriter.rewrite(analyzedNode);
+    } catch (UnSupportedException e) {
+      e.printStackTrace();
+      throw new RemoteException(e.getMessage());
+    }
+
+    // Optimize
+    System.out.println("Optimizing " + analyzedNode.toSql());
+    optimizer = new RuleBaseOptimizer();
+    PlanNode planNode = null;
+    try {
+      planNode = optimizer.optimize(analyzedNode, serverConnection);
+    } catch (UnSupportedException e) {
+      e.printStackTrace();
+      throw new RemoteException(e.getMessage());
+    }
+
+    // Execute
+    executor = new Executor();
+    SdbResultSet resultSet = new SdbResultSet();
+    ExecutionState eState = new ExecutionState();
+    executor.execute(planNode, eState, resultSet);
+
+    return resultSet;
   }
 
   public void close() {
 
   }
 
-  public ConnectionConf getConnectionConf() {
-    return connectionConf;
+  public MetaStore getMetaDb() {
+    return metaDb;
   }
 
-  public void setConnectionConf(ConnectionConf connectionConf) {
-    this.connectionConf = connectionConf;
+  public void setMetaDb(MetaStore metaDb) {
+    this.metaDb = metaDb;
+  }
+
+  public Connection getServerConnection() {
+    return serverConnection;
+  }
+
+  public void setServerConnection(Connection serverConnection) {
+    this.serverConnection = serverConnection;
   }
 }

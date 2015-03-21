@@ -47,7 +47,8 @@ public class ExecutorTest {
   private Optimizer optimizer;
   private Executor executor;
   private String simpleSelectQuery = "select salary from t2";
-  private String simpleMultipleSelectQuery = "select id from t2";
+  private String simpleMultipleSelectQuery = "select id, salary from t2";
+  private String simpleMultipleMultiECQuery = "select salary * 3 from t2";
 
 
   @Before
@@ -193,13 +194,14 @@ public class ExecutorTest {
 
 
   @Test
-  public void testServerConnection() throws Exception{
+  public void testSimpleSelect() throws Exception{
 
+    String testQuery = simpleMultipleMultiECQuery;
     // Parse & analyse
-    System.out.println("Parsing " + simpleSelectQuery);
+    System.out.println("Parsing " + testQuery);
     parser = new ParseDriver();
     semanticAnalyzer = new SemanticAnalyzer(metaDB);
-    ASTNode parsedNode = parser.parse(simpleSelectQuery);
+    ASTNode parsedNode = parser.parse(testQuery);
     ParseNode analyzedNode  = semanticAnalyzer.analyze(parsedNode);
 
     // Rewrite
@@ -221,6 +223,7 @@ public class ExecutorTest {
 
     while (resultSet.next()){
       System.out.println(resultSet.getInteger(1));
+//      System.out.println(resultSet.getInteger(1) + " " + resultSet.getInteger(2) );
     }
 
   }
