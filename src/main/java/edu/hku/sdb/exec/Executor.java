@@ -17,10 +17,12 @@
 
 package edu.hku.sdb.exec;
 
+import edu.hku.sdb.connect.SDBResultSetMetaData;
 import edu.hku.sdb.connect.SdbResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.rmi.RemoteException;
 import java.util.List;
 
 public class Executor {
@@ -35,6 +37,19 @@ public class Executor {
     while (basicTupleSlot != null){
       resultList.add(basicTupleSlot.nextTuple().toArray());
       basicTupleSlot = plan.nextTuple();
+    }
+
+    try {
+      //set SdbMetaData
+      if (resultSet.getResultSetMetaData() == null){
+        SDBResultSetMetaData sdbMetaData = new SDBResultSetMetaData();
+        List<BasicColumnDesc> basicColumnDescList = plan.nodeDesc.getRowDesc().getSignature();
+        //Remove row_id before init resultSetMetaData
+        sdbMetaData.setColumnList(basicColumnDescList.subList(0, basicColumnDescList.size() - 1));
+        resultSet.setSdbResultSetMetaData(sdbMetaData);
+      }
+    } catch (RemoteException e) {
+      e.printStackTrace();
     }
 
     resultSet.setTuple(resultList);

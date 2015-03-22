@@ -15,7 +15,7 @@ public class DbConfFactoryTest extends TestCase {
 
   public void testGetDbConf() throws Exception {
     DbConfFactory dbConfFactory = new DbConfFactory();
-    DbConf clientDbConf = dbConfFactory.getDbConf("src/test/resources/conf/sdb-client.xml");
+    DbConf clientDbConf = dbConfFactory.getDbConf("src/test/resources/conf/sdb-metastore.xml");
     String clientDatabase = clientDbConf.getDatabaseName();
     String clientUrl = clientDbConf.getJdbcUrl();
     String clientUsername = clientDbConf.getUsername();
@@ -24,9 +24,9 @@ public class DbConfFactoryTest extends TestCase {
 
     assertEquals(clientUsername, null);
     assertEquals(clientPassword, null);
-    assertEquals(clientDatabase, "sdbclient");
+    assertNotNull(clientDatabase, "metastore_db");
     assertEquals(clientDriverName, "org.apache.derby.jdbc.EmbeddedDriver");
-    assertEquals(clientUrl, "jdbc:derby:memory:sdbclient;create=true");
+    assertEquals(clientUrl, "jdbc:derby:memory:metastore_db;create=true");
 
   }
 }

@@ -36,14 +36,6 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
   PlanNode child;
   boolean initialized = false;
 
-  public PlanNode getChild() {
-    return child;
-  }
-
-  public void setChild(PlanNode child) {
-    this.child = child;
-  }
-
   public LocalDecrypt(RowDesc rowDesc){
     nodeDesc = new LocalDecryptDesc();
     nodeDesc.setRowDesc(rowDesc);
@@ -51,7 +43,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see edu.hku.sdb.exec.PlanNode#init()
    */
   @Override
@@ -62,7 +54,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see edu.hku.sdb.exec.PlanNode#nextTuple()
    */
   @Override
@@ -108,7 +100,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see edu.hku.sdb.exec.PlanNode#close()
    */
   @Override
@@ -131,6 +123,14 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
       return false;
     }
     return true;
+  }
+
+  public PlanNode getChild() {
+    return child;
+  }
+
+  public void setChild(PlanNode child) {
+    this.child = child;
   }
 
   public void setCredential(BigInteger p, BigInteger q, BigInteger n, BigInteger g) {

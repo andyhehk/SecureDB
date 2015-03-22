@@ -49,8 +49,9 @@ public class ConnectionManagerTest {
     assertNotNull(statement);
     ResultSet resultSet = statement.executeQuery("SELECT ID FROM t2");
     assertNotNull(resultSet);
-    resultSet.next();
-    assertTrue(resultSet.getInteger(1) > 0);
+    while (resultSet.next()){
+      assertTrue(resultSet.getInteger(1) > 0);
+    }
   }
 
 }

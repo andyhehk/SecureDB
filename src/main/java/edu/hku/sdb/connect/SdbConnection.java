@@ -81,7 +81,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
   }
 
   public void close() throws RemoteException {
-
+    //TODO to be implemented
   }
 
   private MetaStore getMetaDbConnection(DbConf dbConf){

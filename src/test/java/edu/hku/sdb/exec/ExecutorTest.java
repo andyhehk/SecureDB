@@ -1,7 +1,7 @@
 package edu.hku.sdb.exec;
 
 import edu.hku.sdb.catalog.*;
-import edu.hku.sdb.connect.ResultSet;
+import edu.hku.sdb.connect.ResultSetMetaData;
 import edu.hku.sdb.connect.SdbResultSet;
 import edu.hku.sdb.crypto.Crypto;
 import edu.hku.sdb.optimize.Optimizer;
@@ -48,7 +48,7 @@ public class ExecutorTest {
   private Executor executor;
   private String simpleSelectQuery = "select salary from t2";
   private String simpleMultipleSelectQuery = "select id, salary from t2";
-  private String simpleMultipleMultiECQuery = "select salary * 3 from t2";
+  private String simpleMultipleMultiECQuery = "select salary * 3, id from t2";
 
 
   @Before
@@ -221,10 +221,14 @@ public class ExecutorTest {
     ExecutionState eState = new ExecutionState();
     executor.execute(planNode, eState, resultSet);
 
+    ResultSetMetaData sdbMetaData = resultSet.getResultSetMetaData();
+    assertTrue(sdbMetaData.getColumnCount() > 0);
+    System.out.println(sdbMetaData.getColumnName(1) + " " + sdbMetaData.getColumnName(2));
     while (resultSet.next()){
-      System.out.println(resultSet.getInteger(1));
-//      System.out.println(resultSet.getInteger(1) + " " + resultSet.getInteger(2) );
+//      System.out.println(resultSet.getInteger(1));
+      System.out.println(resultSet.getInteger(1) + " " + resultSet.getInteger(2) );
     }
+
 
   }
 
@@ -254,9 +258,6 @@ public class ExecutorTest {
     System.out.println("Testing UDF " + sql);
     res = con.createStatement().executeQuery(sql);
 
-//    while (res.next()) {
-//      System.out.println(res.getString(1) + " " + res.getString(2));
-//    }
     return con;
   }
 

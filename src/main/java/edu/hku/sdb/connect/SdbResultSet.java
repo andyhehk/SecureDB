@@ -22,13 +22,31 @@ import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
     Serializable {
 
   private static final long serialVersionUID = 127L;
+
+  private List<Object[]> tuple;
+  private int index;
+
+  private SDBResultSetMetaData sdbResultSetMetaData;
+
+  public SdbResultSet() throws RemoteException {
+    super();
+    tuple = new ArrayList<>();
+    index = -1;
+  }
+
+  public ResultSetMetaData getResultSetMetaData() throws RemoteException{
+    return sdbResultSetMetaData;
+  }
+
+  public void setSdbResultSetMetaData(SDBResultSetMetaData sdbResultSetMetaData) {
+    this.sdbResultSetMetaData = sdbResultSetMetaData;
+  }
 
   public List<Object[]> getTuple() {
     return tuple;
@@ -38,33 +56,39 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
     this.tuple = tuple;
   }
 
-  private List<Object[]> tuple;
-  private int index;
-
-  public SdbResultSet() throws RemoteException {
-    super();
-    tuple = new ArrayList<>();
-    index = -1;
-  }
-
+  @Override
   public boolean next() throws RemoteException {
     if (index == tuple.size()-1 ){
       return false;
-    }
-    else{
+    } else{
       index ++;
     }
     return true;
-  };
+  }
 
-  // TODO to be implemented
+  /**
+   * nullify tuple and other related resources
+   * @throws RemoteException
+   */
   public void close() throws RemoteException {
+    tuple = null;
+    index = -1;
     return;
-  };
+  }
 
+  /**
+   * Get the String at column index
+   * @param columnIndex
+   * @return
+   * @throws RemoteException
+   */
   public String getString(int columnIndex) throws RemoteException{
     //column index starts from 1 in JDBC
-    return (String) tuple.get(index)[columnIndex - 1];
+    Object columnData = tuple.get(index)[columnIndex - 1];
+    if (columnData instanceof Integer){
+      return String.valueOf(columnData);
+    }
+    return columnData.toString();
   }
 
   /**
