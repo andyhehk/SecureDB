@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
-    Serializable {
+    Serializable, Profiler {
 
   private static final long serialVersionUID = 127L;
 
@@ -40,6 +40,9 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
   private Executor executor;
   private PlanNode planNode;
   private SDBResultSetMetaData sdbResultSetMetaData;
+
+  private long clientTotalTime;
+  private long serverTotalTime;
 
   public SdbResultSet() throws RemoteException {
     super();
@@ -78,10 +81,10 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
   public ExecutionState geteState() {
     return eState;
   }
+
   public void seteState(ExecutionState eState) {
     this.eState = eState;
   }
-
   public void setTuple(List<Object[]> tuple) {
     this.tuple = tuple;
   }
@@ -147,4 +150,32 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
     executor.execute(planNode, eState, this);
   }
 
+  @Override
+  public long getTotalTime() throws RemoteException {
+    return totalTime;
+  }
+
+  @Override
+  public long getClientTotalTime() throws RemoteException {
+    return clientTotalTime;
+  }
+
+  @Override
+  public long getServerTotalTime() throws RemoteException {
+    return serverTotalTime;
+  }
+
+  public void setTotalTime(long totalTime) {
+    this.totalTime = totalTime;
+  }
+
+  private long totalTime;
+
+  public void setClientTotalTime(long clientTotalTime) {
+    this.clientTotalTime = clientTotalTime;
+  }
+
+  public void setServerTotalTime(long serverTotalTime) {
+    this.serverTotalTime = serverTotalTime;
+  }
 }

@@ -17,7 +17,6 @@
 
 package edu.hku.sdb.exec;
 
-import edu.hku.sdb.connect.SDBResultSetMetaData;
 import edu.hku.sdb.connect.SdbResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +31,11 @@ public class Executor {
 
   public void execute(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
 
+    // Only support LocalDecrypt node
+    if (!(plan instanceof LocalDecrypt)){
+      return;
+    }
+
     List<Object[]> resultList = resultSet.getTuple();
     BasicTupleSlot basicTupleSlot = plan.nextTuple();
     while (basicTupleSlot != null){
@@ -40,14 +44,12 @@ public class Executor {
     }
 
     try {
-      //set SdbMetaData
+      //set client & server SdbMetaData
       if (resultSet.getResultSetMetaData() == null){
-        SDBResultSetMetaData sdbMetaData = new SDBResultSetMetaData();
-        List<BasicColumnDesc> basicColumnDescList = plan.nodeDesc.getRowDesc().getSignature();
-        //Remove row_id before init resultSetMetaData
-        sdbMetaData.setColumnList(basicColumnDescList.subList(0, basicColumnDescList.size() - 1));
-        resultSet.setSdbResultSetMetaData(sdbMetaData);
+        resultSet.setSdbResultSetMetaData(((LocalDecrypt) plan).getResultSetMetaData());
       }
+      //set server execution time
+      resultSet.setServerTotalTime(((LocalDecrypt) plan).getServerExecutionTime());
     } catch (RemoteException e) {
       e.printStackTrace();
     }

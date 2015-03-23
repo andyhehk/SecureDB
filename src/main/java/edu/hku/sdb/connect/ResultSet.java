@@ -31,4 +31,5 @@ public interface ResultSet extends Remote {
   public Integer getInteger(int columnIndex) throws RemoteException;
 
   public ResultSetMetaData getResultSetMetaData() throws RemoteException;
+
 }

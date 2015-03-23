@@ -19,6 +19,8 @@ package edu.hku.sdb.exec;
 
 import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.connect.ResultSetMetaData;
+import edu.hku.sdb.connect.SDBResultSetMetaData;
 import edu.hku.sdb.crypto.Crypto;
 import edu.hku.sdb.parse.FieldLiteral;
 import edu.hku.sdb.plan.LocalDecryptDesc;
@@ -26,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +47,19 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
     nodeDesc.setRowDesc(rowDesc);
   }
 
+  public SDBResultSetMetaData getResultSetMetaData(){
+    SDBResultSetMetaData sdbMetaData = null;
+    try {
+      sdbMetaData = new SDBResultSetMetaData();
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    }
+    List<BasicColumnDesc> basicColumnDescList = nodeDesc.getRowDesc().getSignature();
+    //Remove row_id before init resultSetMetaData for localDecrypt
+    sdbMetaData.setColumnList(basicColumnDescList.subList(0, basicColumnDescList.size() - 1));
+    return sdbMetaData;
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -53,6 +69,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
   public void init() {
     child.init();
 
+    // decrypt and buffer result
     basicTupleSlotList = new ArrayList<>();
     BasicTupleSlot tupleSlot = child.nextTuple();
     while (tupleSlot != null){
@@ -145,5 +162,12 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
     nodeDesc.setQ(q);
     nodeDesc.setN(n);
     nodeDesc.setG(g);
+  }
+
+  public long getServerExecutionTime(){
+    if (!(child instanceof RemoteSQL)){
+      return 0;
+    }
+    return ((RemoteSQL) child).getServerExecutionTime();
   }
 }

@@ -45,6 +45,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   private SdbSchemeRewriter sdbSchemeRewriter;
   private Optimizer optimizer;
   private Executor executor;
+  private SdbResultSet sdbResultSet;
 
   private MetaStore metaDb;
   private Connection serverConnection;
@@ -59,7 +60,70 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   @Override
   public ResultSet executeQuery(String query) throws RemoteException  {
 
+    // get execution start time
+    long startTimeStamp = System.currentTimeMillis();
+
     // Parse & analyse
+    ParseNode analyzedNode = getParseNode(query);
+
+    // Rewrite
+    rewriteNode(analyzedNode);
+
+    // Optimize
+    PlanNode planNode = getPlanNode(analyzedNode);
+
+    // Execute
+    sdbResultSet = getSdbResultSet(planNode);
+
+    // get execution end time
+    setExecutionTime(startTimeStamp);
+
+    return sdbResultSet;
+  }
+
+  private void setExecutionTime(long startTimeStamp) {
+    long endTimeStamp = System.currentTimeMillis();
+    sdbResultSet.setTotalTime(endTimeStamp - startTimeStamp);
+    try {
+      sdbResultSet.setClientTotalTime(sdbResultSet.getTotalTime() - sdbResultSet.getServerTotalTime());
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private SdbResultSet getSdbResultSet(PlanNode planNode) throws RemoteException {
+    executor = new Executor();
+    SdbResultSet resultSet = new SdbResultSet();
+    ExecutionState eState = new ExecutionState();
+    executor.execute(planNode, eState, resultSet);
+    return resultSet;
+  }
+
+  private PlanNode getPlanNode(ParseNode analyzedNode) throws RemoteException {
+    System.out.println("Optimizing " + analyzedNode.toSql());
+    optimizer = new RuleBaseOptimizer();
+    PlanNode planNode = null;
+    try {
+      planNode = optimizer.optimize(analyzedNode, serverConnection);
+    } catch (UnSupportedException e) {
+      e.printStackTrace();
+      throw new RemoteException(e.getMessage());
+    }
+    return planNode;
+  }
+
+  private void rewriteNode(ParseNode analyzedNode) throws RemoteException {
+    System.out.println("Rewriting " + analyzedNode.toSql());
+    sdbSchemeRewriter = new SdbSchemeRewriter(metaDb.getAllDBs().get(0));
+    try {
+      sdbSchemeRewriter.rewrite(analyzedNode);
+    } catch (UnSupportedException e) {
+      e.printStackTrace();
+      throw new RemoteException(e.getMessage());
+    }
+  }
+
+  private ParseNode getParseNode(String query) throws RemoteException {
     System.out.println("Parsing " + query);
     parser = new ParseDriver();
     semanticAnalyzer = new SemanticAnalyzer(metaDb);
@@ -74,39 +138,16 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       e.printStackTrace();
       throw new RemoteException(e.getMessage());
     }
-
-    // Rewrite
-    System.out.println("Rewriting " + analyzedNode.toSql());
-    sdbSchemeRewriter = new SdbSchemeRewriter(metaDb.getAllDBs().get(0));
-    try {
-      sdbSchemeRewriter.rewrite(analyzedNode);
-    } catch (UnSupportedException e) {
-      e.printStackTrace();
-      throw new RemoteException(e.getMessage());
-    }
-
-    // Optimize
-    System.out.println("Optimizing " + analyzedNode.toSql());
-    optimizer = new RuleBaseOptimizer();
-    PlanNode planNode = null;
-    try {
-      planNode = optimizer.optimize(analyzedNode, serverConnection);
-    } catch (UnSupportedException e) {
-      e.printStackTrace();
-      throw new RemoteException(e.getMessage());
-    }
-
-    // Execute
-    executor = new Executor();
-    SdbResultSet resultSet = new SdbResultSet();
-    ExecutionState eState = new ExecutionState();
-    executor.execute(planNode, eState, resultSet);
-
-    return resultSet;
+    return analyzedNode;
   }
 
   public void close() {
 
+  }
+
+  @Override
+  public Profiler getProfiler() throws RemoteException {
+    return (Profiler) sdbResultSet;
   }
 
   public MetaStore getMetaDb() {

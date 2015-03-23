@@ -26,4 +26,5 @@ public interface Statement extends Remote {
 
   public void close() throws RemoteException;
 
+  public Profiler getProfiler() throws RemoteException;
 }
