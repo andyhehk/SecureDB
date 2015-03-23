@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
@@ -35,6 +36,8 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
 
   PlanNode child;
   boolean initialized = false;
+  private List<BasicTupleSlot> basicTupleSlotList;
+  private int rowIndex = -1;
 
   public LocalDecrypt(RowDesc rowDesc){
     nodeDesc = new LocalDecryptDesc();
@@ -49,27 +52,10 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
   @Override
   public void init() {
     child.init();
-    initialized = true;
-  }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see edu.hku.sdb.exec.PlanNode#nextTuple()
-   */
-  @Override
-  public BasicTupleSlot nextTuple() {
-    return getNextTupleInternal();
-  }
-
-  private BasicTupleSlot getNextTupleInternal() {
-    if (!initialized){
-      init();
-    }
-
+    basicTupleSlotList = new ArrayList<>();
     BasicTupleSlot tupleSlot = child.nextTuple();
-
-    if (tupleSlot != null) {
+    while (tupleSlot != null){
       List<Object> row = tupleSlot.nextTuple();
       Object rowId = null;
       BigInteger p = nodeDesc.getP();
@@ -94,8 +80,29 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
           row.set(index, plainText);
         }
       }
+      basicTupleSlotList.add(tupleSlot);
+      tupleSlot = child.nextTuple();
     }
-    return tupleSlot;
+
+    initialized = true;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see edu.hku.sdb.exec.PlanNode#nextTuple()
+   */
+  @Override
+  public BasicTupleSlot nextTuple() {
+    if (!initialized){
+      init();
+    }
+
+    rowIndex ++;
+    if (rowIndex == basicTupleSlotList.size()){
+      return null;
+    }
+    return basicTupleSlotList.get(rowIndex);
   }
 
   /*

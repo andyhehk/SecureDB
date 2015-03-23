@@ -17,6 +17,10 @@
 
 package edu.hku.sdb.connect;
 
+import edu.hku.sdb.exec.ExecutionState;
+import edu.hku.sdb.exec.Executor;
+import edu.hku.sdb.exec.PlanNode;
+
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
@@ -32,6 +36,9 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
   private List<Object[]> tuple;
   private int index;
 
+  private ExecutionState eState;
+  private Executor executor;
+  private PlanNode planNode;
   private SDBResultSetMetaData sdbResultSetMetaData;
 
   public SdbResultSet() throws RemoteException {
@@ -52,12 +59,39 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
     return tuple;
   }
 
+  public PlanNode getPlanNode() {
+    return planNode;
+  }
+
+  public void setPlanNode(PlanNode planNode) {
+    this.planNode = planNode;
+  }
+
+  public Executor getExecutor() {
+    return executor;
+  }
+
+  public void setExecutor(Executor executor) {
+    this.executor = executor;
+  }
+
+  public ExecutionState geteState() {
+    return eState;
+  }
+  public void seteState(ExecutionState eState) {
+    this.eState = eState;
+  }
+
   public void setTuple(List<Object[]> tuple) {
     this.tuple = tuple;
   }
 
   @Override
   public boolean next() throws RemoteException {
+    if (tuple.size() == 0){
+      return false;
+    }
+    //TODO fetch 50 localDecrypt results per page
     if (index == tuple.size()-1 ){
       return false;
     } else{
@@ -109,6 +143,8 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
     return (Integer) columnData;
   }
 
-
+  private void getNext(){
+    executor.execute(planNode, eState, this);
+  }
 
 }

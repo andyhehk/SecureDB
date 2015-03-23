@@ -17,6 +17,7 @@
 
 package edu.hku.sdb.plan;
 
+import edu.hku.sdb.exec.BasicColumnDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +25,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RemoteSQLDesc extends PlanNodeDesc {
 
@@ -34,6 +37,8 @@ public class RemoteSQLDesc extends PlanNodeDesc {
   private Connection connection;
   private Statement statement;
   private ResultSet resultSet;
+  private List<List<Object>> resultLists;
+  private int rowIndex = -1;
 
   public ResultSet getResultSet() {
     return resultSet;
@@ -67,14 +72,35 @@ public class RemoteSQLDesc extends PlanNodeDesc {
     this.connection = connection;
   }
 
-  public void init(){
+  //TODO data manipulation logic should be implemented in planNode instead
+  public void init() {
+    resultLists = new ArrayList< List<Object> >();
     try {
       statement = connection.createStatement();
       LOG.debug("Initialize RemoteSQLDesc with sql " + query);
       resultSet = statement.executeQuery(query);
+      List<BasicColumnDesc> basicColumnDescList = rowDesc.getSignature();
+
+      //buffer all results in resultList
+      while (resultSet.next()) {
+        List<Object> row = new ArrayList<Object>();
+        for (BasicColumnDesc columnDesc : basicColumnDescList){
+          row.add(resultSet.getObject(columnDesc.getName()));
+        }
+        resultLists.add(row);
+      }
+
     } catch (SQLException e) {
       e.printStackTrace();
     }
+  }
+
+  public List<Object> nextTuple(){
+    rowIndex ++;
+    if (rowIndex == resultLists.size()){
+      return null;
+    }
+    return resultLists.get(rowIndex);
   }
 
   public void close(){

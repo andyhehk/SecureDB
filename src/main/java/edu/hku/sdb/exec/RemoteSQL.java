@@ -25,6 +25,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
 
@@ -57,20 +58,12 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
    * @see edu.hku.sdb.exec.PlanNode#nextTuple()
    */
   @Override
-  public BasicTupleSlot nextTuple() {
+  public BasicTupleSlot nextTuple(){
     TupleSlot tupleSlot = null;
-    try {
-      ResultSet resultSet = nodeDesc.getResultSet();
-      if (resultSet.next()) {
-        tupleSlot = new TupleSlot();
-        ArrayList<Object> row = new ArrayList<Object>();
-        for (BasicColumnDesc columnDesc : nodeDesc.getRowDesc().getSignature()){
-          row.add(resultSet.getObject(columnDesc.getName()));
-        }
-        tupleSlot.setRow(row);
-      }
-    } catch (SQLException e1) {
-      e1.printStackTrace();
+    List<Object> row = nodeDesc.nextTuple();
+    if (row != null){
+      tupleSlot = new TupleSlot();
+      tupleSlot.setRow(row);
     }
     return tupleSlot;
   }
@@ -91,7 +84,7 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
       LOG.debug("Not an instance of LocalDecrypt!");
       return false;
     }
-    if (!nodeDesc.equals((RemoteSQLDesc) ((RemoteSQL) object).nodeDesc)){
+    if (!nodeDesc.equals(((RemoteSQL) object).nodeDesc)){
       LOG.debug("nodeDesc instance of RemoteSQL is not equal!");
       return false;
     }

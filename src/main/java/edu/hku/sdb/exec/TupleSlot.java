@@ -22,9 +22,9 @@ import java.util.List;
 
 public class TupleSlot extends BasicTupleSlot {
 
-  private ArrayList<Object> row;
+  private List<Object> row;
 
-  public void setRow(ArrayList<Object> row) {
+  public void setRow(List<Object> row) {
     this.row = row;
   }
 

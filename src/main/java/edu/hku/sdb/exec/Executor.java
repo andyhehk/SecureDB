@@ -52,7 +52,11 @@ public class Executor {
       e.printStackTrace();
     }
 
+    //TODO find a better way to handle batch fetch
     resultSet.setTuple(resultList);
+    resultSet.seteState(eState);
+    resultSet.setPlanNode(plan);
+    resultSet.setExecutor(this);
 
     LOG.debug(resultList.size() + " records computed, saved in resultSet");
 
