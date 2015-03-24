@@ -32,4 +32,6 @@ public interface ResultSet extends Remote {
 
   public ResultSetMetaData getResultSetMetaData() throws RemoteException;
 
+  public String getRemoteSQLQuery() throws RemoteException;
+
 }

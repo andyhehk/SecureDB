@@ -18,6 +18,7 @@
 package edu.hku.sdb.exec;
 
 import edu.hku.sdb.connect.SdbResultSet;
+import edu.hku.sdb.plan.RemoteSQLDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +51,7 @@ public class Executor {
       }
       //set server execution time
       resultSet.setServerTotalTime(((LocalDecrypt) plan).getServerExecutionTime());
+      resultSet.setRemoteSQLQuery(((LocalDecrypt) plan).getRemoteSQLQuery());
     } catch (RemoteException e) {
       e.printStackTrace();
     }

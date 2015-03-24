@@ -24,6 +24,7 @@ import edu.hku.sdb.connect.SDBResultSetMetaData;
 import edu.hku.sdb.crypto.Crypto;
 import edu.hku.sdb.parse.FieldLiteral;
 import edu.hku.sdb.plan.LocalDecryptDesc;
+import edu.hku.sdb.plan.RemoteSQLDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,5 +170,12 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
       return 0;
     }
     return ((RemoteSQL) child).getServerExecutionTime();
+  }
+
+  public String getRemoteSQLQuery(){
+    if (child.nodeDesc instanceof RemoteSQLDesc){
+      return ((RemoteSQLDesc) child.nodeDesc).getQuery();
+    }
+    else return "";
   }
 }

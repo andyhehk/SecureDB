@@ -41,13 +41,23 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
   private PlanNode planNode;
   private SDBResultSetMetaData sdbResultSetMetaData;
 
-  private long clientTotalTime;
-  private long serverTotalTime;
+  private SDBProfiler sdbProfiler;
+  private String remoteSQLQuery;
 
   public SdbResultSet() throws RemoteException {
     super();
     tuple = new ArrayList<>();
     index = -1;
+    sdbProfiler = new SDBProfiler();
+  }
+
+  public void setRemoteSQLQuery(String remoteSQLQuery) {
+    this.remoteSQLQuery = remoteSQLQuery;
+  }
+
+  @Override
+  public String getRemoteSQLQuery() throws RemoteException {
+    return remoteSQLQuery;
   }
 
   public ResultSetMetaData getResultSetMetaData() throws RemoteException{
@@ -152,30 +162,29 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
 
   @Override
   public long getTotalTime() throws RemoteException {
-    return totalTime;
+    return sdbProfiler.getTotalTime();
   }
 
   @Override
   public long getClientTotalTime() throws RemoteException {
-    return clientTotalTime;
+    return sdbProfiler.getClientTotalTime();
   }
 
   @Override
   public long getServerTotalTime() throws RemoteException {
-    return serverTotalTime;
+    return sdbProfiler.getServerTotalTime();
   }
 
   public void setTotalTime(long totalTime) {
-    this.totalTime = totalTime;
+    sdbProfiler.setTotalTime(totalTime);
   }
 
-  private long totalTime;
 
   public void setClientTotalTime(long clientTotalTime) {
-    this.clientTotalTime = clientTotalTime;
+    sdbProfiler.setClientTotalTime(clientTotalTime);
   }
 
   public void setServerTotalTime(long serverTotalTime) {
-    this.serverTotalTime = serverTotalTime;
+    sdbProfiler.setServerTotalTime(serverTotalTime);
   }
 }
