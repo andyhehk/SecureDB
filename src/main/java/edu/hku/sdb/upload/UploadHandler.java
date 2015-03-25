@@ -30,7 +30,6 @@ public class UploadHandler {
   private String sourceFile;
   private boolean localMode;
   private FileSystem hdfs;
-  //TODO: replace metaStore with DBMeta/TableMeta
   private MetaStore metaStore;
 
   public MetaStore getMetaStore() {
@@ -84,10 +83,10 @@ public class UploadHandler {
         String newLine = processLine(line);
         bufferedWriter.write(newLine);
       }
+      //close resources
       bufferedReader.close();
       bufferedWriter.close();
       hdfs.close();
-
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -107,7 +106,6 @@ public class UploadHandler {
       hdfs = FileSystem.get(new URI(HDFS_URL), configuration);
       Path file = new Path(HDFS_FILE_PATH);
       //Delete the file if it already exists
-      //TODO: Do we need to support appending to the file?
       if (hdfs.exists(file)) {
         hdfs.delete(file, true);
       }
@@ -130,7 +128,7 @@ public class UploadHandler {
 
     //TODO: should programatically get db name
     DBMeta dbMeta = metaStore.getAllDBs().get(0);
-    //TODO: should get the specific columns of that table instead of columns
+    //TODO: should get the specific columns of that table instead of all columns
     List<ColumnMeta> allCols = metaStore.getAllCols();
     BigInteger n = new BigInteger(dbMeta.getN());
     BigInteger p = new BigInteger(dbMeta.getP());
@@ -194,8 +192,7 @@ public class UploadHandler {
   }
 
   private String appendHelperColumn(String newLine, BigInteger columnValue, ColumnMeta columnMeta, BigInteger n, BigInteger p, BigInteger q, BigInteger g, BigInteger rowId, int rColumnIndex) {
-    ColumnMeta rColumnMeta = columnMeta;
-    IntegerPlaintext integerPlaintext = getIntegerPlaintext(columnValue.toString(), n, p, q, g, rowId, rColumnMeta);
+    IntegerPlaintext integerPlaintext = getIntegerPlaintext(columnValue.toString(), n, p, q, g, rowId, columnMeta);
     newLine = appendColumnString(newLine, rColumnIndex, integerPlaintext);
     return newLine;
   }

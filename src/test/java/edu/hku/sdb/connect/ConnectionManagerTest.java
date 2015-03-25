@@ -13,6 +13,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class ConnectionManagerTest {
 
@@ -30,18 +31,27 @@ public class ConnectionManagerTest {
     ConnectionService connectionService = null;
     try {
       connectionService = (ConnectionService) Naming.lookup("//localhost:2019/ConnectionService");
-      assertNotNull(connectionService);
-    } catch (NotBoundException e) {
-      e.printStackTrace();
-    } catch (MalformedURLException e) {
-      e.printStackTrace();
-    } catch (RemoteException e) {
+    } catch (NotBoundException | MalformedURLException | RemoteException e) {
       e.printStackTrace();
     }
+    assertNotNull(connectionService);
     Connection connection = connectionService.getConnection();
     assertNotNull(connection);
     Statement statement = connection.createStatement();
     assertNotNull(statement);
+  }
+
+  @Test
+  public void testGetConnection() throws Exception{
+    Connection connection = ConnectionManager.getConnection("//localhost:2019/ConnectionService", "", "");
+    assertNotNull(connection);
+    Statement statement = connection.createStatement();
+    assertNotNull(statement);
+    ResultSet resultSet = statement.executeQuery("SELECT ID FROM t2");
+    assertNotNull(resultSet);
+    while (resultSet.next()){
+      assertTrue(resultSet.getInteger(1) > 0);
+    }
   }
 
 }

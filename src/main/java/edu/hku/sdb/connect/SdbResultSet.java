@@ -17,54 +17,125 @@
 
 package edu.hku.sdb.connect;
 
+import edu.hku.sdb.exec.ExecutionState;
+import edu.hku.sdb.exec.Executor;
+import edu.hku.sdb.exec.PlanNode;
+
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
-    Serializable {
+    Serializable, Profiler {
 
   private static final long serialVersionUID = 127L;
 
-  public List<Object[]> getTuple() {
-    return tuple;
-  }
-
-  public void setTuple(List<Object[]> tuple) {
-    this.tuple = tuple;
-  }
-
   private List<Object[]> tuple;
   private int index;
+
+  private ExecutionState eState;
+  private Executor executor;
+  private PlanNode planNode;
+  private SDBResultSetMetaData sdbResultSetMetaData;
+
+  private SDBProfiler sdbProfiler;
+  private String remoteSQLQuery;
 
   public SdbResultSet() throws RemoteException {
     super();
     tuple = new ArrayList<>();
     index = -1;
+    sdbProfiler = new SDBProfiler();
   }
 
+  public void setRemoteSQLQuery(String remoteSQLQuery) {
+    this.remoteSQLQuery = remoteSQLQuery;
+  }
+
+  @Override
+  public String getRemoteSQLQuery() throws RemoteException {
+    return remoteSQLQuery;
+  }
+
+  public ResultSetMetaData getResultSetMetaData() throws RemoteException{
+    return sdbResultSetMetaData;
+  }
+
+  public void setSdbResultSetMetaData(SDBResultSetMetaData sdbResultSetMetaData) {
+    this.sdbResultSetMetaData = sdbResultSetMetaData;
+  }
+
+  public List<Object[]> getTuple() {
+    return tuple;
+  }
+
+  public PlanNode getPlanNode() {
+    return planNode;
+  }
+
+  public void setPlanNode(PlanNode planNode) {
+    this.planNode = planNode;
+  }
+
+  public Executor getExecutor() {
+    return executor;
+  }
+
+  public void setExecutor(Executor executor) {
+    this.executor = executor;
+  }
+
+  public ExecutionState geteState() {
+    return eState;
+  }
+
+  public void seteState(ExecutionState eState) {
+    this.eState = eState;
+  }
+  public void setTuple(List<Object[]> tuple) {
+    this.tuple = tuple;
+  }
+
+  @Override
   public boolean next() throws RemoteException {
-    if (index == tuple.size()-1 ){
+    if (tuple.size() == 0){
       return false;
     }
-    else{
+    //TODO fetch 50 localDecrypt results per page
+    if (index == tuple.size()-1 ){
+      return false;
+    } else{
       index ++;
     }
     return true;
-  };
+  }
 
-  // TODO to be implemented
+  /**
+   * nullify tuple and other related resources
+   * @throws RemoteException
+   */
   public void close() throws RemoteException {
+    tuple = null;
+    index = -1;
     return;
-  };
+  }
 
+  /**
+   * Get the String at column index
+   * @param columnIndex
+   * @return
+   * @throws RemoteException
+   */
   public String getString(int columnIndex) throws RemoteException{
     //column index starts from 1 in JDBC
-    return (String) tuple.get(index)[columnIndex - 1];
+    Object columnData = tuple.get(index)[columnIndex - 1];
+    if (columnData instanceof Integer){
+      return String.valueOf(columnData);
+    }
+    return columnData.toString();
   }
 
   /**
@@ -85,6 +156,35 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
     return (Integer) columnData;
   }
 
+  private void getNext(){
+    executor.execute(planNode, eState, this);
+  }
+
+  @Override
+  public long getTotalTime() throws RemoteException {
+    return sdbProfiler.getTotalTime();
+  }
+
+  @Override
+  public long getClientTotalTime() throws RemoteException {
+    return sdbProfiler.getClientTotalTime();
+  }
+
+  @Override
+  public long getServerTotalTime() throws RemoteException {
+    return sdbProfiler.getServerTotalTime();
+  }
+
+  public void setTotalTime(long totalTime) {
+    sdbProfiler.setTotalTime(totalTime);
+  }
 
 
+  public void setClientTotalTime(long clientTotalTime) {
+    sdbProfiler.setClientTotalTime(clientTotalTime);
+  }
+
+  public void setServerTotalTime(long serverTotalTime) {
+    sdbProfiler.setServerTotalTime(serverTotalTime);
+  }
 }

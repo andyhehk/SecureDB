@@ -63,16 +63,29 @@ public class SdbDriver {
           + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
       Naming.rebind(sdbConnectionUrl, connectionPool);
 
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    } catch (MalformedURLException e) {
+    } catch (RemoteException | MalformedURLException e) {
       e.printStackTrace();
     }
   }
 
-  // TODO: to be implemented
-  private static void stopDriver() {
+  public static SdbConf getSdbConf() {
+    return sdbConf;
+  }
 
+  public static void setSdbConf(SdbConf sdbConf) {
+    SdbDriver.sdbConf = sdbConf;
+  }
+
+  private static void initConfig() {
+    setSdbConf(new SdbConf());
+  }
+
+  private static void initConfig(String sdbConfPath) {
+    setSdbConf(new SdbConf(sdbConfPath));
+  }
+
+  private static void stopDriver() {
+    System.exit(0);
   }
 
   private static void printUsage(OutputStream outputStream) {
@@ -83,12 +96,10 @@ public class SdbDriver {
     }
   }
 
-  // TODO: to be implemented
   private static void failAndExit(String message) {
-    return;
+    System.exit(0);
   }
 
-  // TODO: to be implemented
   private static void parseAndValidateInput(String[] argsList) {
 
     if (argsList.length == 0) {
@@ -116,22 +127,6 @@ public class SdbDriver {
       stopDriver();
       return;
     }
-  }
-
-  public static SdbConf getSdbConf() {
-    return sdbConf;
-  }
-
-  public static void setSdbConf(SdbConf sdbConf) {
-    SdbDriver.sdbConf = sdbConf;
-  }
-
-  private static void initConfig() {
-    setSdbConf(new SdbConf());
-  }
-
-  private static void initConfig(String sdbConfPath) {
-    setSdbConf(new SdbConf(sdbConfPath));
   }
 
 }

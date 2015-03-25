@@ -36,10 +36,8 @@ public class SdbConf {
   private ConnectionConf connectionConf;
   private DbConf metaDbConf;
   private DbConf serverDbConf;
-  private DbConf clientDbConf;
   private String sdbConfPath;
 
-  private static final String CLIENT_CONF_FILE = "sdb-client.xml";
   private static final String SERVER_CONF_FILE = "sdb-server.xml";
   private static final String METASTORE_CONF_FILE = "sdb-metastore.xml";
   private static final String CONNECTION_CONF_FILE = "sdb-connection.xml";
@@ -77,14 +75,6 @@ public class SdbConf {
     this.serverDbConf = serverdbConf;
   }
 
-  public DbConf getClientdbConf() {
-    return clientDbConf;
-  }
-
-  public void setClientdbConf(DbConf clientdbConf) {
-    this.clientDbConf = clientdbConf;
-  }
-
   public ConnectionConf getConnectionConf() {
     return connectionConf;
   }
@@ -102,14 +92,9 @@ public class SdbConf {
   }
 
   private void init() {
-    initClientDbConf(sdbConfPath + "/" + CLIENT_CONF_FILE);
     initServerDbConf(sdbConfPath + "/" + SERVER_CONF_FILE);
     initMetaDbConf(sdbConfPath + "/" + METASTORE_CONF_FILE);
     initConnectionConf(sdbConfPath + "/" + CONNECTION_CONF_FILE);
-  }
-
-  private void initClientDbConf(String filename) {
-    clientDbConf = DbConfFactory.getDbConf(filename);
   }
 
   private void initServerDbConf(String filename) {
@@ -156,11 +141,7 @@ public class SdbConf {
         connectionConf.setSdbPort(Integer.parseInt(propertyValue));
       }
 
-    } catch (ParserConfigurationException e) {
-      e.printStackTrace();
-    } catch (SAXException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
+    } catch (ParserConfigurationException | SAXException | IOException e) {
       e.printStackTrace();
     } catch (XPathExpressionException e) {
       e.printStackTrace();

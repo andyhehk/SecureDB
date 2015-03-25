@@ -41,7 +41,6 @@ public class ConnectionPool extends UnicastRemoteObject implements
   private static final String SERVICE_NAME = "Connection";
   private static String serviceUrl;
   private Integer maxConnectionNumber;
-  // TODO handle synchronized method for availableConnectionNumber
   private Integer availableConnectionNumber;
   private SdbConf sdbConf;
   private SdbConnection sdbConnection;
@@ -51,7 +50,6 @@ public class ConnectionPool extends UnicastRemoteObject implements
    */
   protected ConnectionPool() throws RemoteException {
     super();
-    // TODO Auto-generated constructor stub
   }
 
   public ConnectionPool(SdbConf sdbConf) throws RemoteException {
@@ -64,13 +62,11 @@ public class ConnectionPool extends UnicastRemoteObject implements
   private void createConnection() {
     try {
       ConnectionConf connectionConf = sdbConf.getConnectionConf();
-      sdbConnection = new SdbConnection(connectionConf);
+      sdbConnection = new SdbConnection(sdbConf);
       serviceUrl = connectionConf.getSdbAddress() + ":"
           + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
       Naming.rebind(serviceUrl, sdbConnection);
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    } catch (MalformedURLException e) {
+    } catch (RemoteException | MalformedURLException e) {
       e.printStackTrace();
     }
   }
@@ -82,23 +78,21 @@ public class ConnectionPool extends UnicastRemoteObject implements
    */
   public Connection getConnection() {
     Connection connection = null;
-    if (availableConnectionNumber > 0) {
-      if (sdbConnection == null) {
-        createConnection();
-      }
-      try {
-        connection = (Connection) Naming.lookup(serviceUrl);
-      } catch (NotBoundException e) {
-        e.printStackTrace();
-      } catch (MalformedURLException e) {
-        e.printStackTrace();
-      } catch (RemoteException e) {
-        e.printStackTrace();
-      }
-      availableConnectionNumber--;
-      return connection;
-    } else
-      return null;
+    //TODO enable multiple connection
+    synchronized (this){
+      if (availableConnectionNumber > 0) {
+        if (sdbConnection == null) {
+          createConnection();
+        }
+        try {
+          connection = (Connection) Naming.lookup(serviceUrl);
+        } catch (NotBoundException | MalformedURLException | RemoteException e) {
+          e.printStackTrace();
+        }
+        availableConnectionNumber--;
+        return connection;
+      } else return null;
+    }
   }
 
   /*

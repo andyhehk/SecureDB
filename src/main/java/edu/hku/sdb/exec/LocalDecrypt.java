@@ -19,13 +19,18 @@ package edu.hku.sdb.exec;
 
 import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.connect.ResultSetMetaData;
+import edu.hku.sdb.connect.SDBResultSetMetaData;
 import edu.hku.sdb.crypto.Crypto;
 import edu.hku.sdb.parse.FieldLiteral;
 import edu.hku.sdb.plan.LocalDecryptDesc;
+import edu.hku.sdb.plan.RemoteSQLDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
@@ -35,49 +40,40 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
 
   PlanNode child;
   boolean initialized = false;
-
-  public PlanNode getChild() {
-    return child;
-  }
-
-  public void setChild(PlanNode child) {
-    this.child = child;
-  }
+  private List<BasicTupleSlot> basicTupleSlotList;
+  private int rowIndex = -1;
 
   public LocalDecrypt(RowDesc rowDesc){
     nodeDesc = new LocalDecryptDesc();
     nodeDesc.setRowDesc(rowDesc);
   }
 
+  public SDBResultSetMetaData getResultSetMetaData(){
+    SDBResultSetMetaData sdbMetaData = null;
+    try {
+      sdbMetaData = new SDBResultSetMetaData();
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    }
+    List<BasicColumnDesc> basicColumnDescList = nodeDesc.getRowDesc().getSignature();
+    //Remove row_id before init resultSetMetaData for localDecrypt
+    sdbMetaData.setColumnList(basicColumnDescList.subList(0, basicColumnDescList.size() - 1));
+    return sdbMetaData;
+  }
+
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see edu.hku.sdb.exec.PlanNode#init()
    */
   @Override
   public void init() {
     child.init();
-    initialized = true;
-  }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#nextTuple()
-   */
-  @Override
-  public BasicTupleSlot nextTuple() {
-    return getNextTupleInternal();
-  }
-
-  private BasicTupleSlot getNextTupleInternal() {
-    if (!initialized){
-      init();
-    }
-
+    // decrypt and buffer result
+    basicTupleSlotList = new ArrayList<>();
     BasicTupleSlot tupleSlot = child.nextTuple();
-
-    if (tupleSlot != null) {
+    while (tupleSlot != null){
       List<Object> row = tupleSlot.nextTuple();
       Object rowId = null;
       BigInteger p = nodeDesc.getP();
@@ -102,13 +98,34 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
           row.set(index, plainText);
         }
       }
+      basicTupleSlotList.add(tupleSlot);
+      tupleSlot = child.nextTuple();
     }
-    return tupleSlot;
+
+    initialized = true;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
+   * @see edu.hku.sdb.exec.PlanNode#nextTuple()
+   */
+  @Override
+  public BasicTupleSlot nextTuple() {
+    if (!initialized){
+      init();
+    }
+
+    rowIndex ++;
+    if (rowIndex == basicTupleSlotList.size()){
+      return null;
+    }
+    return basicTupleSlotList.get(rowIndex);
+  }
+
+  /*
+   * (non-Javadoc)
+   *
    * @see edu.hku.sdb.exec.PlanNode#close()
    */
   @Override
@@ -133,10 +150,32 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
     return true;
   }
 
+  public PlanNode getChild() {
+    return child;
+  }
+
+  public void setChild(PlanNode child) {
+    this.child = child;
+  }
+
   public void setCredential(BigInteger p, BigInteger q, BigInteger n, BigInteger g) {
     nodeDesc.setP(p);
     nodeDesc.setQ(q);
     nodeDesc.setN(n);
     nodeDesc.setG(g);
+  }
+
+  public long getServerExecutionTime(){
+    if (!(child instanceof RemoteSQL)){
+      return 0;
+    }
+    return ((RemoteSQL) child).getServerExecutionTime();
+  }
+
+  public String getRemoteSQLQuery(){
+    if (child.nodeDesc instanceof RemoteSQLDesc){
+      return ((RemoteSQLDesc) child.nodeDesc).getQuery();
+    }
+    else return "";
   }
 }

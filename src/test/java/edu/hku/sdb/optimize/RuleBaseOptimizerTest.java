@@ -184,8 +184,8 @@ public class RuleBaseOptimizerTest {
     ExecutionState eState = new ExecutionState();
     executor.execute(planNode, eState, resultSet);
 
-    while (resultSet.next()){
-      System.out.println(resultSet.getString(1) + " " + resultSet.getString(2));
-    }
+//    while (resultSet.next()){
+//      System.out.println(resultSet.getInteger(1) + " " + resultSet.getInteger(2));
+//    }
   }
 }

@@ -21,35 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 public class RemoteSQLDesc extends PlanNodeDesc {
 
   private static final Logger LOG = LoggerFactory
           .getLogger(RemoteSQLDesc.class);
-
   private String query;
   private Connection connection;
-  private Statement statement;
-  private ResultSet resultSet;
-
-  public ResultSet getResultSet() {
-    return resultSet;
-  }
-
-  public void setResultSet(ResultSet resultSet) {
-    this.resultSet = resultSet;
-  }
-
-  public Statement getStatement() {
-    return statement;
-  }
-
-  public void setStatement(Statement statement) {
-    this.statement = statement;
-  }
 
   public String getQuery() {
     return query;
@@ -65,25 +43,6 @@ public class RemoteSQLDesc extends PlanNodeDesc {
 
   public void setConnection(Connection connection) {
     this.connection = connection;
-  }
-
-  public void init(){
-    try {
-      statement = connection.createStatement();
-      LOG.debug("Initialize RemoteSQLDesc with sql " + query);
-      resultSet = statement.executeQuery(query);
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-  }
-
-  public void close(){
-    try {
-      resultSet.close();
-      statement.close();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
   }
 
   @Override

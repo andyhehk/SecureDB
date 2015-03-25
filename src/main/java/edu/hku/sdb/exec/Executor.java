@@ -18,9 +18,11 @@
 package edu.hku.sdb.exec;
 
 import edu.hku.sdb.connect.SdbResultSet;
+import edu.hku.sdb.plan.RemoteSQLDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.rmi.RemoteException;
 import java.util.List;
 
 public class Executor {
@@ -30,6 +32,11 @@ public class Executor {
 
   public void execute(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
 
+    // Only support LocalDecrypt node
+    if (!(plan instanceof LocalDecrypt)){
+      return;
+    }
+
     List<Object[]> resultList = resultSet.getTuple();
     BasicTupleSlot basicTupleSlot = plan.nextTuple();
     while (basicTupleSlot != null){
@@ -37,7 +44,23 @@ public class Executor {
       basicTupleSlot = plan.nextTuple();
     }
 
+    try {
+      //set client & server SdbMetaData
+      if (resultSet.getResultSetMetaData() == null){
+        resultSet.setSdbResultSetMetaData(((LocalDecrypt) plan).getResultSetMetaData());
+      }
+      //set server execution time
+      resultSet.setServerTotalTime(((LocalDecrypt) plan).getServerExecutionTime());
+      resultSet.setRemoteSQLQuery(((LocalDecrypt) plan).getRemoteSQLQuery());
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    }
+
+    //TODO find a better way to handle batch fetch
     resultSet.setTuple(resultList);
+    resultSet.seteState(eState);
+    resultSet.setPlanNode(plan);
+    resultSet.setExecutor(this);
 
     LOG.debug(resultList.size() + " records computed, saved in resultSet");
 

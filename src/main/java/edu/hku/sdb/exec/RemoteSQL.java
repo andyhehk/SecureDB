@@ -17,6 +17,7 @@
 
 package edu.hku.sdb.exec;
 
+import edu.hku.sdb.connect.Statement;
 import edu.hku.sdb.plan.RemoteSQLDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,16 +26,28 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
 
   private static final Logger LOG = LoggerFactory
           .getLogger(RemoteSQL.class);
+  private List<BasicTupleSlot> resultLists;
+  private int rowIndex = -1;
+  private long serverExecutionTime;
 
   public RemoteSQL(String query, RowDesc rowDesc) {
     nodeDesc = new RemoteSQLDesc();
     nodeDesc.setRowDesc(rowDesc);
     nodeDesc.setQuery(query);
+  }
+
+  public long getServerExecutionTime() {
+    return serverExecutionTime;
+  }
+
+  public void setServerExecutionTime(long serverExecutionTime) {
+    this.serverExecutionTime = serverExecutionTime;
   }
 
   public void setConnection(Connection connection){
@@ -48,7 +61,37 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
      */
   @Override
   public void init() {
-    nodeDesc.init();
+    long startTimeStamp = System.currentTimeMillis();
+    resultLists = new ArrayList<>();
+    try {
+      String query = nodeDesc.getQuery();
+      java.sql.Statement statement = nodeDesc.getConnection().createStatement();
+      LOG.debug("Initialize RemoteSQLDesc with sql " + query);
+      ResultSet resultSet = statement.executeQuery(query);
+      List<BasicColumnDesc> basicColumnDescList = nodeDesc.getRowDesc().getSignature();
+
+      //buffer all results in resultList
+      while (resultSet.next()) {
+        TupleSlot tupleSlot = new TupleSlot();
+        List<Object> row = new ArrayList<Object>();
+        for (BasicColumnDesc columnDesc : basicColumnDescList){
+          row.add(resultSet.getObject(columnDesc.getName()));
+        }
+        if (row.size() > 0){
+          tupleSlot.setRow(row);
+          resultLists.add(tupleSlot);
+        }
+      }
+      resultSet.close();
+      statement.close();
+
+      // profile server query execution time
+      long endTimeStamp = System.currentTimeMillis();
+      setServerExecutionTime(endTimeStamp - startTimeStamp);
+
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
 
   /*
@@ -57,22 +100,12 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
    * @see edu.hku.sdb.exec.PlanNode#nextTuple()
    */
   @Override
-  public BasicTupleSlot nextTuple() {
-    TupleSlot tupleSlot = null;
-    try {
-      ResultSet resultSet = nodeDesc.getResultSet();
-      if (resultSet.next()) {
-        tupleSlot = new TupleSlot();
-        ArrayList<Object> row = new ArrayList<Object>();
-        for (BasicColumnDesc columnDesc : nodeDesc.getRowDesc().getSignature()){
-          row.add(resultSet.getObject(columnDesc.getName()));
-        }
-        tupleSlot.setRow(row);
-      }
-    } catch (SQLException e1) {
-      e1.printStackTrace();
+  public BasicTupleSlot nextTuple(){
+    rowIndex ++;
+    if (rowIndex == resultLists.size()){
+      return null;
     }
-    return tupleSlot;
+    return resultLists.get(rowIndex);
   }
 
   /*
@@ -82,7 +115,11 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
    */
   @Override
   public void close() {
-    nodeDesc.close();
+    try {
+      nodeDesc.getConnection().close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
 
   @Override
@@ -91,7 +128,7 @@ public class RemoteSQL extends PlanNode<RemoteSQLDesc> {
       LOG.debug("Not an instance of LocalDecrypt!");
       return false;
     }
-    if (!nodeDesc.equals((RemoteSQLDesc) ((RemoteSQL) object).nodeDesc)){
+    if (!nodeDesc.equals(((RemoteSQL) object).nodeDesc)){
       LOG.debug("nodeDesc instance of RemoteSQL is not equal!");
       return false;
     }
