@@ -33,10 +33,6 @@ import static com.google.common.base.Preconditions.*;
 public class FieldLiteral extends LiteralExpr {
 
   private static final Logger LOG = LoggerFactory.getLogger(FieldLiteral.class);
-  public static final String ROW_ID_COLUMN_NAME = "row_id";
-  public static final String S_COLUMN_NAME = "s";
-  public static final String R_COLUMN_NAME = "r";
-
 
   // Make sure the tbl is not null.
   private String tblName = "";

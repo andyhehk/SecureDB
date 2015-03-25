@@ -59,6 +59,10 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     switch (tree.getType()) {
     case HiveParser.TOK_QUERY:
       parseTree = buildStmt(tree);
+      break;
+    case HiveParser.TOK_CREATETABLE:
+      parseTree = buildCreateStmt(tree);
+      break;
     }
 
     if (parseTree != null)
@@ -151,6 +155,123 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
 
     return insertStmt;
   }
+
+  private CreateStmt buildCreateStmt(ASTNode tree) throws SemanticException{
+    CreateStmt createStmt = new CreateStmt();
+    TableName tableName = null;
+    List<BasicFieldLiteral> basicFieldLiterals = null;
+    TableRowFormat tableRowFormat = null;
+
+    for (int i = 0; i < tree.getChildCount(); i++) {
+      ASTNode child = (ASTNode) tree.getChild(i);
+      switch (child.getType()) {
+        case HiveParser.TOK_TABNAME:
+          tableName = new TableName();
+          tableName.setName(child.getChild(0).getText());
+          continue;
+        case HiveParser.TOK_TABCOLLIST:
+          basicFieldLiterals = buildBasicFieldLiteralList(child);
+          continue;
+        case HiveParser.TOK_TABLEROWFORMATFIELD:
+          tableRowFormat = buildTableRowFormat(child);
+          continue;
+          //TODO doesn't support create from as select ... yet
+        case HiveParser.TOK_INSERT:
+        case HiveParser.TOK_LIKETABLE:
+          continue;
+        default:
+          throw new SemanticException("Unsupported Query Type!");
+      }
+    }
+
+    if (tableRowFormat == null){
+      tableRowFormat = buildDefaultTableRowFormat();
+    }
+    createStmt.setFieldList(basicFieldLiterals);
+    createStmt.setTableName(tableName);
+    createStmt.setTableRowFormat(tableRowFormat);
+
+    return createStmt;
+  }
+
+  private TableRowFormat buildTableRowFormat(ASTNode tree) throws SemanticException{
+    TableRowFormat tableRowFormat = null;
+
+    for (int i = 0; i < tree.getChildCount(); i++) {
+      ASTNode child = (ASTNode) tree.getChild(i);
+      switch (child.getType()) {
+        case HiveParser.TOK_SERDEPROPS:
+          ASTNode  secondLevelChild = (ASTNode) child.getChild(0);
+          if (secondLevelChild.getType() == HiveParser.TOK_TABLEROWFORMATFIELD){
+            tableRowFormat = new TableRowFormat();
+            tableRowFormat.setRowFieldFormat(secondLevelChild.getChild(0).getText());
+            return tableRowFormat;
+          }
+        default:
+          throw new SemanticException("Unsupported Query Type!");
+      }
+    }
+    return tableRowFormat;
+  }
+
+  private TableRowFormat buildDefaultTableRowFormat(){
+    TableRowFormat tableRowFormat = new TableRowFormat();
+    tableRowFormat.setRowFieldFormat(";");
+    return tableRowFormat;
+  }
+
+  private List<BasicFieldLiteral> buildBasicFieldLiteralList(ASTNode tree) throws SemanticException {
+    List<BasicFieldLiteral> basicFieldLiterals = new ArrayList<>();
+
+    for (int i = 0; i < tree.getChildCount(); i++) {
+      ASTNode child = (ASTNode) tree.getChild(i);
+      switch (child.getType()) {
+        case HiveParser.TOK_TABCOL:
+          basicFieldLiterals.add(buildBasicFieldLiteral(child));
+          continue;
+        default:
+          throw new SemanticException("Unsupported Query Type!");
+      }
+    }
+
+
+    return basicFieldLiterals;
+  }
+
+  private BasicFieldLiteral buildBasicFieldLiteral(ASTNode tree) throws SemanticException {
+    DataType type;
+    String fieldName = tree.getChild(0).getText();
+    boolean isSensitive = false;
+
+    ASTNode secondChild = (ASTNode) tree.getChild(1);
+    switch (secondChild.getType()) {
+      case HiveParser.TOK_VARCHAR:
+        type = DataType.VARCHAR;
+        type.setLength(Integer.valueOf(secondChild.getChild(0).getText()));
+        break;
+      case HiveParser.TOK_CHAR:
+        type = DataType.CHAR;
+        type.setLength(Integer.valueOf(secondChild.getChild(0).getText()));
+        break;
+      case HiveParser.TOK_INT:
+        type = DataType.INT;
+        // mark sensitive in case of ENC
+        if (tree.getChildren().size() >= 3 && tree.getChild(2).getType() == (HiveParser.TOK_ENC)){
+          isSensitive = true;
+        }
+        break;
+      default:
+        throw new SemanticException("Unsupported Query Type!");
+    }
+
+    BasicFieldLiteral fieldLiteral = new BasicFieldLiteral(fieldName, type);
+    if (isSensitive){
+      fieldLiteral.setSen(true);
+    }
+
+    return fieldLiteral;
+  }
+
 
   /**
    * Get the query statement without the "insert into".

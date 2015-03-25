@@ -20,5 +20,23 @@ package edu.hku.sdb.catalog;
 public enum DataType {
   INT,
   CHAR,
-  UNKNOWN
+  VARCHAR,
+  UNKNOWN;
+
+  private int length = 0;
+
+  public void setLength(int length){
+    this.length = length;
+  }
+
+  @Override
+  public String toString(){
+    switch (this){
+      case INT: return "INT";
+      case VARCHAR: return "VARCHAR(" + length + ")";
+      case CHAR: return "CHAR";
+    }
+    return null;
+  }
+
 }

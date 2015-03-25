@@ -160,4 +160,22 @@ public class SemanticAnalyzerTest {
     }
   }
 
+
+  @Test
+  public void testCreateStmt(){
+    String command = "CREATE TABLE employee (id INT, name VARCHAR(20), salary INT ENC, age INT)";
+
+    try {
+      ASTNode astTree = parser.parse(command);
+
+      ParseNode ansTree = TestQuery.prepareCreateStmt();
+      ParseNode resultTree = testObj.analyze(astTree);
+
+      assertEquals(ansTree, resultTree);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+  }
+
 }

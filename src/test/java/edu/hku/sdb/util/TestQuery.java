@@ -24,20 +24,7 @@ import java.util.List;
 import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.ColumnMeta;
 import edu.hku.sdb.catalog.DataType;
-import edu.hku.sdb.parse.BaseTableRef;
-import edu.hku.sdb.parse.Expr;
-import edu.hku.sdb.parse.FieldLiteral;
-import edu.hku.sdb.parse.FloatLiteral;
-import edu.hku.sdb.parse.FunctionCallStarExpr;
-import edu.hku.sdb.parse.InLineViewRef;
-import edu.hku.sdb.parse.JoinOperator;
-import edu.hku.sdb.parse.NormalArithmeticExpr;
-import edu.hku.sdb.parse.NormalBinPredicate;
-import edu.hku.sdb.parse.ParseNode;
-import edu.hku.sdb.parse.SelectStmt;
-import edu.hku.sdb.parse.SelectionItem;
-import edu.hku.sdb.parse.SelectionList;
-import edu.hku.sdb.parse.TableRef;
+import edu.hku.sdb.parse.*;
 import edu.hku.sdb.parse.BinaryPredicate.BinOperator;
 import edu.hku.sdb.parse.NormalArithmeticExpr.Operator;
 
@@ -261,5 +248,42 @@ public class TestQuery {
     selStmt.setWhereClause(whereClause);
 
     return selStmt;
+  }
+
+  static public CreateStmt prepareCreateStmt(){
+    CreateStmt createStmt = new CreateStmt();
+
+    //set table name
+    TableName tableName = new TableName();
+    tableName.setName("employee");
+    createStmt.setTableName(tableName);
+
+    //set basic field literals
+    List<BasicFieldLiteral> literalList = new ArrayList<>();
+    BasicFieldLiteral idField = new BasicFieldLiteral("id", DataType.INT);
+    DataType varcharType = DataType.VARCHAR;
+    varcharType.setLength(20);
+    BasicFieldLiteral nameField = new BasicFieldLiteral("name", varcharType);
+    BasicFieldLiteral salaryField = new BasicFieldLiteral("salary", DataType.INT, tableName, true);
+    BasicFieldLiteral ageField = new BasicFieldLiteral("age", DataType.INT);
+
+    idField.setTableName(tableName);
+    nameField.setTableName(tableName);
+    salaryField.setTableName(tableName);
+    ageField.setTableName(tableName);
+
+    literalList.add(idField);
+    literalList.add(nameField);
+    literalList.add(salaryField);
+    literalList.add(ageField);
+
+    createStmt.setFieldList(literalList);
+
+    //set table row format
+    TableRowFormat tableRowFormat = new TableRowFormat();
+    tableRowFormat.setRowFieldFormat(";");
+    createStmt.setTableRowFormat(tableRowFormat);
+
+    return createStmt;
   }
 }
