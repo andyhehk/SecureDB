@@ -60,7 +60,12 @@ public class CreateStmt implements ParseNode {
     }
     String fields = Joiner.on(", ").join(items);
 
-    return "CREATE TABLE " + tableName.toSql() + " (" + fields + ") " + tableRowFormat.toSql();
+    String rowFormat = "";
+    if (tableRowFormat != null ){
+      rowFormat = tableRowFormat.toSql();
+    }
+
+    return "CREATE TABLE " + tableName.toSql() + " (" + fields + ") " + rowFormat;
   }
 
   @Override

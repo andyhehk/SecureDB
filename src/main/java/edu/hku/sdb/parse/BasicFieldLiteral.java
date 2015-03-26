@@ -1,7 +1,5 @@
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.catalog.DataType;
 import edu.hku.sdb.catalog.MetaStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +15,11 @@ public class BasicFieldLiteral  implements ParseNode{
   public static final String R_COLUMN_NAME = "r";
 
   private TableName tableName;
-  private DataType type;
+  private ColumnType type;
   private boolean isSen = false;
   private String name;
-  public BasicFieldLiteral(String name, DataType type) {
+
+  public BasicFieldLiteral(String name, ColumnType type) {
     this.name = name;
     this.type = type;
   }
@@ -41,11 +40,11 @@ public class BasicFieldLiteral  implements ParseNode{
     this.name = name;
   }
 
-  public DataType getType() {
+  public ColumnType getType() {
     return type;
   }
 
-  public void setType(DataType type) {
+  public void setType(ColumnType type) {
     this.type = type;
   }
 
@@ -57,7 +56,7 @@ public class BasicFieldLiteral  implements ParseNode{
     this.isSen = isSen;
   }
 
-  public BasicFieldLiteral(String name, DataType type, TableName tableName, boolean isSen) {
+  public BasicFieldLiteral(String name, ColumnType type, TableName tableName, boolean isSen) {
     this.name = name;
     this.type = type;
     this.isSen = isSen;
@@ -75,7 +74,7 @@ public class BasicFieldLiteral  implements ParseNode{
 
   @Override
   public String toSql() {
-    return name + " " + type;
+    return name + " " + type.toSql();
   }
 
   @Override

@@ -86,6 +86,50 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     rewriteHavingExpr(selStmt.getHavingExpr());
   }
 
+  @Override
+  protected void rewriteCreateStmt(CreateStmt createStmt) throws UnSupportedException {
+    rewriteCreateFieldLists(createStmt.getFieldList());
+    rewriteCreateRowFormat(createStmt.getTableRowFormat());
+
+  }
+
+  private void rewriteCreateRowFormat(TableRowFormat tableRowFormat) {
+    //TODO get default separator ";" from config file
+    if (tableRowFormat == null){
+      tableRowFormat = new TableRowFormat();
+      tableRowFormat.setRowFieldFormat(";");
+    }
+  }
+
+  private void rewriteCreateFieldLists(List<BasicFieldLiteral> fieldList) {
+    TableName tableName = fieldList.get(0).getTableName();
+
+    for (BasicFieldLiteral basicFieldLiteral : fieldList){
+      if (basicFieldLiteral.isSen()){
+        ColumnType type = new ColumnType(DataType.VARCHAR);
+        type.setLength(Crypto.TWO_THOUSAND_FORTY_EIGHT);
+        basicFieldLiteral.setType(type);
+      }
+    }
+
+    BasicFieldLiteral rowIdField = buildSensitiveCreateField(BasicFieldLiteral.ROW_ID_COLUMN_NAME, tableName);
+    fieldList.add(rowIdField);
+
+    BasicFieldLiteral rField = buildSensitiveCreateField(BasicFieldLiteral.R_COLUMN_NAME, tableName);
+    fieldList.add(rField);
+
+    BasicFieldLiteral sField = buildSensitiveCreateField(BasicFieldLiteral.S_COLUMN_NAME, tableName);
+    fieldList.add(sField);
+
+  }
+
+  private BasicFieldLiteral buildSensitiveCreateField(String fieldName, TableName tableName) {
+    ColumnType type = new ColumnType(DataType.VARCHAR);
+    type.setLength(Crypto.TWO_THOUSAND_FORTY_EIGHT);
+    BasicFieldLiteral fieldLiteral = new BasicFieldLiteral(fieldName, type, tableName, true);
+    return fieldLiteral;
+  }
+
   protected void rewriteSelList(SelectionList selList)
       throws UnSupportedException {
 

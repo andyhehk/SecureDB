@@ -36,6 +36,7 @@ public class HiveRewriterTest {
   private String simpleSQLMulEE = "SELECT b * id AS C FROM T2";
   private String simpleSQLMulEC = "SELECT b * 10 AS C FROM T2";
   private String simpleSQLAddEE = "SELECT b + id AS C FROM T2";
+  private String simpleCreate = "CREATE TABLE employee (id INT, name VARCHAR(20), salary INT ENC, age INT)";
 
   /**
    * Prepare a in-memory database for testing
@@ -131,5 +132,9 @@ public class HiveRewriterTest {
     sdbSchemeRewriter.rewrite(parseNode);
     System.out.println(parseNode.toSql());
 
+    parseNode = testObj.analyze(parser.parse(simpleCreate));
+    sdbSchemeRewriter.rewrite(parseNode);
+    System.out.println(parseNode.toSql());
   }
+
 }

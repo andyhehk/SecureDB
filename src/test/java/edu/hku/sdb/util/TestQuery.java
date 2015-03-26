@@ -260,12 +260,12 @@ public class TestQuery {
 
     //set basic field literals
     List<BasicFieldLiteral> literalList = new ArrayList<>();
-    BasicFieldLiteral idField = new BasicFieldLiteral("id", DataType.INT);
-    DataType varcharType = DataType.VARCHAR;
-    varcharType.setLength(20);
-    BasicFieldLiteral nameField = new BasicFieldLiteral("name", varcharType);
-    BasicFieldLiteral salaryField = new BasicFieldLiteral("salary", DataType.INT, tableName, true);
-    BasicFieldLiteral ageField = new BasicFieldLiteral("age", DataType.INT);
+    BasicFieldLiteral idField = new BasicFieldLiteral("id", new ColumnType(DataType.INT));
+    ColumnType columnType = new ColumnType(DataType.VARCHAR);
+    columnType.setLength(20);
+    BasicFieldLiteral nameField = new BasicFieldLiteral("name", columnType);
+    BasicFieldLiteral salaryField = new BasicFieldLiteral("salary", new ColumnType(DataType.INT), tableName, true);
+    BasicFieldLiteral ageField = new BasicFieldLiteral("age", new ColumnType(DataType.INT));
 
     idField.setTableName(tableName);
     nameField.setTableName(tableName);
@@ -278,11 +278,6 @@ public class TestQuery {
     literalList.add(ageField);
 
     createStmt.setFieldList(literalList);
-
-    //set table row format
-    TableRowFormat tableRowFormat = new TableRowFormat();
-    tableRowFormat.setRowFieldFormat(";");
-    createStmt.setTableRowFormat(tableRowFormat);
 
     return createStmt;
   }

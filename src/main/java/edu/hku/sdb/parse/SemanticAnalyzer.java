@@ -184,9 +184,6 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       }
     }
 
-    if (tableRowFormat == null){
-      tableRowFormat = buildDefaultTableRowFormat();
-    }
     createStmt.setFieldList(basicFieldLiterals);
     createStmt.setTableName(tableName);
     createStmt.setTableRowFormat(tableRowFormat);
@@ -214,12 +211,6 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     return tableRowFormat;
   }
 
-  private TableRowFormat buildDefaultTableRowFormat(){
-    TableRowFormat tableRowFormat = new TableRowFormat();
-    tableRowFormat.setRowFieldFormat(";");
-    return tableRowFormat;
-  }
-
   private List<BasicFieldLiteral> buildBasicFieldLiteralList(ASTNode tree) throws SemanticException {
     List<BasicFieldLiteral> basicFieldLiterals = new ArrayList<>();
 
@@ -239,22 +230,22 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
   }
 
   private BasicFieldLiteral buildBasicFieldLiteral(ASTNode tree) throws SemanticException {
-    DataType type;
+    ColumnType type;
     String fieldName = tree.getChild(0).getText();
     boolean isSensitive = false;
 
     ASTNode secondChild = (ASTNode) tree.getChild(1);
     switch (secondChild.getType()) {
       case HiveParser.TOK_VARCHAR:
-        type = DataType.VARCHAR;
+        type = new ColumnType(DataType.VARCHAR);
         type.setLength(Integer.valueOf(secondChild.getChild(0).getText()));
         break;
       case HiveParser.TOK_CHAR:
-        type = DataType.CHAR;
+        type = new ColumnType(DataType.CHAR);
         type.setLength(Integer.valueOf(secondChild.getChild(0).getText()));
         break;
       case HiveParser.TOK_INT:
-        type = DataType.INT;
+        type = new ColumnType(DataType.INT);
         // mark sensitive in case of ENC
         if (tree.getChildren().size() >= 3 && tree.getChild(2).getType() == (HiveParser.TOK_ENC)){
           isSensitive = true;
