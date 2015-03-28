@@ -167,7 +167,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
   }
 
   public long getServerExecutionTime(){
-    if (!(child instanceof RemoteSQL)){
+    if (!(child instanceof RemoteQuery)){
       return 0;
     }
     return ((RemoteSQL) child).getServerExecutionTime();

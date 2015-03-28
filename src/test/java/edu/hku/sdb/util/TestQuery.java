@@ -24,6 +24,7 @@ import java.util.List;
 import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.ColumnMeta;
 import edu.hku.sdb.catalog.DataType;
+import edu.hku.sdb.crypto.Crypto;
 import edu.hku.sdb.parse.*;
 import edu.hku.sdb.parse.BinaryPredicate.BinOperator;
 import edu.hku.sdb.parse.NormalArithmeticExpr.Operator;
@@ -250,7 +251,7 @@ public class TestQuery {
     return selStmt;
   }
 
-  static public CreateStmt prepareCreateStmt(){
+  static public CreateStmt prepareCreateStmtAnalysed(){
     CreateStmt createStmt = new CreateStmt();
 
     //set table name
@@ -264,7 +265,7 @@ public class TestQuery {
     ColumnType columnType = new ColumnType(DataType.VARCHAR);
     columnType.setLength(20);
     BasicFieldLiteral nameField = new BasicFieldLiteral("name", columnType);
-    BasicFieldLiteral salaryField = new BasicFieldLiteral("salary", new ColumnType(DataType.INT), tableName, true);
+    BasicFieldLiteral salaryField = new BasicFieldLiteral("salary", new ColumnType(DataType.INT), tableName, true, null);
     BasicFieldLiteral ageField = new BasicFieldLiteral("age", new ColumnType(DataType.INT));
 
     idField.setTableName(tableName);
@@ -278,6 +279,53 @@ public class TestQuery {
     literalList.add(ageField);
 
     createStmt.setFieldList(literalList);
+
+    return createStmt;
+  }
+
+  static public CreateStmt prepareCreateStmtRewritten(){
+    CreateStmt createStmt = new CreateStmt();
+
+    //set table name
+    TableName tableName = new TableName();
+    tableName.setName("employee");
+    createStmt.setTableName(tableName);
+
+    //prepare column types
+    ColumnType nameColumnType = new ColumnType(DataType.VARCHAR);
+    nameColumnType.setLength(20);
+    ColumnType sensitiveColumnType = new ColumnType(DataType.VARCHAR);
+    sensitiveColumnType.setLength(Crypto.TWO_THOUSAND_FORTY_EIGHT);
+
+    //set basic field literals
+    List<BasicFieldLiteral> literalList = new ArrayList<>();
+    BasicFieldLiteral idField = new BasicFieldLiteral("id", new ColumnType(DataType.INT));
+    BasicFieldLiteral nameField = new BasicFieldLiteral("name", nameColumnType);
+    BasicFieldLiteral salaryField = new BasicFieldLiteral("salary", sensitiveColumnType, tableName, true, new ColumnKey("1", "1"));
+    BasicFieldLiteral ageField = new BasicFieldLiteral("age", new ColumnType(DataType.INT));
+    BasicFieldLiteral rowIdField = new BasicFieldLiteral(BasicFieldLiteral.ROW_ID_COLUMN_NAME, sensitiveColumnType, tableName, true, new ColumnKey("1", "1"));
+    BasicFieldLiteral rField = new BasicFieldLiteral(BasicFieldLiteral.R_COLUMN_NAME, sensitiveColumnType, tableName, true, new ColumnKey("1", "1"));
+    BasicFieldLiteral sField = new BasicFieldLiteral(BasicFieldLiteral.S_COLUMN_NAME, sensitiveColumnType, tableName, true, new ColumnKey("1", "1"));
+
+    idField.setTableName(tableName);
+    nameField.setTableName(tableName);
+    salaryField.setTableName(tableName);
+    ageField.setTableName(tableName);
+
+    literalList.add(idField);
+    literalList.add(nameField);
+    literalList.add(salaryField);
+    literalList.add(ageField);
+    literalList.add(rowIdField);
+    literalList.add(rField);
+    literalList.add(sField);
+
+    createStmt.setFieldList(literalList);
+
+    TableRowFormat tableRowFormat = new TableRowFormat();
+    tableRowFormat.setRowFieldFormat(";");
+
+    createStmt.setTableRowFormat(tableRowFormat);
 
     return createStmt;
   }

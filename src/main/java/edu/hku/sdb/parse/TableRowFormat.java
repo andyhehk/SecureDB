@@ -23,8 +23,10 @@ public class TableRowFormat implements ParseNode {
 
   }
 
-  public String toSql(){
+  @Override
+  public String toSql() {
     return "ROW FORMAT DELIMITED FIELDS TERMINATED BY " + "'" + rowFieldFormat + "'";
+
   }
 
   @Override

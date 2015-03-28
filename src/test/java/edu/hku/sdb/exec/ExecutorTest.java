@@ -49,13 +49,14 @@ public class ExecutorTest {
   private String simpleSelectQuery = "select salary from t2";
   private String simpleMultipleSelectQuery = "select id, salary from t2";
   private String simpleMultipleMultiECQuery = "select salary * 3, id from t2";
+  private String simpleCreateQuery = "CREATE TABLE t2 (id INT, name VARCHAR(20), salary INT ENC)";
 
 
   @Before
   public void setUp(){
     prepareTestDB();
     try {
-//      prepareMetaDB();
+      //prepareMetaDBUpload();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -90,7 +91,7 @@ public class ExecutorTest {
     metaDB = new MetaStore(pm);
   }
 
-  public void prepareMetaDB() throws Exception {
+  public void prepareMetaDBUpload() throws Exception {
     p = Crypto.generateRandPrime();
     q = Crypto.generateRandPrime();
     n = p.multiply(q);
@@ -213,7 +214,7 @@ public class ExecutorTest {
     System.out.println("Optimizing " + analyzedNode.toSql());
     Connection connection = getHiveConnection();
     optimizer = new RuleBaseOptimizer();
-    PlanNode planNode = optimizer.optimize(analyzedNode, connection);
+    PlanNode planNode = optimizer.optimize(analyzedNode, connection, null);
 
     // Execute
     executor = new Executor();
@@ -223,13 +224,15 @@ public class ExecutorTest {
 
     ResultSetMetaData sdbMetaData = resultSet.getResultSetMetaData();
     assertTrue(sdbMetaData.getColumnCount() > 0);
+
     System.out.println(sdbMetaData.getColumnName(1) + " " + sdbMetaData.getColumnName(2));
     while (resultSet.next()){
-//      System.out.println(resultSet.getInteger(1));
+      //System.out.println(resultSet.getInteger(1));
       System.out.println(resultSet.getInteger(1) + " " + resultSet.getInteger(2) );
     }
 
-
+    assertTrue(resultSet.getServerTotalTime() > 0);
+    assertTrue(!resultSet.getRemoteSQLQuery().equals(""));
   }
 
   private Connection getHiveConnection() throws SQLException {
@@ -239,10 +242,8 @@ public class ExecutorTest {
       e.printStackTrace();
       System.exit(1);
     }
-    Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/default", "Yifan", "3199130E");
+    Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/default", "Yifan", "*");
     Statement stmt = con.createStatement();
-    String tableName = "t2";
-    java.sql.ResultSet res;
 
     // register UDFs
     stmt.execute("add jar SDB-0.1-SNAPSHOT.jar");
@@ -256,10 +257,35 @@ public class ExecutorTest {
     String sql = "select sdb_intadd(bin(t2.id), '1', '11'),bin(t2.id)  from t2";
 
     System.out.println("Testing UDF " + sql);
-    res = con.createStatement().executeQuery(sql);
+    java.sql.ResultSet res = con.createStatement().executeQuery(sql);
 
     return con;
   }
 
+
+  @Test
+  public void testOptimizeCreate() throws Exception{
+
+    String testQuery = simpleCreateQuery;
+    // Parse & analyse
+    System.out.println("Parsing " + testQuery);
+    parser = new ParseDriver();
+    semanticAnalyzer = new SemanticAnalyzer(metaDB);
+    ASTNode parsedNode = parser.parse(testQuery);
+    ParseNode analyzedNode  = semanticAnalyzer.analyze(parsedNode);
+
+    // Rewrite
+    System.out.println("Rewriting " + analyzedNode.toSql());
+    sdbSchemeRewriter = new SdbSchemeRewriter(metaDB.getAllDBs().get(0));
+    sdbSchemeRewriter.rewrite(analyzedNode);
+
+    // Optimize
+    System.out.println("Optimizing " + analyzedNode.toSql());
+    Connection connection = getHiveConnection();
+    optimizer = new RuleBaseOptimizer();
+    PlanNode planNode = optimizer.optimize(analyzedNode, connection, metaDB);
+    
+
+  }
 
 }

@@ -38,7 +38,6 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     Serializable {
 
   private static final long serialVersionUID = 427L;
-  private static final String SERVICE_NAME = "ResultSet";
 
   private SemanticAnalyzer semanticAnalyzer;
   private ParseDriver parser;
@@ -104,7 +103,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     optimizer = new RuleBaseOptimizer();
     PlanNode planNode = null;
     try {
-      planNode = optimizer.optimize(analyzedNode, serverConnection);
+      planNode = optimizer.optimize(analyzedNode, serverConnection, null);
     } catch (UnSupportedException e) {
       e.printStackTrace();
       throw new RemoteException(e.getMessage());

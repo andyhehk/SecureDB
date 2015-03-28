@@ -38,6 +38,7 @@ public class ParserTest extends TestCase
   private ParseDriver parseDriver;
   private String stmtArraySimple;
   private String stmtArrayOneLevel;
+  private String showTableQuery = "CREATE TABLE employee (id INT, name VARCHAR(20), salary INT ENC, age INT)";
 
   /**
    * Create the test case
@@ -59,8 +60,14 @@ public class ParserTest extends TestCase
   public void setUp() {
     this.parseDriver = new ParseDriver();
 
-    this.stmtArraySimple = "CREATE TABLE employee (id int, age int, salary int ENC);";
+    this.stmtArraySimple = " ";
     this.stmtArrayOneLevel = "select id, sum(price*quantity) from (select id, price, quantity from A JOIN B ) t group by id;";
+
+    try {
+      printVizTree(new ParseDriver().parse(showTableQuery));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
   }
 
   /**

@@ -89,44 +89,50 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   @Override
   protected void rewriteCreateStmt(CreateStmt createStmt) throws UnSupportedException {
     rewriteCreateFieldLists(createStmt.getFieldList());
-    rewriteCreateRowFormat(createStmt.getTableRowFormat());
+    rewriteCreateRowFormat(createStmt);
 
   }
 
-  private void rewriteCreateRowFormat(TableRowFormat tableRowFormat) {
+  private void rewriteCreateRowFormat(CreateStmt createStmt) {
+    TableRowFormat tableRowFormat = createStmt.getTableRowFormat();
     //TODO get default separator ";" from config file
     if (tableRowFormat == null){
       tableRowFormat = new TableRowFormat();
       tableRowFormat.setRowFieldFormat(";");
+      createStmt.setTableRowFormat(tableRowFormat);
     }
   }
 
   private void rewriteCreateFieldLists(List<BasicFieldLiteral> fieldList) {
     TableName tableName = fieldList.get(0).getTableName();
+    BigInteger p = new BigInteger(dbMeta.getP());
+    BigInteger q = new BigInteger(dbMeta.getQ());
 
     for (BasicFieldLiteral basicFieldLiteral : fieldList){
       if (basicFieldLiteral.isSen()){
-        ColumnType type = new ColumnType(DataType.VARCHAR);
-        type.setLength(Crypto.TWO_THOUSAND_FORTY_EIGHT);
-        basicFieldLiteral.setType(type);
+        int index = fieldList.indexOf(basicFieldLiteral);
+        BasicFieldLiteral sensitiveField = buildSensitiveCreateField(basicFieldLiteral.getName(), tableName, p, q);
+        fieldList.set(index, sensitiveField);
       }
     }
 
-    BasicFieldLiteral rowIdField = buildSensitiveCreateField(BasicFieldLiteral.ROW_ID_COLUMN_NAME, tableName);
+    BasicFieldLiteral rowIdField = buildSensitiveCreateField(BasicFieldLiteral.ROW_ID_COLUMN_NAME, tableName, p, q);
     fieldList.add(rowIdField);
 
-    BasicFieldLiteral rField = buildSensitiveCreateField(BasicFieldLiteral.R_COLUMN_NAME, tableName);
+    BasicFieldLiteral rField = buildSensitiveCreateField(BasicFieldLiteral.R_COLUMN_NAME, tableName, p, q);
     fieldList.add(rField);
 
-    BasicFieldLiteral sField = buildSensitiveCreateField(BasicFieldLiteral.S_COLUMN_NAME, tableName);
+    BasicFieldLiteral sField = buildSensitiveCreateField(BasicFieldLiteral.S_COLUMN_NAME, tableName, p, q);
     fieldList.add(sField);
-
   }
 
-  private BasicFieldLiteral buildSensitiveCreateField(String fieldName, TableName tableName) {
+  private BasicFieldLiteral buildSensitiveCreateField(String fieldName, TableName tableName, BigInteger p, BigInteger q) {
     ColumnType type = new ColumnType(DataType.VARCHAR);
     type.setLength(Crypto.TWO_THOUSAND_FORTY_EIGHT);
-    BasicFieldLiteral fieldLiteral = new BasicFieldLiteral(fieldName, type, tableName, true);
+    BigInteger m = Crypto.generatePositiveRand(p, q);
+    BigInteger x = Crypto.generatePositiveRand(p, q);
+    ColumnKey columnKey = new ColumnKey(m, x);
+    BasicFieldLiteral fieldLiteral = new BasicFieldLiteral(fieldName, type, tableName, true, columnKey);
     return fieldLiteral;
   }
 

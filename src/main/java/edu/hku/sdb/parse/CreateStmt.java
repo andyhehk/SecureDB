@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import edu.hku.sdb.catalog.MetaStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +17,6 @@ public class CreateStmt implements ParseNode {
   private List<BasicFieldLiteral> fieldList;
   private TableName tableName;
   private TableRowFormat tableRowFormat;
-
 
   public TableRowFormat getTableRowFormat() {
     return tableRowFormat;
@@ -103,7 +101,6 @@ public class CreateStmt implements ParseNode {
       LOG.debug("The other object's fieldList does not match!");
       return false;
     }
-
 
     return true;
   }

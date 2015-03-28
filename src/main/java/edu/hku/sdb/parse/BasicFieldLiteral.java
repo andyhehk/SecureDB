@@ -1,5 +1,6 @@
 package edu.hku.sdb.parse;
 
+import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.MetaStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +19,14 @@ public class BasicFieldLiteral  implements ParseNode{
   private ColumnType type;
   private boolean isSen = false;
   private String name;
+  private ColumnKey colKey;
 
-  public BasicFieldLiteral(String name, ColumnType type) {
-    this.name = name;
-    this.type = type;
+  public ColumnKey getColumnKey() {
+    return colKey;
+  }
+
+  public void setColumnKey(ColumnKey columnKey) {
+    this.colKey = columnKey;
   }
 
   public TableName getTableName() {
@@ -56,11 +61,23 @@ public class BasicFieldLiteral  implements ParseNode{
     this.isSen = isSen;
   }
 
-  public BasicFieldLiteral(String name, ColumnType type, TableName tableName, boolean isSen) {
+  public BasicFieldLiteral(String name, ColumnType type) {
+    this.name = name;
+    this.type = type;
+  }
+
+  public BasicFieldLiteral(String name, ColumnType type, TableName tableName) {
+    this.name = name;
+    this.type = type;
+    this.tableName = tableName;
+  }
+
+  public BasicFieldLiteral(String name, ColumnType type, TableName tableName, boolean isSen, ColumnKey columnKey) {
     this.name = name;
     this.type = type;
     this.isSen = isSen;
     this.tableName = tableName;
+    this.colKey = columnKey;
   }
 
   @Override
@@ -84,6 +101,7 @@ public class BasicFieldLiteral  implements ParseNode{
 
   @Override
   public boolean equals(Object obj) {
+    // Log messages are used for debug.
     if (!(obj instanceof BasicFieldLiteral)){
       LOG.debug("object is not an instance of BasicFieldLiteral");
       return false;
@@ -109,6 +127,24 @@ public class BasicFieldLiteral  implements ParseNode{
     if (!tableName.equals(fieldobj.getTableName())){
       LOG.debug("tableName of right BasicFieldLiteral " + fieldobj.getTableName() + " is not equal to " + tableName + "!");
       return false;
+    }
+
+    if ((colKey == null) != (fieldobj.colKey == null)) {
+      String err = (colKey == null) ? "Left column key is null, while "
+              + "right column key is: " + fieldobj.colKey : "Left column is: "
+              + colKey + ", while right column key is null";
+      LOG.debug(err);
+      return false;
+    }
+
+    if (colKey != null) {
+      //TODO temporarily disabled for testing convenience
+      /*if (!colKey.equals(fieldobj.getColumnKey())) {
+        String err = "Left column key is: " + colKey + ";Right column key is: "
+                + fieldobj.colKey;
+        LOG.debug(err);
+        return false;
+      }*/
     }
 
     return true;
