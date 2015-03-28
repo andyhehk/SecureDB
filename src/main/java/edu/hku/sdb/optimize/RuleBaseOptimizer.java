@@ -62,20 +62,26 @@ public class RuleBaseOptimizer extends Optimizer {
     TableName tableName = null;
 
     for (BasicFieldLiteral fieldLiteral: createStmt.getFieldList()){
-      if (fieldLiteral.isSen()){
-        tableName = fieldLiteral.getTableName();
-        String columnName = fieldLiteral.getName();
-        Class clazz = Integer.class;
-        String alias = "";
+      BasicColumnDesc basicColumnDesc = null;
+      tableName = fieldLiteral.getTableName();
+      String columnName = fieldLiteral.getName();
+      Class clazz = Integer.class;
+      String alias = "";
+      boolean isSen = fieldLiteral.isSen();
+      if (isSen){
         ColumnKey columnKey = fieldLiteral.getColumnKey();
-        ColumnDesc columnDesc = new ColumnDesc(columnName, alias, clazz, true, columnKey);
-        columnDescList.add(columnDesc);
+        basicColumnDesc = new ColumnDesc(columnName, alias, clazz, true, columnKey);
       }
+      else {
+        basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
+      }
+      columnDescList.add(basicColumnDesc);
+
     }
     localCreateRowDesc.setSignature(columnDescList);
 
     RemoteUpdate remoteUpdate = new RemoteUpdate(query, connection);
-    LocalCreate localCreate = new LocalCreate(metaStore, tableName);
+    LocalCreate localCreate = new LocalCreate(metaStore, tableName, localCreateRowDesc);
     CreateTbl createTbl = new CreateTbl(remoteUpdate, localCreate);
     return createTbl;
   }

@@ -24,6 +24,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 
@@ -49,8 +50,7 @@ public class ExecutorTest {
   private String simpleSelectQuery = "select salary from t2";
   private String simpleMultipleSelectQuery = "select id, salary from t2";
   private String simpleMultipleMultiECQuery = "select salary * 3, id from t2";
-  private String simpleCreateQuery = "CREATE TABLE t2 (id INT, name VARCHAR(20), salary INT ENC)";
-
+  private String simpleCreateQuery = "CREATE TABLE create_test_" + new Random().nextInt(100) +  " (id INT, name VARCHAR(20), salary INT ENC)";
 
   @Before
   public void setUp(){
@@ -254,7 +254,7 @@ public class ExecutorTest {
     stmt.execute("CREATE TEMPORARY FUNCTION sdb_mul AS 'edu.hku.sdb.udf.SDBMultiUDF'");
 
     // test simple UDF
-    String sql = "select sdb_intadd(bin(t2.id), '1', '11'),bin(t2.id)  from t2";
+    String sql = "select COUNT(sdb_intadd('2', '1', '11'))  from test_table_1";
 
     System.out.println("Testing UDF " + sql);
     java.sql.ResultSet res = con.createStatement().executeQuery(sql);
@@ -284,8 +284,12 @@ public class ExecutorTest {
     Connection connection = getHiveConnection();
     optimizer = new RuleBaseOptimizer();
     PlanNode planNode = optimizer.optimize(analyzedNode, connection, metaDB);
-    
 
+    // Execute
+    executor = new Executor();
+    SdbResultSet resultSet = new SdbResultSet();
+    ExecutionState eState = new ExecutionState();
+    executor.execute(planNode, eState, resultSet);
   }
 
 }
