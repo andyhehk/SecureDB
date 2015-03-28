@@ -49,6 +49,9 @@ public abstract class AbstractRewriter {
     else if (parseTree instanceof CreateStmt){
       rewriteCreateStmt((CreateStmt) parseTree);
     }
+    else if (parseTree instanceof LoadStmt){
+      ;
+    }
     else throw new UnSupportedException(parseTree.getClass().toString());
   }
 

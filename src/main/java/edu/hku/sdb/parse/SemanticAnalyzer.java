@@ -63,12 +63,32 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     case HiveParser.TOK_CREATETABLE:
       parseTree = buildCreateStmt(tree);
       break;
+    case HiveParser.TOK_LOAD:
+      parseTree = buildLoadStmt(tree);
+      break;
     }
 
     if (parseTree != null)
       parseTree.analyze(metaDB, (ParseNode) null);
 
     return parseTree;
+  }
+
+  private ParseNode buildLoadStmt(ASTNode tree) throws SemanticException{
+
+    String filePath =  tree.getChild(0).getText().replace("'", "");
+    TableName tableName = new TableName();
+
+    //Get table name from AST
+    ASTNode secondChild = (ASTNode) tree.getChild(1);
+    if (secondChild.getType() == HiveParser.TOK_TAB){
+      ASTNode secondLevelChild = (ASTNode) secondChild.getChild(0);
+      if (secondLevelChild.getType() == HiveParser.TOK_TABNAME){
+        tableName.setName(secondLevelChild.getChild(0).getText());
+      }
+    }
+    LoadStmt loadStmt = new LoadStmt(filePath, tableName);
+    return loadStmt;
   }
 
   /**
@@ -305,7 +325,6 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         throw new SemanticException("Unsupported selection element!");
       }
     }
-
 
     //TODO get DbMeta according to DBName
     //set global p, q, n, g

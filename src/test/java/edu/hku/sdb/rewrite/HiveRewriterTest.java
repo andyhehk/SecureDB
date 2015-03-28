@@ -37,6 +37,7 @@ public class HiveRewriterTest {
   private String simpleSQLMulEC = "SELECT b * 10 AS C FROM T2";
   private String simpleSQLAddEE = "SELECT b + id AS C FROM T2";
   private String simpleCreate = "CREATE TABLE employee (id INT, name VARCHAR(20), salary INT ENC, age INT)";
+  private String simpleLoad = "LOAD DATA LOCAL INPATH '/User/Yifan/employee.txt' OVERWRITE INTO TABLE test_create_1";
 
   /**
    * Prepare a in-memory database for testing
@@ -114,7 +115,7 @@ public class HiveRewriterTest {
 
   }
 
-  @Test
+  //@Test
   public void testRewrite() throws Exception {
     ParseNode parseNode = testObj.analyze(parser.parse(simpleSQL1));
     sdbSchemeRewriter.rewrite(parseNode);
@@ -132,8 +133,15 @@ public class HiveRewriterTest {
     sdbSchemeRewriter.rewrite(parseNode);
     System.out.println(parseNode.toSql());
 
-    parseNode = testObj.analyze(parser.parse(simpleCreate));
+  }
+
+  @Test
+  public void testRewriteCreate() throws Exception{
+    ParseNode parseNode = testObj.analyze(parser.parse(simpleCreate));
     sdbSchemeRewriter.rewrite(parseNode);
+    System.out.println(parseNode.toSql());
+
+    parseNode = testObj.analyze(parser.parse(simpleLoad));
     System.out.println(parseNode.toSql());
   }
 

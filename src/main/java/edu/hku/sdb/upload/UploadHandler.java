@@ -72,6 +72,10 @@ public class UploadHandler {
     this.localMode = localMode;
   }
 
+  public UploadHandler(MetaStore metaStore){
+    setMetaStore(metaStore);
+  }
+
   public void upload(){
     BufferedWriter bufferedWriter = getBufferedWriter();
     BufferedReader bufferedReader = null;

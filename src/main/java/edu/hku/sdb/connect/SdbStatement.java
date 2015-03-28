@@ -27,12 +27,14 @@ import edu.hku.sdb.optimize.RuleBaseOptimizer;
 import edu.hku.sdb.parse.*;
 import edu.hku.sdb.rewrite.SdbSchemeRewriter;
 import edu.hku.sdb.rewrite.UnSupportedException;
+import edu.hku.sdb.upload.UploadHandler;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.sql.Connection;
+import java.util.Random;
 
 public class SdbStatement extends UnicastRemoteObject implements Statement,
     Serializable {
@@ -65,19 +67,44 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     // Parse & analyse
     ParseNode analyzedNode = getParseNode(query);
 
-    // Rewrite
-    rewriteNode(analyzedNode);
+    if (analyzedNode instanceof LoadStmt){
 
-    // Optimize
-    PlanNode planNode = getPlanNode(analyzedNode);
+      // another programme encrypts & uploads the data
+      UploadHandler uploadHandler = new UploadHandler(metaDb);
+      String sourceFilePath = ((LoadStmt) analyzedNode).getFilePath();
+      uploadHandler.setSourceFile(sourceFilePath);
 
-    // Execute
-    sdbResultSet = getSdbResultSet(planNode);
+      String serverFilePath = "/user/yifan/employee" + new Random().nextInt(60000) + ".txt";
+      uploadHandler.setHDFS_URL("hdfs://localhost:9000");
+      uploadHandler.setHDFS_FILE_PATH("hdfs://localhost:9000" + serverFilePath);
+      uploadHandler.upload();
 
-    // get execution end time
-    setExecutionTime(startTimeStamp);
+      ((LoadStmt) analyzedNode).setFilePath(serverFilePath);
+      String loadQuery = analyzedNode.toSql();
+      System.out.println(loadQuery);
+      try {
+        java.sql.Statement statement = serverConnection.createStatement();
+        statement.executeUpdate(loadQuery);
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+      return null;
 
-    return sdbResultSet;
+    } else {
+
+      // Rewrite
+      rewriteNode(analyzedNode);
+
+      // Optimize
+      PlanNode planNode = getPlanNode(analyzedNode);
+
+      // Execute
+      sdbResultSet = getSdbResultSet(planNode);
+
+      // get execution end time
+      setExecutionTime(startTimeStamp);
+      return sdbResultSet;
+    }
   }
 
   private void setExecutionTime(long startTimeStamp) {
