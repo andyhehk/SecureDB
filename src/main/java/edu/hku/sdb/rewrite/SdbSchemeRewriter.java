@@ -86,6 +86,56 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     rewriteHavingExpr(selStmt.getHavingExpr());
   }
 
+  @Override
+  protected void rewriteCreateStmt(CreateStmt createStmt) throws UnSupportedException {
+    rewriteCreateFieldLists(createStmt.getFieldList());
+    rewriteCreateRowFormat(createStmt);
+
+  }
+
+  private void rewriteCreateRowFormat(CreateStmt createStmt) {
+    TableRowFormat tableRowFormat = createStmt.getTableRowFormat();
+    //TODO get default separator ";" from config file
+    if (tableRowFormat == null){
+      tableRowFormat = new TableRowFormat();
+      tableRowFormat.setRowFieldFormat(";");
+      createStmt.setTableRowFormat(tableRowFormat);
+    }
+  }
+
+  private void rewriteCreateFieldLists(List<BasicFieldLiteral> fieldList) {
+    TableName tableName = fieldList.get(0).getTableName();
+    BigInteger p = new BigInteger(dbMeta.getP());
+    BigInteger q = new BigInteger(dbMeta.getQ());
+
+    for (BasicFieldLiteral basicFieldLiteral : fieldList){
+      if (basicFieldLiteral.isSen()){
+        int index = fieldList.indexOf(basicFieldLiteral);
+        BasicFieldLiteral sensitiveField = buildSensitiveCreateField(basicFieldLiteral.getName(), tableName, p, q);
+        fieldList.set(index, sensitiveField);
+      }
+    }
+
+    BasicFieldLiteral rowIdField = buildSensitiveCreateField(BasicFieldLiteral.ROW_ID_COLUMN_NAME, tableName, p, q);
+    fieldList.add(rowIdField);
+
+    BasicFieldLiteral rField = buildSensitiveCreateField(BasicFieldLiteral.R_COLUMN_NAME, tableName, p, q);
+    fieldList.add(rField);
+
+    BasicFieldLiteral sField = buildSensitiveCreateField(BasicFieldLiteral.S_COLUMN_NAME, tableName, p, q);
+    fieldList.add(sField);
+  }
+
+  private BasicFieldLiteral buildSensitiveCreateField(String fieldName, TableName tableName, BigInteger p, BigInteger q) {
+    ColumnType type = new ColumnType(DataType.VARCHAR);
+    type.setLength(Crypto.TWO_THOUSAND_FORTY_EIGHT);
+    BigInteger m = Crypto.generatePositiveRand(p, q);
+    BigInteger x = Crypto.generatePositiveRand(p, q);
+    ColumnKey columnKey = new ColumnKey(m, x);
+    BasicFieldLiteral fieldLiteral = new BasicFieldLiteral(fieldName, type, tableName, true, columnKey);
+    return fieldLiteral;
+  }
+
   protected void rewriteSelList(SelectionList selList)
       throws UnSupportedException {
 
@@ -129,7 +179,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     //Insert row-id field at the end of selectionItem list
     if (baseRefs.size() == 1){
       SelectionItem selectionItem = new SelectionItem();
-      Expr expr = new FieldLiteral(baseRefs.get(0).getTableName(), FieldLiteral.ROW_ID_COLUMN_NAME, DataType.INT);
+      Expr expr = new FieldLiteral(baseRefs.get(0).getTableName(), BasicFieldLiteral.ROW_ID_COLUMN_NAME, DataType.INT);
       selectionItem.setExpr(expr);
       selList.getItemList().add(selectionItem);
     }
@@ -360,7 +410,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       BigInteger pq_b[] = Crypto.keyUpdateClient(mb, mc, ms, xb, xc, xs, p, q);
 
       //prepare parameter for sdb_add
-      Expr sField = new FieldLiteral(((FieldLiteral) left).getTbl(), FieldLiteral.S_COLUMN_NAME, DataType.INT, true, columnKeyS);
+      Expr sField = new FieldLiteral(((FieldLiteral) left).getTbl(), BasicFieldLiteral.S_COLUMN_NAME, DataType.INT, true, columnKeyS);
       StringLiteral p_a = new StringLiteral(pq_a[0].toString());
       StringLiteral q_a = new StringLiteral(pq_a[1].toString());
       StringLiteral p_b = new StringLiteral(pq_b[0].toString());
@@ -390,7 +440,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     for (TableMeta tableMeta : dbMeta.getTbls()){
       if (tableMeta.getTblName().equals(tableName)){
         for (ColumnMeta columnMeta: tableMeta.getCols()){
-          if (columnMeta.getColName().equals(FieldLiteral.S_COLUMN_NAME)){
+          if (columnMeta.getColName().equals(BasicFieldLiteral.S_COLUMN_NAME)){
             BigInteger ms = columnMeta.getColkey().getM();
             BigInteger xs = columnMeta.getColkey().getX();
             columnKeyS = new ColumnKey(ms, xs);

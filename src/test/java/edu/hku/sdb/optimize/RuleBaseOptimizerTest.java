@@ -35,7 +35,6 @@ public class RuleBaseOptimizerTest {
   private String driver = "org.apache.derby.jdbc.EmbeddedDriver";
   private static String dbURL = "jdbc:derby:memory:test_db;create=true";
 
-
   public void prepareTestDBConnection() {
     try {
       Class.forName(driver).newInstance();
@@ -44,11 +43,6 @@ public class RuleBaseOptimizerTest {
       statement.executeUpdate("CREATE TABLE t2 (ID VARCHAR(2048) , ROW_ID VARCHAR(2048))");
       statement.executeUpdate("INSERT INTO t2 VALUES ('100', '1')");
       statement.executeUpdate("INSERT INTO t2 VALUES ('200', '2')");
-      ResultSet resultSet = statement.executeQuery("select row_id, id from t2");
-      if (resultSet.next()){
-        assert(resultSet.getInt(1) < 300);
-      }
-
     } catch (Exception except){
       except.printStackTrace();
     }
@@ -120,8 +114,7 @@ public class RuleBaseOptimizerTest {
     prepareTestDBConnection();
     String query = "SELECT t2.id, t2.row_id\n" +
             "from t2";
-    RemoteSQL remoteSQL = new RemoteSQL(query.toLowerCase(), rowDesc1);
-    remoteSQL.setConnection(connection);
+    RemoteSQL remoteSQL = new RemoteQuery(query.toLowerCase(), connection, rowDesc1);
     return remoteSQL;
   }
 
@@ -158,7 +151,7 @@ public class RuleBaseOptimizerTest {
 
     // t2 tableref field
     List<TableRef> tableRefList = new ArrayList<TableRef>();
-    //@See SelectStatemetn#toSql
+    //@See SelectStatement#toSql
     TableRef tableRef1 = new BaseTableRef("t2 ", "");
     tableRefList.add(tableRef1);
     // set tableRef for select statement
@@ -175,17 +168,9 @@ public class RuleBaseOptimizerTest {
   @Test
   public void testOptimizeSimple() throws Exception {
     //Test optimizer
-    PlanNode planNode = optimizer.optimize(selectStmt, connection);
+    PlanNode planNode = optimizer.optimize(selectStmt, connection, null);
     assertEquals(localDecrypt, planNode);
-
-    //Test executor
-    Executor executor = new Executor();
-    SdbResultSet resultSet = new SdbResultSet();
-    ExecutionState eState = new ExecutionState();
-    executor.execute(planNode, eState, resultSet);
-
-//    while (resultSet.next()){
-//      System.out.println(resultSet.getInteger(1) + " " + resultSet.getInteger(2));
-//    }
   }
+
+
 }

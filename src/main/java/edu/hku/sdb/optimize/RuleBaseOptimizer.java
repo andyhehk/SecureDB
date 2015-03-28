@@ -19,6 +19,7 @@ package edu.hku.sdb.optimize;
 
 import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.DataType;
+import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.exec.*;
 import edu.hku.sdb.parse.*;
 import edu.hku.sdb.rewrite.UnSupportedException;
@@ -48,12 +49,45 @@ public class RuleBaseOptimizer extends Optimizer {
    * 
    * @see edu.hku.sdb.optimize.Optimizer#optimize(edu.hku.sdb.parse.ParseNode)
    */
-  public PlanNode optimize(ParseNode parseTree, Connection connection) throws UnSupportedException {
-    return optimizeInternal(parseTree, connection);
+  public PlanNode optimize(ParseNode parseTree, Connection connection, MetaStore metaStore) throws UnSupportedException {
+    return optimizeInternal(parseTree, connection, metaStore);
   }
 
   @Override
-  protected PlanNode optimizeSelStmt(SelectStmt selStmt, Connection connection) throws UnSupportedException {
+  protected PlanNode optimizeCreateStmt(CreateStmt createStmt, Connection connection, MetaStore metaStore) throws UnSupportedException {
+
+    String query = createStmt.toSql().toLowerCase();
+    RowDesc localCreateRowDesc = new RowDesc();
+    List<BasicColumnDesc> columnDescList = new ArrayList<BasicColumnDesc>();
+    TableName tableName = null;
+
+    for (BasicFieldLiteral fieldLiteral: createStmt.getFieldList()){
+      BasicColumnDesc basicColumnDesc = null;
+      tableName = fieldLiteral.getTableName();
+      String columnName = fieldLiteral.getName();
+      Class clazz = Integer.class;
+      String alias = "";
+      boolean isSen = fieldLiteral.isSen();
+      if (isSen){
+        ColumnKey columnKey = fieldLiteral.getColumnKey();
+        basicColumnDesc = new ColumnDesc(columnName, alias, clazz, true, columnKey);
+      }
+      else {
+        basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
+      }
+      columnDescList.add(basicColumnDesc);
+
+    }
+    localCreateRowDesc.setSignature(columnDescList);
+
+    RemoteUpdate remoteUpdate = new RemoteUpdate(query, connection);
+    LocalCreate localCreate = new LocalCreate(metaStore, tableName, localCreateRowDesc);
+    CreateTbl createTbl = new CreateTbl(remoteUpdate, localCreate);
+    return createTbl;
+  }
+
+  @Override
+  protected PlanNode optimizeSelStmt(SelectStmt selStmt, Connection connection, MetaStore metaStore) throws UnSupportedException {
 
     String query = selStmt.toSql().toLowerCase();
     RowDesc remoteRowDesc = new RowDesc();
@@ -94,13 +128,12 @@ public class RuleBaseOptimizer extends Optimizer {
 
     // create remoteSQL Node
     remoteRowDesc.setSignature(basicColumnDescList);
-    RemoteSQL remoteSQL = new RemoteSQL(query, remoteRowDesc);
-    remoteSQL.setConnection(connection);
+    RemoteQuery remoteQuery = new RemoteQuery(query, connection, remoteRowDesc);
 
     // create localDecrypt Node
     localDecryptRowDesc.setSignature(columnDescList);
     LocalDecrypt localDecrypt = new LocalDecrypt(localDecryptRowDesc);
-    localDecrypt.setChild(remoteSQL);
+    localDecrypt.setChild(remoteQuery);
     localDecrypt.setCredential(selStmt.getP(), selStmt.getQ(), selStmt.getN(), selStmt.getG());
     return localDecrypt;
   }

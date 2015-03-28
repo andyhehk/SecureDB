@@ -22,6 +22,7 @@ import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.connect.ResultSetMetaData;
 import edu.hku.sdb.connect.SDBResultSetMetaData;
 import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.parse.BasicFieldLiteral;
 import edu.hku.sdb.parse.FieldLiteral;
 import edu.hku.sdb.plan.LocalDecryptDesc;
 import edu.hku.sdb.plan.RemoteSQLDesc;
@@ -84,7 +85,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
 
       for (int index = columnDescList.size() - 1; index >= 0; index-- ) {
         BasicColumnDesc columnDesc = columnDescList.get(index);
-        if (columnDesc.getName().equals(FieldLiteral.ROW_ID_COLUMN_NAME)){
+        if (columnDesc.getName().equals(BasicFieldLiteral.ROW_ID_COLUMN_NAME)){
           BigInteger rowIdEncrypted = new BigInteger((String) row.get(index));
           rowId = Crypto.PaillierDecrypt(rowIdEncrypted, p, q);
         }
@@ -166,7 +167,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
   }
 
   public long getServerExecutionTime(){
-    if (!(child instanceof RemoteSQL)){
+    if (!(child instanceof RemoteQuery)){
       return 0;
     }
     return ((RemoteSQL) child).getServerExecutionTime();

@@ -33,10 +33,16 @@ public class Executor {
   public void execute(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
 
     // Only support LocalDecrypt node
-    if (!(plan instanceof LocalDecrypt)){
-      return;
+    if ((plan instanceof LocalDecrypt)){
+      executeLocalDecrypt(plan, eState, resultSet);
+    }
+    else if (plan instanceof CreateTbl){
+      plan.init();
     }
 
+  }
+
+  private void executeLocalDecrypt(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
     List<Object[]> resultList = resultSet.getTuple();
     BasicTupleSlot basicTupleSlot = plan.nextTuple();
     while (basicTupleSlot != null){
@@ -63,6 +69,5 @@ public class Executor {
     resultSet.setExecutor(this);
 
     LOG.debug(resultList.size() + " records computed, saved in resultSet");
-
   }
 }

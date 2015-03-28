@@ -30,6 +30,7 @@ import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 
+import edu.hku.sdb.rewrite.SdbSchemeRewriter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -158,6 +159,25 @@ public class SemanticAnalyzerTest {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+
+  @Test
+  public void testCreateStmt(){
+    String command = "CREATE TABLE employee (id INT, name VARCHAR(20), salary INT ENC, age INT)";
+
+    try {
+      ASTNode astTree = parser.parse(command);
+
+      ParseNode ansTree = TestQuery.prepareCreateStmtAnalysed();
+      ParseNode resultTree = testObj.analyze(astTree);
+      System.out.println(resultTree.toSql());
+      assertEquals(ansTree, resultTree);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
   }
 
 }

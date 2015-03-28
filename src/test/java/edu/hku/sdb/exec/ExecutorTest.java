@@ -3,14 +3,13 @@ package edu.hku.sdb.exec;
 import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.connect.ResultSetMetaData;
 import edu.hku.sdb.connect.SdbResultSet;
+import edu.hku.sdb.connect.SdbStatement;
 import edu.hku.sdb.crypto.Crypto;
 import edu.hku.sdb.optimize.Optimizer;
 import edu.hku.sdb.optimize.RuleBaseOptimizer;
-import edu.hku.sdb.parse.ASTNode;
-import edu.hku.sdb.parse.ParseDriver;
-import edu.hku.sdb.parse.ParseNode;
-import edu.hku.sdb.parse.SemanticAnalyzer;
+import edu.hku.sdb.parse.*;
 import edu.hku.sdb.rewrite.SdbSchemeRewriter;
+import edu.hku.sdb.rewrite.UnSupportedException;
 import edu.hku.sdb.upload.UploadHandler;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,11 +18,13 @@ import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import java.math.BigInteger;
+import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 
@@ -40,22 +41,27 @@ public class ExecutorTest {
   private BigInteger p;
   private BigInteger q;
 
+
   private MetaStore metaDB;
   private SemanticAnalyzer semanticAnalyzer;
   private ParseDriver parser;
   private SdbSchemeRewriter sdbSchemeRewriter;
   private Optimizer optimizer;
   private Executor executor;
+  private Connection connection;
+
   private String simpleSelectQuery = "select salary from t2";
   private String simpleMultipleSelectQuery = "select id, salary from t2";
   private String simpleMultipleMultiECQuery = "select salary * 3, id from t2";
 
-
+  private String tableName = "create_test_" + new Random().nextInt(100);
+  private String simpleCreateQuery = "CREATE TABLE " + tableName + " (id INT, name VARCHAR(20), salary INT ENC)";
+  private String simpleLoadQuery = "LOAD DATA LOCAL INPATH 'src/test/resources/upload/employee.txt' OVERWRITE INTO TABLE " + tableName;
   @Before
   public void setUp(){
     prepareTestDB();
     try {
-//      prepareMetaDB();
+      //prepareMetaDBUpload();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -88,20 +94,18 @@ public class ExecutorTest {
     pmf = JDOHelper.getPersistenceManagerFactory(properties);
     pm = pmf.getPersistenceManager();
     metaDB = new MetaStore(pm);
+    try {
+      connection = getHiveConnection();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
   }
 
-  public void prepareMetaDB() throws Exception {
+  public void prepareMetaDBUpload() throws Exception {
     p = Crypto.generateRandPrime();
     q = Crypto.generateRandPrime();
     n = p.multiply(q);
     g = Crypto.generatePositiveRand(p ,q);
-
-    uploadHandler = new UploadHandler();
-    uploadHandler.setHDFS_URL("file:///");
-    String homeDir = System.getenv("HOME");
-    uploadHandler.setSourceFile("src/test/resources/upload/employee.txt");
-    uploadHandler.setHDFS_FILE_PATH("file://"+homeDir+"/employee.txt");
-    uploadHandler.setLocalMode(true);
 
     String dbName1 = "default";
     db1 = new DBMeta(dbName1);
@@ -184,7 +188,12 @@ public class ExecutorTest {
 
     metaDB.addTbl(tbl1);
 
-    uploadHandler.setMetaStore(metaDB);
+    uploadHandler = new UploadHandler(metaDB);
+    uploadHandler.setHDFS_URL("file:///");
+    String homeDir = System.getenv("HOME");
+    uploadHandler.setSourceFile("src/test/resources/upload/employee.txt");
+    uploadHandler.setHDFS_FILE_PATH("file://" + homeDir + "/employee.txt");
+    uploadHandler.setLocalMode(true);
     testUploadIntegrated();
   }
 
@@ -193,7 +202,7 @@ public class ExecutorTest {
   }
 
 
-  @Test
+  //@Test
   public void testSimpleSelect() throws Exception{
 
     String testQuery = simpleMultipleMultiECQuery;
@@ -211,9 +220,8 @@ public class ExecutorTest {
 
     // Optimize
     System.out.println("Optimizing " + analyzedNode.toSql());
-    Connection connection = getHiveConnection();
     optimizer = new RuleBaseOptimizer();
-    PlanNode planNode = optimizer.optimize(analyzedNode, connection);
+    PlanNode planNode = optimizer.optimize(analyzedNode, connection, null);
 
     // Execute
     executor = new Executor();
@@ -223,13 +231,15 @@ public class ExecutorTest {
 
     ResultSetMetaData sdbMetaData = resultSet.getResultSetMetaData();
     assertTrue(sdbMetaData.getColumnCount() > 0);
+
     System.out.println(sdbMetaData.getColumnName(1) + " " + sdbMetaData.getColumnName(2));
     while (resultSet.next()){
-//      System.out.println(resultSet.getInteger(1));
+      //System.out.println(resultSet.getInteger(1));
       System.out.println(resultSet.getInteger(1) + " " + resultSet.getInteger(2) );
     }
 
-
+    assertTrue(resultSet.getServerTotalTime() > 0);
+    assertTrue(!resultSet.getRemoteSQLQuery().equals(""));
   }
 
   private Connection getHiveConnection() throws SQLException {
@@ -239,10 +249,8 @@ public class ExecutorTest {
       e.printStackTrace();
       System.exit(1);
     }
-    Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/default", "Yifan", "3199130E");
+    Connection con = DriverManager.getConnection("jdbc:hive2://localhost:10000/default", "Yifan", "*");
     Statement stmt = con.createStatement();
-    String tableName = "t2";
-    java.sql.ResultSet res;
 
     // register UDFs
     stmt.execute("add jar SDB-0.1-SNAPSHOT.jar");
@@ -253,13 +261,56 @@ public class ExecutorTest {
     stmt.execute("CREATE TEMPORARY FUNCTION sdb_mul AS 'edu.hku.sdb.udf.SDBMultiUDF'");
 
     // test simple UDF
-    String sql = "select sdb_intadd(bin(t2.id), '1', '11'),bin(t2.id)  from t2";
+    String sql = "select COUNT(sdb_intadd('2', '1', '11'))  from test_table_1";
 
     System.out.println("Testing UDF " + sql);
-    res = con.createStatement().executeQuery(sql);
+    java.sql.ResultSet res = con.createStatement().executeQuery(sql);
 
     return con;
   }
 
+
+  @Test
+  public void testExecuteCreate() throws Exception{
+
+    testCreateInternal();
+    testLoadInternal();
+  }
+
+  private void testCreateInternal() throws ParseException, SemanticException, UnSupportedException, SQLException, RemoteException {
+
+    String testQuery = simpleCreateQuery;
+    // Parse & analyse
+    System.out.println("Parsing " + testQuery);
+    parser = new ParseDriver();
+    semanticAnalyzer = new SemanticAnalyzer(metaDB);
+    ASTNode parsedNode = parser.parse(testQuery);
+    ParseNode analyzedNode  = semanticAnalyzer.analyze(parsedNode);
+
+    // Rewrite
+    System.out.println("Rewriting " + analyzedNode.toSql());
+    sdbSchemeRewriter = new SdbSchemeRewriter(metaDB.getAllDBs().get(0));
+    sdbSchemeRewriter.rewrite(analyzedNode);
+
+    // Optimize
+    System.out.println("Optimizing " + analyzedNode.toSql());
+    Connection connection = getHiveConnection();
+    optimizer = new RuleBaseOptimizer();
+    PlanNode planNode = optimizer.optimize(analyzedNode, connection, metaDB);
+
+    // Execute
+    executor = new Executor();
+    SdbResultSet resultSet = new SdbResultSet();
+    ExecutionState eState = new ExecutionState();
+    executor.execute(planNode, eState, resultSet);
+  }
+
+  private void testLoadInternal() throws ParseException, SemanticException, UnSupportedException, SQLException, RemoteException {
+    String testQuery = simpleLoadQuery;
+
+    SdbStatement sdbStatement = new SdbStatement(metaDB, connection);
+    sdbStatement.executeQuery(testQuery);
+
+  }
 
 }

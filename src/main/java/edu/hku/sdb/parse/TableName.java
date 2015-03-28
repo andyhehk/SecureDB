@@ -17,8 +17,13 @@
 
 package edu.hku.sdb.parse;
 
-public class TableName {
+import edu.hku.sdb.catalog.MetaStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+public class TableName implements ParseNode {
+
+  private static final Logger LOG = LoggerFactory.getLogger(TableName.class);
   protected String db;
   protected String name;
 
@@ -52,4 +57,34 @@ public class TableName {
     this.name = name;
   }
 
+  @Override
+  public boolean equals(Object object){
+    if (!(object instanceof TableName)){
+      LOG.debug("The other object is not an instance of TableName!");
+      return false;
+    }
+
+    //TODO check dbName and null values
+    if (!name.equals(((TableName) object).getName())){
+      LOG.debug("The other object's name does not match!");
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
+
+  }
+
+  @Override
+  public String toSql() {
+    return name;
+  }
+
+  @Override
+  public boolean involveSdbEncrytedCol() {
+    return false;
+  }
 }

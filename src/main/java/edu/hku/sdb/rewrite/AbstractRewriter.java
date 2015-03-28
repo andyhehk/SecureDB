@@ -21,13 +21,7 @@ package edu.hku.sdb.rewrite;
 import java.util.List;
 
 import edu.hku.sdb.catalog.DBMeta;
-import edu.hku.sdb.parse.BaseTableRef;
-import edu.hku.sdb.parse.Expr;
-import edu.hku.sdb.parse.InLineViewRef;
-import edu.hku.sdb.parse.ParseNode;
-import edu.hku.sdb.parse.SelectStmt;
-import edu.hku.sdb.parse.SelectionList;
-import edu.hku.sdb.parse.TableRef;
+import edu.hku.sdb.parse.*;
 
 public abstract class AbstractRewriter {
 
@@ -52,10 +46,20 @@ public abstract class AbstractRewriter {
     if (parseTree instanceof SelectStmt) {
       rewriteSelStmt((SelectStmt) parseTree);
     }
+    else if (parseTree instanceof CreateStmt){
+      rewriteCreateStmt((CreateStmt) parseTree);
+    }
+    else if (parseTree instanceof LoadStmt){
+      ;
+    }
+    else throw new UnSupportedException(parseTree.getClass().toString());
   }
 
   protected abstract void rewriteSelStmt(SelectStmt selStmt)
       throws UnSupportedException;
+
+  protected abstract void rewriteCreateStmt(CreateStmt createStmt)
+          throws UnSupportedException;
 
 //  protected abstract void rewriteSelList(SelectionList selList)
 //      throws UnSupportedException;

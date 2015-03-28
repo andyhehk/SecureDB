@@ -28,17 +28,20 @@ import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 
-import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.catalog.ColumnMeta;
-import edu.hku.sdb.catalog.DataType;
-import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.*;
+import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.parse.ASTNode;
+import edu.hku.sdb.parse.ParseDriver;
 import edu.hku.sdb.parse.ParseNode;
 import edu.hku.sdb.parse.SemanticAnalyzer;
+import edu.hku.sdb.upload.UploadHandler;
 import edu.hku.sdb.util.TestQuery;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Unit test for the rewriter based on sdb encryption scheme.
@@ -75,7 +78,8 @@ public class SdbSchemeRewriterTest {
     pmf = JDOHelper.getPersistenceManagerFactory(properties);
     pm = pmf.getPersistenceManager();
 
-    String dbName = "dummy_db";
+    String dbName = "default";
+
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
     ColumnMeta col1 = new ColumnMeta(dbName, "T1", "id", DataType.INT, true,
@@ -86,14 +90,26 @@ public class SdbSchemeRewriterTest {
         new ColumnKey(new BigInteger("1"), new BigInteger("3")));
     ColumnMeta col4 = new ColumnMeta(dbName, "T2", "b", DataType.INT, true,
         new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-
     cols.add(col1);
     cols.add(col2);
     cols.add(col3);
     cols.add(col4);
 
+    BigInteger p = Crypto.generateRandPrime();
+    BigInteger q = Crypto.generateRandPrime();
+    BigInteger n = p.multiply(q);
+    BigInteger g = Crypto.generatePositiveRand(p ,q);
+
+
+    DBMeta db1 = new DBMeta(dbName);
+    db1.setN(n.toString());
+    db1.setG(g.toString());
+    db1.setP(p.toString());
+    db1.setQ(q.toString());
+
     metadb = new MetaStore(dbName, pm);
     metadb.addCols(cols);
+    metadb.addDB(db1);
     
     return metadb;
   }
@@ -104,7 +120,7 @@ public class SdbSchemeRewriterTest {
   @Before
   public void prepare() {
     MetaStore metadb = prepareTestDB();
-    testObj = new SdbSchemeRewriter(metadb.getDB("dummy_db"));
+    testObj = new SdbSchemeRewriter(metadb.getAllDBs().get(0));
   }
 
   /**
@@ -123,7 +139,7 @@ public class SdbSchemeRewriterTest {
     }
   }
 
-  @Test
+  //@Test
   public void testRewriteJoinGroupBy() {
     ParseNode candidateTree = TestQuery.prepareAnsJoinGroupBy();
     try {
@@ -132,4 +148,21 @@ public class SdbSchemeRewriterTest {
       e.printStackTrace();
     }
   }
+
+  @Test
+  public void testRewriteCreate() throws Exception{
+    //"CREATE TABLE employee (id INT, name VARCHAR(20), salary INT ENC, age INT)";
+    try {
+      ParseNode tree = TestQuery.prepareCreateStmtAnalysed();
+      ParseNode ansTreeRewritten = TestQuery.prepareCreateStmtRewritten();
+      testObj.rewrite(tree);
+      System.out.println(tree.toSql());
+      assertEquals(ansTreeRewritten.toSql(), tree.toSql());
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+  }
+
 }
