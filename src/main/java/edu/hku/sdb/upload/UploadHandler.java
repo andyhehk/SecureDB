@@ -2,6 +2,7 @@ package edu.hku.sdb.upload;
 
 import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.parse.TableName;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -31,6 +32,17 @@ public class UploadHandler {
   private boolean localMode;
   private FileSystem hdfs;
   private MetaStore metaStore;
+  private TableName tableName;
+
+  public TableName getTableName() {
+    return tableName;
+  }
+
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
+  }
+
+
 
   public MetaStore getMetaStore() {
     return metaStore;
@@ -72,8 +84,9 @@ public class UploadHandler {
     this.localMode = localMode;
   }
 
-  public UploadHandler(MetaStore metaStore){
+  public UploadHandler(MetaStore metaStore, TableName tableName){
     setMetaStore(metaStore);
+    setTableName(tableName);
   }
 
   public void upload(){
@@ -133,7 +146,7 @@ public class UploadHandler {
     //TODO: should programatically get db name
     DBMeta dbMeta = metaStore.getAllDBs().get(0);
     //TODO: should get the specific columns of that table instead of all columns
-    List<ColumnMeta> allCols = metaStore.getAllCols();
+    List<ColumnMeta> allCols = metaStore.getTbl(DBMeta.defaultDbName, tableName.getName()).getCols();
     BigInteger n = new BigInteger(dbMeta.getN());
     BigInteger p = new BigInteger(dbMeta.getP());
     BigInteger q = new BigInteger(dbMeta.getQ());
@@ -145,7 +158,7 @@ public class UploadHandler {
       ColumnMeta columnMeta = allCols.get(columnIndex);
 
       AbstractPlaintext plaintext;
-      if (columnMeta.getType() == DataType.CHAR){
+      if (columnMeta.getType() == DataType.CHAR || columnMeta.getType() == DataType.VARCHAR){
         plaintext = new StringPlaintext();
         plaintext.setPlainText(columnValues[columnIndex]);
       }

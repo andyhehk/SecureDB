@@ -46,6 +46,11 @@ public class LocalCreate extends PlanNode<LocalCreateDesc> {
       }
       else if (columnDesc instanceof BasicColumnDesc){
         columnMeta = new ColumnMeta(dbName, tableName, colName);
+        if (columnDesc.getClazz() == String.class){
+          columnMeta.setType(DataType.VARCHAR);
+        } else {
+          columnMeta.setType(DataType.INT);
+        }
       }
       columnMeta.setTableMeta(tableMeta);
       columnMetaList.add(columnMeta);

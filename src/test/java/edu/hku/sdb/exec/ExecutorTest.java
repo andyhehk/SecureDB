@@ -41,7 +41,6 @@ public class ExecutorTest {
   private BigInteger p;
   private BigInteger q;
 
-
   private MetaStore metaDB;
   private SemanticAnalyzer semanticAnalyzer;
   private ParseDriver parser;
@@ -52,11 +51,13 @@ public class ExecutorTest {
 
   private String simpleSelectQuery = "select salary from t2";
   private String simpleMultipleSelectQuery = "select id, salary from t2";
-  private String simpleMultipleMultiECQuery = "select salary * 3, id from t2";
 
-  private String tableName = "create_test_" + new Random().nextInt(100);
+  private String tableName = "create_test_3_" + new Random().nextInt(100);
+
   private String simpleCreateQuery = "CREATE TABLE " + tableName + " (id INT, name VARCHAR(20), salary INT ENC)";
   private String simpleLoadQuery = "LOAD DATA LOCAL INPATH 'src/test/resources/upload/employee.txt' OVERWRITE INTO TABLE " + tableName;
+  private String simpleMultipleMultiECQuery = "select id, salary from " + tableName;
+
   @Before
   public void setUp(){
     prepareTestDB();
@@ -117,7 +118,7 @@ public class ExecutorTest {
 
     metaDB.addDB(db1);
 
-    String tblName1 = "t2";
+    String tblName1 = tableName;
     TableMeta tbl1 = new TableMeta(dbName1, tblName1.toUpperCase());
     tbl1.setDbMeta(db1);
     metaDB.addTbl(tbl1);
@@ -188,7 +189,9 @@ public class ExecutorTest {
 
     metaDB.addTbl(tbl1);
 
-    uploadHandler = new UploadHandler(metaDB);
+    TableName tableNameObj = new TableName();
+    tableNameObj.setName(tblName1);
+    uploadHandler = new UploadHandler(metaDB, tableNameObj);
     uploadHandler.setHDFS_URL("file:///");
     String homeDir = System.getenv("HOME");
     uploadHandler.setSourceFile("src/test/resources/upload/employee.txt");
@@ -232,10 +235,11 @@ public class ExecutorTest {
     ResultSetMetaData sdbMetaData = resultSet.getResultSetMetaData();
     assertTrue(sdbMetaData.getColumnCount() > 0);
 
-    System.out.println(sdbMetaData.getColumnName(1) + " " + sdbMetaData.getColumnName(2));
+    //System.out.println(sdbMetaData.getColumnName(1) + " " + sdbMetaData.getColumnName(2));
+    System.out.println(sdbMetaData.getColumnName(2));
     while (resultSet.next()){
-      //System.out.println(resultSet.getInteger(1));
-      System.out.println(resultSet.getInteger(1) + " " + resultSet.getInteger(2) );
+      //System.out.println(resultSet.getInteger(1) + " " + resultSet.getInteger(2));
+      System.out.println(resultSet.getInteger(2));
     }
 
     assertTrue(resultSet.getServerTotalTime() > 0);
@@ -275,6 +279,7 @@ public class ExecutorTest {
 
     testCreateInternal();
     testLoadInternal();
+    testSimpleSelect();
   }
 
   private void testCreateInternal() throws ParseException, SemanticException, UnSupportedException, SQLException, RemoteException {

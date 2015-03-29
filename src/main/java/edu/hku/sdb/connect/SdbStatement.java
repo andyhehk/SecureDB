@@ -70,7 +70,8 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     if (analyzedNode instanceof LoadStmt){
 
       // another programme encrypts & uploads the data
-      UploadHandler uploadHandler = new UploadHandler(metaDb);
+      TableName tableName = ((LoadStmt) analyzedNode).getTableName();
+      UploadHandler uploadHandler = new UploadHandler(metaDb, tableName);
       String sourceFilePath = ((LoadStmt) analyzedNode).getFilePath();
       uploadHandler.setSourceFile(sourceFilePath);
 
@@ -130,7 +131,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     optimizer = new RuleBaseOptimizer();
     PlanNode planNode = null;
     try {
-      planNode = optimizer.optimize(analyzedNode, serverConnection, null);
+      planNode = optimizer.optimize(analyzedNode, serverConnection, metaDb);
     } catch (UnSupportedException e) {
       e.printStackTrace();
       throw new RemoteException(e.getMessage());

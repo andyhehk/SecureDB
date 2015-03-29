@@ -63,16 +63,21 @@ public class RuleBaseOptimizer extends Optimizer {
 
     for (BasicFieldLiteral fieldLiteral: createStmt.getFieldList()){
       BasicColumnDesc basicColumnDesc = null;
+      Class clazz = null;
       tableName = fieldLiteral.getTableName();
       String columnName = fieldLiteral.getName();
-      Class clazz = Integer.class;
       String alias = "";
       boolean isSen = fieldLiteral.isSen();
       if (isSen){
+        clazz = Integer.class;
         ColumnKey columnKey = fieldLiteral.getColumnKey();
         basicColumnDesc = new ColumnDesc(columnName, alias, clazz, true, columnKey);
       }
       else {
+        switch (fieldLiteral.getType().getDataType()){
+          case INT: clazz = Integer.class; break;
+          default: clazz = String.class;
+        }
         basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
       }
       columnDescList.add(basicColumnDesc);
@@ -109,7 +114,9 @@ public class RuleBaseOptimizer extends Optimizer {
         columnName = ((FieldLiteral) expr).getName();
         // obtain clazz information
         switch (((FieldLiteral) expr).getType()){
-          case CHAR: clazz = String.class; break;
+          case CHAR:
+          case VARCHAR:
+            clazz = String.class; break;
           case INT:
           default:  clazz = Integer.class;
         }

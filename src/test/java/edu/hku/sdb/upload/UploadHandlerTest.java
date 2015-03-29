@@ -2,6 +2,7 @@ package edu.hku.sdb.upload;
 
 import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.parse.TableName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -9,10 +10,6 @@ import org.junit.Test;
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.DriverManager;
 import java.sql.SQLException;
