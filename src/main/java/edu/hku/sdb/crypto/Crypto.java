@@ -188,7 +188,7 @@ public class Crypto {
     //prepare numbers for q
     BigInteger msp = ms.modPow(newP, n);
     BigInteger mcInverse = mc.modInverse(n);
-		BigInteger newQ = (ma.multiply(msp).multiply(mcInverse)).mod(n);
+		BigInteger newQ = ((ma.mod(n)).multiply(msp).multiply(mcInverse)).mod(n);
 
 		newPQ[0] = newP;
 		newPQ[1] = newQ;

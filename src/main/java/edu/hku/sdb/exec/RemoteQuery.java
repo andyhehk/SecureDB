@@ -59,8 +59,9 @@ public class RemoteQuery extends RemoteSQL {
       while (resultSet.next()) {
         TupleSlot tupleSlot = new TupleSlot();
         List<Object> row = new ArrayList<Object>();
-        for (BasicColumnDesc columnDesc : basicColumnDescList){
-          row.add(resultSet.getObject(columnDesc.getName()));
+
+        for (int i = 1; i<= basicColumnDescList.size(); i++){
+          row.add(resultSet.getObject(i));
         }
         if (row.size() > 0){
           tupleSlot.setRow(row);
