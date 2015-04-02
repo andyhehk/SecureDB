@@ -17,17 +17,14 @@
 
 package edu.hku.sdb.parse;
 
+import java.math.BigInteger;
+
 public class SdbBinPredicate extends BinaryPredicate {
 
   private SdbArithmeticExpr arithExpr;
   private SdbKeyUpdateExpr keyUpExpr;
-
-  public SdbBinPredicate(BinOperator op, SdbArithmeticExpr arithExpr,
-      SdbKeyUpdateExpr keyUpExpr) {
-    super(op);
-    this.arithExpr = arithExpr;
-    this.keyUpExpr = keyUpExpr;
-  }
+  private String sdbCompareUDF = "sdb_compare";
+  private BigInteger threshold;
 
   @Override
   public boolean equals(Object obj) {
@@ -37,6 +34,21 @@ public class SdbBinPredicate extends BinaryPredicate {
     SdbBinPredicate sdbBin = (SdbBinPredicate) obj;
     return op.equals(sdbBin.op) && arithExpr.equals(sdbBin.arithExpr)
         && keyUpExpr.equals(sdbBin.keyUpExpr);
+  }
+
+  public BigInteger getThreshold() {
+    return threshold;
+  }
+
+  public void setThreshold(BigInteger threshold) {
+    this.threshold = threshold;
+  }
+
+  public SdbBinPredicate(BinOperator op, SdbArithmeticExpr arithExpr,
+                         SdbKeyUpdateExpr keyUpExpr) {
+    super(op);
+    this.arithExpr = arithExpr;
+    this.keyUpExpr = keyUpExpr;
   }
 
   /*
@@ -57,8 +69,7 @@ public class SdbBinPredicate extends BinaryPredicate {
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    return  sdbCompareUDF + "(" + keyUpExpr.toSql() + ", \"" + threshold.toString() +  "\") " + op + " 0";
   }
 
   /* (non-Javadoc)

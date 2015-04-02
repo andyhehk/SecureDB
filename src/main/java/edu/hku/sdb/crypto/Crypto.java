@@ -11,8 +11,10 @@ import thep.paillier.exceptions.BigIntegerClassNotValid;
 public class Crypto {
 
 	public static int defaultCertainty = 10;
+  public static int FIVE_HUNDRED_AND_TWELVE = 512;
   public static int ONE_THOUSAND_TWENTY_FOUR = 1024;
   public static int TWO_THOUSAND_FORTY_EIGHT = 2048;
+  public static int EIGHTY = 80;
 
 	/**
 	 * 
@@ -60,11 +62,25 @@ public class Crypto {
    * @return a random positive big integer co-prime with p,q & totient(p,q)
    */
   public static BigInteger generatePositiveRand(BigInteger p, BigInteger q){
+    return generatePositiveRandInternal(p, q, TWO_THOUSAND_FORTY_EIGHT);
+  }
+
+  /**
+   * Generates a positive random number of 2048 bits, which is less than n, and co-prime with both n and totient(n).
+   * @param p
+   * @param q
+   * @return a random positive big integer co-prime with p,q & totient(p,q)
+   */
+  public static BigInteger generatePositiveRandShort(BigInteger p, BigInteger q){
+    return generatePositiveRandInternal(p, q, EIGHTY);
+  }
+
+  private static BigInteger generatePositiveRandInternal(BigInteger p, BigInteger q, int numBits) {
     BigInteger n = p.multiply(q);
     BigInteger totient = Crypto.evaluateTotient(p, q);
     BigInteger r = null;
     while(true){
-      r = generatePositiveRand(TWO_THOUSAND_FORTY_EIGHT);
+      r = generatePositiveRand(numBits);
       try{
         BigInteger rReverseN = r.modInverse(n);
         BigInteger rReverseTotient = r.modInverse(totient);
@@ -78,7 +94,8 @@ public class Crypto {
     return r;
   }
 
-	/**
+
+  /**
 	 * Generates an item key based on columnKey<m,x> and row-id.
 	 * @param m m value of columnKey whose value is less than (p * q)
 	 * @param x x value of columnKey whose value is less than (p * q)
@@ -195,5 +212,6 @@ public class Crypto {
 
 		return newPQ;
 	}
+
 
 }

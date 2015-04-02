@@ -1,13 +1,8 @@
 package edu.hku.sdb.crypto;
 
 import java.math.BigInteger;
+import java.util.Random;
 
-import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.catalog.DataType;
-import edu.hku.sdb.parse.BasicFieldLiteral;
-import edu.hku.sdb.parse.Expr;
-import edu.hku.sdb.parse.FieldLiteral;
-import edu.hku.sdb.parse.StringLiteral;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -349,8 +344,8 @@ public class CryptoTest extends TestCase {
     BigInteger sk = Crypto.generateItemKey(ms, xs, r, g, p, q);
 
     //Encrypt A, S column
-    BigInteger s = Crypto.encrypt(new BigInteger("1"),sk, n);
-    BigInteger a = Crypto.encrypt(new BigInteger("9"),ak, n);
+    BigInteger s = Crypto.encrypt(new BigInteger("1"), sk, n);
+    BigInteger a = Crypto.encrypt(new BigInteger("9"), ak, n);
 
 
     BigInteger mb = ms;
@@ -359,12 +354,6 @@ public class CryptoTest extends TestCase {
     //execute key update client protocol
     BigInteger pq_a[] = Crypto.keyUpdateClient(ma, mc, ms, xa, xc, xs, p, q);
     BigInteger pq_b[] = Crypto.keyUpdateClient(mb, mc, ms, xb, xc, xs, p, q);
-
-    //prepare parameter for sdb_add
-    StringLiteral p_a = new StringLiteral(pq_a[0].toString());
-    StringLiteral q_a = new StringLiteral(pq_a[1].toString());
-    StringLiteral p_b = new StringLiteral(pq_b[0].toString());
-    StringLiteral q_b = new StringLiteral(pq_b[1].toString());
 
     BigInteger cUpdated = UDFHandler.add(a, s, s, pq_a[0], pq_a[1], pq_b[0], pq_b[1], n);
     BigInteger cDerypted = Crypto.decrypt(cUpdated, ck, n);
@@ -425,4 +414,181 @@ public class CryptoTest extends TestCase {
     System.out.println(cDerypted);
     assertEquals(new BigInteger("10"), cDerypted);
   }
+/*
+  public void testCompareSimple() throws Exception{
+    //A big prime number
+    BigInteger p = new BigInteger("7");
+    //Another big prime number
+    BigInteger q = new BigInteger("13");
+    BigInteger n = p.multiply(q);
+    BigInteger totient = Crypto.evaluateTotient(p, q);
+    BigInteger row_id = new BigInteger("2");
+    BigInteger g = new BigInteger("2");
+
+    //column key for column A
+    BigInteger ma = new BigInteger("3");
+    BigInteger xa = new BigInteger("17");
+
+    //column key for additional column S
+    BigInteger ms = new BigInteger("5");
+    BigInteger xs = new BigInteger("19");
+
+    //column key for additional column S
+    BigInteger mr = new BigInteger("5");
+    BigInteger xr = new BigInteger("3");
+
+    //item key for A,C,S
+    BigInteger ak = Crypto.generateItemKey(ma, xa, row_id, g, p, q);
+    BigInteger sk = Crypto.generateItemKey(ms, xs, row_id, g, p, q);
+
+    //Encrypt A, S column
+    BigInteger s = Crypto.encrypt(new BigInteger("1"), sk, n);
+    BigInteger a = Crypto.encrypt(new BigInteger("9"), ak, n);
+    //BigInteger r = Crypto.encrypt(new BigInteger("7"), ak, n);
+
+    for (int i = 1; i < 20; i++ ) {
+      BigInteger u = new BigInteger(String.valueOf(i));
+
+      //rewrite subtract EC => A - S * u
+      BigInteger msu = ms.multiply(u);
+      BigInteger xsu = xs;
+
+      BigInteger msu_i = n.subtract(BigInteger.ONE).multiply(msu).mod(n);
+      BigInteger xsu_i = xsu;
+
+      BigInteger mc = new BigInteger("11");
+      BigInteger xc = new BigInteger("11");
+
+      BigInteger[] pqa_c = Crypto.keyUpdateClient(ma, mc, ms, xa, xc, xs, p, q);
+      BigInteger pa_c = pqa_c[0];
+      BigInteger qa_c = pqa_c[1];
+
+      BigInteger[] pqsu_i_c = Crypto.keyUpdateClient(msu_i, mc, ms, xsu_i, xc, xs, p, q);
+      BigInteger psu_i_c = pqsu_i_c[0];
+      BigInteger qsu_i_c = pqsu_i_c[1];
+
+
+      BigInteger aMinusUCipherText = UDFHandler.add(a, s, s, pa_c, qa_c, psu_i_c, qsu_i_c, n);
+
+      // TODO should be mrc, xrc, multi(r, aMinusUCipherText, n);
+      BigInteger msc = ms.multiply(mc).mod(n);
+      BigInteger xsc = xs.add(xc).mod(Crypto.evaluateTotient(p, q));
+
+      BigInteger[] pqrc_z = Crypto.keyUpdateClient(msc, new BigInteger("1"), ms, xsc, new BigInteger("0"), xs, p, q);
+
+      //TODO DANGER! hack with s instead of r
+      BigInteger rTimesaMinusUCipherText = UDFHandler.multi(s, aMinusUCipherText, n);
+      BigInteger result = UDFHandler.keyUpdate(rTimesaMinusUCipherText, s, pqrc_z[0], pqrc_z[1], n);
+      System.out.println("testCompareSimple: " + result + " with u = " + i);
+      // n = 91
+      // n - 1 / 2 = 45
+    }
+  }*/
+
+  public void testCompareLarge() throws Exception{
+    //A big prime number
+    BigInteger p = Crypto.generateRandPrime();
+    //Another big prime number
+    BigInteger q = Crypto.generateRandPrime();
+    BigInteger n = p.multiply(q);
+    BigInteger totient = Crypto.evaluateTotient(p, q);
+    BigInteger row_id = Crypto.generatePositiveRandShort(p, q);
+    BigInteger g = Crypto.generatePositiveRand(p, q);
+
+    //column key for column A
+    BigInteger ma = Crypto.generatePositiveRand(p, q);
+    BigInteger xa = Crypto.generatePositiveRand(p, q);
+
+    //column key for additional column S
+    BigInteger ms = Crypto.generatePositiveRand(p, q);
+    BigInteger xs = Crypto.generatePositiveRand(p, q);
+
+    //column key for additional column S
+    BigInteger mr = Crypto.generatePositiveRand(p, q);
+    BigInteger xr = Crypto.generatePositiveRand(p, q);
+
+    //item key for A,C,S
+    BigInteger ak = Crypto.generateItemKey(ma, xa, row_id, g, p, q);
+    BigInteger sk = Crypto.generateItemKey(ms, xs, row_id, g, p, q);
+
+    //A PLAINTEXT
+    BigInteger aPlaintext = Crypto.generatePositiveRandShort(p, q);
+            //new BigInteger(String.valueOf(new Random().nextInt(10000)));
+    System.out.println(aPlaintext);
+
+    //Encrypt A, S column
+    BigInteger s = Crypto.encrypt(new BigInteger("1"), sk, n);
+    BigInteger a = Crypto.encrypt(aPlaintext, ak, n);
+    BigInteger r = Crypto.encrypt(Crypto.generatePositiveRandShort(p, q), ak, n);
+
+    BigInteger u = aPlaintext.subtract(new BigInteger("100"));
+    testCompareInternal(p, q, n, ma, xa, ms, xs, s, a, u, mr, xr, r);
+
+    u = aPlaintext.subtract(new BigInteger("100000000"));
+    testCompareInternal(p, q, n, ma, xa, ms, xs, s, a, u, mr, xr, r);
+
+    u = aPlaintext.subtract(new BigInteger("1000000000000000000"));
+    testCompareInternal(p, q, n, ma, xa, ms, xs, s, a, u, mr, xr, r);
+
+    u = aPlaintext.subtract(new BigInteger("500000000000000000000000"));
+    testCompareInternal(p, q, n, ma, xa, ms, xs, s, a, u, mr, xr, r);
+
+    u = aPlaintext.subtract(new BigInteger("80000000000000000000000000"));
+    testCompareInternal(p, q, n, ma, xa, ms, xs, s, a, u, mr, xr, r);
+
+    u = aPlaintext.add(new BigInteger("100"));
+    testCompareInternal(p, q, n, ma, xa, ms, xs, s, a, u, mr, xr, r);
+
+    u = aPlaintext.add(new BigInteger("1000000000"));
+    testCompareInternal(p, q, n, ma, xa, ms, xs, s, a, u, mr, xr, r);
+
+    u = aPlaintext.add(new BigInteger("100000000000000000"));
+    testCompareInternal(p, q, n, ma, xa, ms, xs, s, a, u, mr, xr, r);
+  }
+
+  private void testCompareInternal(BigInteger p, BigInteger q, BigInteger n, BigInteger ma, BigInteger xa, BigInteger ms,
+                                   BigInteger xs, BigInteger s, BigInteger a, BigInteger u, BigInteger mr, BigInteger xr,
+                                   BigInteger r) {
+    //rewrite subtract EC => A - S * u
+    BigInteger msu = ms.multiply(u);
+    BigInteger xsu = xs;
+
+    BigInteger msu_i = n.subtract(BigInteger.ONE).multiply(msu).mod(n);
+    BigInteger xsu_i = xsu;
+
+    BigInteger mc = Crypto.generatePositiveRand(p, q);
+    BigInteger xc = Crypto.generatePositiveRand(p, q);
+
+    BigInteger[] pqa_c = Crypto.keyUpdateClient(ma, mc, ms, xa, xc, xs, p, q);
+    BigInteger pa_c = pqa_c[0];
+    BigInteger qa_c = pqa_c[1];
+
+    BigInteger[] pqsu_i_c = Crypto.keyUpdateClient(msu_i, mc, ms, xsu_i, xc, xs, p, q);
+    BigInteger psu_i_c = pqsu_i_c[0];
+    BigInteger qsu_i_c = pqsu_i_c[1];
+
+
+    BigInteger aMinusUCipherText = UDFHandler.add(a, s, s, pa_c, qa_c, psu_i_c, qsu_i_c, n);
+
+    //TODO DANGER! hack with s instead of r, this is not secure
+    //params should be mrc, xrc, multi(r, aMinusUCipherText, n);
+    BigInteger msc = ms.multiply(mc).mod(n);
+    BigInteger xsc = xs.add(xc).mod(Crypto.evaluateTotient(p, q));
+    BigInteger[] pqrc_z = Crypto.keyUpdateClient(msc, new BigInteger("1"), ms, xsc, new BigInteger("0"), xs, p, q);
+    BigInteger rTimesaMinusUCipherText = UDFHandler.multi(s, aMinusUCipherText, n);
+
+//    BigInteger mrc = mr.multiply(mc).mod(n);
+//    BigInteger xrc = xr.add(xc).mod(Crypto.evaluateTotient(p, q));
+//    BigInteger[] pqrc_z = Crypto.keyUpdateClient(mrc, new BigInteger("1"), ms, xrc, new BigInteger("0"), xs, p, q);
+//    BigInteger rTimesaMinusUCipherText = UDFHandler.multi(r, aMinusUCipherText, n);
+
+    BigInteger result = UDFHandler.keyUpdate(rTimesaMinusUCipherText, s, pqrc_z[0], pqrc_z[1], n);
+    BigInteger halfN = n.subtract(BigInteger.ONE).divide(new BigInteger("2"));
+    System.out.println("testCompareLarge: " + result.compareTo(halfN) + "  " + result + " with u = " + u);
+  }
+
+  public void testCompare() {
+    assertTrue(UDFHandler.compare(new BigInteger("100"), new BigInteger("128")) > 0);
+  }
+
 }

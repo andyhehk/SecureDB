@@ -17,6 +17,11 @@
 
 package edu.hku.sdb.parse;
 
+import com.google.common.base.Joiner;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class SdbKeyUpdateExpr extends Expr {
 
   private final String op = "sdb_keyUp";
@@ -36,8 +41,11 @@ public class SdbKeyUpdateExpr extends Expr {
    */
   @Override
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    List<String> items = new ArrayList<String>();
+    for (Expr child : children) {
+      items.add(child.toSql());
+    }
+    return op + "(" + Joiner.on(",").join(items) + ")";
   }
 
   /* (non-Javadoc)

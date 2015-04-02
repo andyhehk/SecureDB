@@ -32,6 +32,7 @@ public class ExecutorTest {
 
   private String driver = "org.apache.derby.jdbc.EmbeddedDriver";
   private static String HiveDriverName = "org.apache.hive.jdbc.HiveDriver";
+  private String serverConnectionURL = "jdbc:hive2://localhost:10000/default";
   private PersistenceManagerFactory pmf;
   private PersistenceManager pm;
   private UploadHandler uploadHandler;
@@ -48,11 +49,16 @@ public class ExecutorTest {
   private Optimizer optimizer;
   private Executor executor;
   private Connection connection;
+  private String targetTableName = "create_test_4_1_76";
 
   private String simpleSelectQuery = "select salary from t2";
-  private String simpleMultipleSelectQuery = "select id, salary from t2";
+  private String simpleMultipleSelectQuery = "select id, salary * 3 from t2";
+  private String simpleSubtractSelectQuery = "select salary - 1 from " + targetTableName;
+  private String simpleSubtractSelectQueryEE = "select salary - s from " + targetTableName;
+  private String simpleAddSelectQueryEE = "select salary + s from " + targetTableName;
+  private String simpleSelectWhereQuery = "select salary from " + targetTableName + " where salary < 10000";
 
-  private String tableName = "create_test_3_" + new Random().nextInt(100);
+  private String tableName = "create_test_4_1_" + new Random().nextInt(100);
 
   private String simpleCreateQuery = "CREATE TABLE " + tableName + " (id INT, name VARCHAR(20), salary INT ENC)";
   private String simpleLoadQuery = "LOAD DATA LOCAL INPATH 'src/test/resources/upload/employee.txt' OVERWRITE INTO TABLE " + tableName;
@@ -205,10 +211,14 @@ public class ExecutorTest {
   }
 
 
-  //@Test
   public void testSimpleSelect() throws Exception{
 
-    String testQuery = simpleMultipleMultiECQuery;
+//    String testQuery = simpleMultipleSelectQuery;
+//    String testQuery = simpleSubtractSelectQuery;
+//    String testQuery = simpleSubtractSelectQueryEE;
+//    String testQuery = simpleAddSelectQueryEE;
+    String testQuery = simpleSelectWhereQuery;
+
     // Parse & analyse
     System.out.println("Parsing " + testQuery);
     parser = new ParseDriver();
@@ -235,11 +245,9 @@ public class ExecutorTest {
     ResultSetMetaData sdbMetaData = resultSet.getResultSetMetaData();
     assertTrue(sdbMetaData.getColumnCount() > 0);
 
-    //System.out.println(sdbMetaData.getColumnName(1) + " " + sdbMetaData.getColumnName(2));
-    System.out.println(sdbMetaData.getColumnName(2));
+    System.out.println(sdbMetaData.getColumnName(1));
     while (resultSet.next()){
-      //System.out.println(resultSet.getInteger(1) + " " + resultSet.getInteger(2));
-      System.out.println(resultSet.getInteger(2));
+      System.out.println(resultSet.getInteger(1));
     }
 
     assertTrue(resultSet.getServerTotalTime() > 0);
@@ -257,18 +265,21 @@ public class ExecutorTest {
     Statement stmt = con.createStatement();
 
     // register UDFs
-    stmt.execute("add jar SDB-0.1-SNAPSHOT.jar");
+    //stmt.execute("add jar SDB-0.1-SNAPSHOT.jar");
+    //stmt.execute("add jar file:///home/haibin/apache/spark/lib/SDB-0.1-SNAPSHOT.jar");
     stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.SDBIntAddUDF'");
     stmt.execute("CREATE TEMPORARY FUNCTION sdb_add AS 'edu.hku.sdb.udf.SDBAddUDF'");
     stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.SDBIntAddUDF'");
     stmt.execute("CREATE TEMPORARY FUNCTION sdb_keyUp AS 'edu.hku.sdb.udf.SDBKeyUpdateUDF'");
     stmt.execute("CREATE TEMPORARY FUNCTION sdb_mul AS 'edu.hku.sdb.udf.SDBMultiUDF'");
+    stmt.execute("CREATE TEMPORARY FUNCTION sdb_compare AS 'edu.hku.sdb.udf.SDBCompareUDF'");
 
     // test simple UDF
     String sql = "select COUNT(sdb_intadd('2', '1', '11'))  from test_table_1";
 
     System.out.println("Testing UDF " + sql);
     java.sql.ResultSet res = con.createStatement().executeQuery(sql);
+    System.out.println(res.next());
 
     return con;
   }
@@ -276,15 +287,18 @@ public class ExecutorTest {
 
   @Test
   public void testExecuteCreate() throws Exception{
+    getHiveConnection();
 
-    testCreateInternal();
-    testLoadInternal();
+    //testCreateInternal();
+    //testLoadInternal();
+
     testSimpleSelect();
   }
 
   private void testCreateInternal() throws ParseException, SemanticException, UnSupportedException, SQLException, RemoteException {
 
     String testQuery = simpleCreateQuery;
+
     // Parse & analyse
     System.out.println("Parsing " + testQuery);
     parser = new ParseDriver();
@@ -299,7 +313,6 @@ public class ExecutorTest {
 
     // Optimize
     System.out.println("Optimizing " + analyzedNode.toSql());
-    Connection connection = getHiveConnection();
     optimizer = new RuleBaseOptimizer();
     PlanNode planNode = optimizer.optimize(analyzedNode, connection, metaDB);
 
@@ -315,7 +328,6 @@ public class ExecutorTest {
 
     SdbStatement sdbStatement = new SdbStatement(metaDB, connection);
     sdbStatement.executeQuery(testQuery);
-
   }
 
 }
