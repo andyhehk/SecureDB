@@ -49,20 +49,20 @@ public class ExecutorTest {
   private Optimizer optimizer;
   private Executor executor;
   private Connection connection;
-  private String targetTableName = "create_test_4_1_76";
+  private String targetTableName = "create_test_4_1_" + new Random().nextInt(100);
+
 
   private String simpleSelectQuery = "select salary from t2";
-  private String simpleMultipleSelectQuery = "select id, salary * 3 from t2";
+  private String simpleMultipleSelectQuery = "select id, salary * 3 from " + targetTableName;
   private String simpleSubtractSelectQuery = "select salary - 1 from " + targetTableName;
   private String simpleSubtractSelectQueryEE = "select salary - s from " + targetTableName;
   private String simpleAddSelectQueryEE = "select salary + s from " + targetTableName;
+
   private String simpleSelectWhereQuery = "select salary from " + targetTableName + " where salary < 10000";
 
-  private String tableName = "create_test_4_1_" + new Random().nextInt(100);
-
-  private String simpleCreateQuery = "CREATE TABLE " + tableName + " (id INT, name VARCHAR(20), salary INT ENC)";
-  private String simpleLoadQuery = "LOAD DATA LOCAL INPATH 'src/test/resources/upload/employee.txt' OVERWRITE INTO TABLE " + tableName;
-  private String simpleMultipleMultiECQuery = "select id, salary from " + tableName;
+  private String simpleCreateQuery = "CREATE TABLE " + targetTableName + " (id INT, name VARCHAR(20), salary INT ENC)";
+  private String simpleLoadQuery = "LOAD DATA LOCAL INPATH 'src/test/resources/upload/employee.txt' OVERWRITE INTO TABLE " + targetTableName;
+  private String simpleMultipleMultiECQuery = "select id, salary from " + targetTableName;
 
   @Before
   public void setUp(){
@@ -124,7 +124,7 @@ public class ExecutorTest {
 
     metaDB.addDB(db1);
 
-    String tblName1 = tableName;
+    String tblName1 = targetTableName;
     TableMeta tbl1 = new TableMeta(dbName1, tblName1.toUpperCase());
     tbl1.setDbMeta(db1);
     metaDB.addTbl(tbl1);

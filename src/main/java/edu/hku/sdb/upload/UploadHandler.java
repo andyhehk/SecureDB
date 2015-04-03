@@ -154,7 +154,8 @@ public class UploadHandler {
     BigInteger p = new BigInteger(dbMeta.getP());
     BigInteger q = new BigInteger(dbMeta.getQ());
     BigInteger g = new BigInteger(dbMeta.getG());
-    BigInteger rowId = Crypto.generatePositiveRand(p, q);
+    //80 bit long rowId is sufficient
+    BigInteger rowId = Crypto.generatePositiveRandShort(p, q);
 
     for (int columnIndex = 0; columnIndex < columnValues.length; columnIndex++){
 
@@ -182,7 +183,8 @@ public class UploadHandler {
 
     //Adding r column
     int rColumnIndex = columnValues.length + 2;
-    BigInteger randomInt = Crypto.generatePositiveRand(p, q);
+    //80 bit long r value is sufficient
+    BigInteger randomInt = Crypto.generatePositiveRandShort(p, q);
     IntegerPlaintext rPlaintext = getIntegerPlaintext(randomInt.toString(), n, p, q, g, rowId, allCols.get(rColumnIndex));
     newLine = appendColumnString(newLine, rColumnIndex, rPlaintext);
 

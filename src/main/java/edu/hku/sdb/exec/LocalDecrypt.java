@@ -86,7 +86,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
       for (int index = columnDescList.size() - 1; index >= 0; index-- ) {
         BasicColumnDesc columnDesc = columnDescList.get(index);
         if (columnDesc.getName().equals(BasicFieldLiteral.ROW_ID_COLUMN_NAME)){
-          BigInteger rowIdEncrypted = new BigInteger((String) row.get(index));
+          BigInteger rowIdEncrypted = Crypto.getSecureBigInt((String) row.get(index));
           rowId = Crypto.PaillierDecrypt(rowIdEncrypted, p, q);
         }
 
@@ -94,7 +94,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
         else if (((ColumnDesc) columnDesc).isSensitive()) {
           ColumnKey columnKey = ((ColumnDesc) columnDesc).getColumnKey();
           BigInteger itemKey = Crypto.generateItemKey(columnKey.getM(), columnKey.getX(), (BigInteger) rowId, g, p, q);
-          BigInteger cipherText = new BigInteger ((String) row.get(index));
+          BigInteger cipherText = Crypto.getSecureBigInt((String) row.get(index));
           BigInteger plainText = Crypto.decrypt(cipherText, itemKey, n);
           row.set(index, plainText);
         }
