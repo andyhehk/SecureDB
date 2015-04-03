@@ -13,13 +13,14 @@ import javax.jdo.PersistenceManagerFactory;
 import java.math.BigInteger;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 
 import static org.junit.Assert.*;
 
 public class UploadHandlerTest {
-
 
   @Before
   public void setUp() throws Exception {
@@ -40,6 +41,7 @@ public class UploadHandlerTest {
   private BigInteger g;
   private BigInteger p;
   private BigInteger q;
+  ColumnKey columnKeySalary;
   /**
    * Prepare a in-memory database for testing
    */
@@ -55,8 +57,10 @@ public class UploadHandlerTest {
     Properties properties = new Properties();
     properties.setProperty("javax.jdo.option.ConnectionURL",
             "jdbc:derby:memory:sdbclient;create=true");
+
     properties.setProperty("javax.jdo.option.ConnectionDriverName",
             "org.apache.derby.jdbc.EmbeddedDriver");
+
     properties.setProperty("javax.jdo.option.ConnectionUserName", "");
     properties.setProperty("javax.jdo.option.ConnectionPassword", "");
     properties.setProperty("datanucleus.schema.autoCreateSchema", "true");
@@ -97,20 +101,9 @@ public class UploadHandlerTest {
     n = p.multiply(q);
     g = Crypto.generatePositiveRand(p ,q);
 
-    uploadHandler = new UploadHandler();
-    uploadHandler.setHDFS_URL("file:///");
-    String homeDir = System.getenv("HOME");
-    uploadHandler.setHDFS_FILE_PATH("file://"+homeDir+"/employee.txt");
-
-//    uploadHandler.setHDFS_URL("hdfs://localhost:9000");
-//    uploadHandler.setHDFS_FILE_PATH("hdfs://localhost:9000/user/yifan/employee.txt");
-
-    uploadHandler.setSourceFile("src/test/resources/upload/employee.txt");
-    uploadHandler.setLocalMode(true);
-
     MetaStore metaDB = new MetaStore(pm);
 
-    String dbName1 = "sdbclient";
+    String dbName1 = DBMeta.defaultDbName;
     db1 = new DBMeta(dbName1);
 
     db1.setN(n.toString());
@@ -152,7 +145,8 @@ public class UploadHandlerTest {
     col5.setType(DataType.INT);
     col6.setType(DataType.INT);
 
-    col3.setColkey(new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
+    columnKeySalary = new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q));
+    col3.setColkey(columnKeySalary);
     col4.setColkey(new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
     col5.setColkey(new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
     col6.setColkey(new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
@@ -164,31 +158,51 @@ public class UploadHandlerTest {
     col5.setSensitive(true);
     col6.setSensitive(true);
 
-    metaDB.addCol(col1);
-    metaDB.addCol(col2);
-    metaDB.addCol(col3);
-    metaDB.addCol(col4);
-    metaDB.addCol(col5);
-    metaDB.addCol(col6);
+    List<ColumnMeta> columnMetaList = new ArrayList<>();
 
-    uploadHandler.setMetaStore(metaDB);
+    columnMetaList.add(col1);
+    columnMetaList.add(col2);
+    columnMetaList.add(col3);
+    columnMetaList.add(col4);
+    columnMetaList.add(col5);
+    columnMetaList.add(col6);
+
+    metaDB.addCols(columnMetaList);
+    tbl1.setCols(columnMetaList);
+    db1.add(tbl1);
+
+    metaDB.addTbl(tbl1);
+    metaDB.addDB(db1);
+
+    TableName tableName = new TableName();
+    tableName.setName(tblName1);
+
+    uploadHandler = new UploadHandler(metaDB, tableName);
+    uploadHandler.setHDFS_URL("file:///");
+    String homeDir = System.getenv("HOME");
+    uploadHandler.setHDFS_FILE_PATH("file://"+homeDir+"/employee_test_short.txt");
+
+//    uploadHandler.setHDFS_URL("hdfs://localhost:9000");
+//    uploadHandler.setHDFS_FILE_PATH("hdfs://localhost:9000/user/yifan/employee.txt");
+
+    uploadHandler.setSourceFile("src/test/resources/upload/employee.txt");
+    uploadHandler.setLocalMode(true);
 
   }
-
-//  @Test
-//  public void testUpload() throws Exception {
-//    String encryptedLine = (uploadHandler.processLineForTest("1;James;4"));
-//    String[] columnValues = encryptedLine.split(";");
-//    BigInteger r = Crypto.PailierDecrypt(new BigInteger(columnValues[3]), new BigInteger(db1.getP()) , new BigInteger(db1.getQ()));
-//    BigInteger itemKey = Crypto.generateItemKey(m1, x1, r, g,p,q);
-//    BigInteger salaryDecrypted =  Crypto.decrypt(new BigInteger(columnValues[2]), itemKey, n);
-//    assertEquals(new BigInteger("4"), salaryDecrypted);
-//  }
 
   @Test
   public void testUploadIntegrated(){
     uploadHandler.upload();
   }
 
+  @Test
+  public void testUpload() {
+    String encryptedLine = (uploadHandler.processLineForTest("1;James;4"));
+    String[] columnValues = encryptedLine.split(";");
+    BigInteger r = Crypto.PaillierDecrypt(Crypto.getSecureBigInt(columnValues[3]), new BigInteger(db1.getP()), new BigInteger(db1.getQ()));
+    BigInteger itemKey = Crypto.generateItemKey(columnKeySalary.getM(), columnKeySalary.getX(), r, g,p,q);
+    BigInteger salaryDecrypted =  Crypto.decrypt(Crypto.getSecureBigInt(columnValues[2]), itemKey, n);
+    assertEquals(new BigInteger("4"), salaryDecrypted);
+  }
 
 }

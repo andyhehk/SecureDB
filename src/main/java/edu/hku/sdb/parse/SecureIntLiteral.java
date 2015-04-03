@@ -13,65 +13,42 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
+ *
  *******************************************************************************/
-
 package edu.hku.sdb.parse;
 
 import edu.hku.sdb.crypto.Crypto;
 
 import java.math.BigInteger;
 
-public class SdbBinPredicate extends BinaryPredicate {
+public class SecureIntLiteral extends LiteralExpr {
 
-  private SdbArithmeticExpr arithExpr;
-  private SdbKeyUpdateExpr keyUpExpr;
-  private String sdbCompareUDF = "sdb_compare";
-  private BigInteger threshold;
+  private BigInteger secureInteger;
+
+  public SecureIntLiteral(BigInteger secureInteger) {
+    this.secureInteger = secureInteger;
+  }
+
+  public BigInteger getSecureInteger() {
+    return secureInteger;
+  }
+
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof SdbBinPredicate))
+    if (!(obj instanceof SecureIntLiteral))
       return false;
 
-    SdbBinPredicate sdbBin = (SdbBinPredicate) obj;
-    return op.equals(sdbBin.op) && arithExpr.equals(sdbBin.arithExpr)
-        && keyUpExpr.equals(sdbBin.keyUpExpr);
+    return secureInteger.equals(((SecureIntLiteral) obj).secureInteger);
   }
 
-  public BigInteger getThreshold() {
-    return threshold;
-  }
 
-  public void setThreshold(BigInteger threshold) {
-    this.threshold = threshold;
-  }
-
-  public SdbBinPredicate(BinOperator op, SdbArithmeticExpr arithExpr,
-                         SdbKeyUpdateExpr keyUpExpr) {
-    super(op);
-    this.arithExpr = arithExpr;
-    this.keyUpExpr = keyUpExpr;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
-   * )
-   */
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    // TODO Auto-generated method stub
-
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
+  /* (non-Javadoc)
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
+  @Override
   public String toSql() {
-    return  sdbCompareUDF + "(" + keyUpExpr.toSql() + ", \"" + Crypto.getSecureString(threshold) +  "\") " + op + " 0";
+    return "\"" + Crypto.getSecureString(secureInteger) + "\"";
   }
 
   /* (non-Javadoc)
@@ -79,7 +56,7 @@ public class SdbBinPredicate extends BinaryPredicate {
    */
   @Override
   public boolean involveSdbEncrytedCol() {
-    return true;
+    return false;
   }
 
 }

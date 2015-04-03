@@ -2,6 +2,7 @@ package edu.hku.sdb.udf;
 
 import java.math.BigInteger;
 
+import edu.hku.sdb.crypto.Crypto;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
 
@@ -15,10 +16,10 @@ public class SDBCartProdUDF extends UDF {
 		}
 
 		BigInteger result = UDFHandler.cartesianProduct(
-				new BigInteger(a.toString()), new BigInteger(s.toString()),
-				new BigInteger(p.toString()), new BigInteger(n.toString()));
+            Crypto.getSecureBigInt(a), Crypto.getSecureBigInt(s),
+            Crypto.getSecureBigInt(p), Crypto.getSecureBigInt(n));
 
-		return new Text(result.toString());
+		return Crypto.getSecureText(result);
 	}
 
 }

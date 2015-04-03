@@ -3,6 +3,7 @@ package edu.hku.sdb.crypto;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+import org.apache.hadoop.io.Text;
 import thep.paillier.EncryptedInteger;
 import thep.paillier.PrivateKey;
 import thep.paillier.PublicKey;
@@ -212,6 +213,22 @@ public class Crypto {
 
 		return newPQ;
 	}
+
+  public static BigInteger getSecureBigInt(String cipherString){
+    return new BigInteger(cipherString, Character.MAX_RADIX);
+  }
+
+  public static BigInteger getSecureBigInt(Text cipherString){
+    return new BigInteger(cipherString.toString(), Character.MAX_RADIX);
+  }
+
+  public static Text getSecureText(BigInteger cipherString){
+    return new Text(cipherString.toString(Character.MAX_RADIX));
+  }
+
+  public static String getSecureString(BigInteger cipherString){
+    return cipherString.toString(Character.MAX_RADIX);
+  }
 
 
 }

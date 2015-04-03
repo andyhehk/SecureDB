@@ -5,7 +5,6 @@ package edu.hku.sdb.upload;
  */
 public class StringPlaintext extends AbstractPlaintext {
 
-
   @Override
   public String toString(){
     return plainText;

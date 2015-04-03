@@ -1,5 +1,6 @@
 package edu.hku.sdb.udf;
 
+import edu.hku.sdb.crypto.Crypto;
 import edu.hku.sdb.crypto.UDFHandler;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
@@ -16,7 +17,8 @@ public class SDBCompareUDF extends UDF {
       return 0;
     }
 
-    int result = UDFHandler.compare( new BigInteger(a.toString()), new BigInteger(b.toString()));
+    int result = UDFHandler.compare(
+            Crypto.getSecureBigInt(a), Crypto.getSecureBigInt(b));
 
     return result;
   }

@@ -138,6 +138,10 @@ public class UploadHandler {
     return bufferedWriter;
   }
 
+  public String processLineForTest(String line){
+    return processLine(line);
+  }
+
   private String processLine(String line){
     String newLine = "";
     String[] columnValues = line.split(";");
@@ -169,16 +173,18 @@ public class UploadHandler {
     }
     //Adding rowId column
     BigInteger encryptedR = Crypto.PaillierEncrypt(rowId, p, q);
-    newLine = appendColumnString(newLine, columnValues.length, encryptedR);
+    newLine = appendColumnString(newLine, columnValues.length, Crypto.getSecureString(encryptedR));
 
     //Adding s column
     int sColumnIndex = columnValues.length + 1;
-    newLine = appendHelperColumn(newLine, new BigInteger("1"), allCols.get(sColumnIndex), n, p, q, g, rowId, sColumnIndex);
+    IntegerPlaintext sPlaintext = getIntegerPlaintext("1", n, p, q, g, rowId, allCols.get(sColumnIndex));
+    newLine = appendColumnString(newLine, sColumnIndex, sPlaintext);
 
     //Adding r column
     int rColumnIndex = columnValues.length + 2;
     BigInteger randomInt = Crypto.generatePositiveRand(p, q);
-    newLine = appendHelperColumn(newLine, randomInt, allCols.get(rColumnIndex), n, p, q, g, rowId, rColumnIndex);
+    IntegerPlaintext rPlaintext = getIntegerPlaintext(randomInt.toString(), n, p, q, g, rowId, allCols.get(rColumnIndex));
+    newLine = appendColumnString(newLine, rColumnIndex, rPlaintext);
 
     return newLine + "\n";
   }
@@ -205,12 +211,6 @@ public class UploadHandler {
     integerPlaintext.setRowId(rowId);
     integerPlaintext.setColumnKey(columnMeta.getColkey());
     return integerPlaintext;
-  }
-
-  private String appendHelperColumn(String newLine, BigInteger columnValue, ColumnMeta columnMeta, BigInteger n, BigInteger p, BigInteger q, BigInteger g, BigInteger rowId, int rColumnIndex) {
-    IntegerPlaintext integerPlaintext = getIntegerPlaintext(columnValue.toString(), n, p, q, g, rowId, columnMeta);
-    newLine = appendColumnString(newLine, rColumnIndex, integerPlaintext);
-    return newLine;
   }
 
   /**

@@ -84,7 +84,6 @@ public class SdbSchemeRewriter extends AbstractRewriter {
      * 
      **********************************************************************/
 
-
     p = new BigInteger(dbMeta.getP());
     q = new BigInteger(dbMeta.getQ());
     n = new BigInteger(dbMeta.getN());
@@ -101,6 +100,12 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
   @Override
   protected void rewriteCreateStmt(CreateStmt createStmt) throws UnSupportedException {
+
+    p = new BigInteger(dbMeta.getP());
+    q = new BigInteger(dbMeta.getQ());
+    n = new BigInteger(dbMeta.getN());
+    g = new BigInteger(dbMeta.getG());
+
     rewriteCreateFieldLists(createStmt.getFieldList());
     rewriteCreateRowFormat(createStmt);
   }
@@ -117,8 +122,6 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
   private void rewriteCreateFieldLists(List<BasicFieldLiteral> fieldList) {
     TableName tableName = fieldList.get(0).getTableName();
-    BigInteger p = new BigInteger(dbMeta.getP());
-    BigInteger q = new BigInteger(dbMeta.getQ());
 
     for (BasicFieldLiteral basicFieldLiteral : fieldList){
       if (basicFieldLiteral.isSen()){
@@ -162,7 +165,6 @@ public class SdbSchemeRewriter extends AbstractRewriter {
           }
         }
       }
-
     }
   }
 
@@ -378,11 +380,11 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     sdbArithmeticExpr.addChild(leftField);
     sdbArithmeticExpr.addChild(rightField);
     sdbArithmeticExpr.addChild(sField);
-    sdbArithmeticExpr.addChild(new StringLiteral(pa_c.toString()));
-    sdbArithmeticExpr.addChild(new StringLiteral(qa_c.toString()));
-    sdbArithmeticExpr.addChild(new StringLiteral(pb_i_c.toString()));
-    sdbArithmeticExpr.addChild(new StringLiteral(qb_i_c.toString()));
-    sdbArithmeticExpr.addChild(new StringLiteral(n.toString()));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(pa_c));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(qa_c));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(pb_i_c));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(qb_i_c));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(n));
     sdbArithmeticExpr.setColumnKey(new ColumnKey(mc, xc));
     return sdbArithmeticExpr;
   }
@@ -430,11 +432,11 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     sdbArithmeticExpr.addChild(leftField);
     sdbArithmeticExpr.addChild(sField);
     sdbArithmeticExpr.addChild(sField);
-    sdbArithmeticExpr.addChild(new StringLiteral(pa_c.toString()));
-    sdbArithmeticExpr.addChild(new StringLiteral(qa_c.toString()));
-    sdbArithmeticExpr.addChild(new StringLiteral(psu_i_c.toString()));
-    sdbArithmeticExpr.addChild(new StringLiteral(qsu_i_c.toString()));
-    sdbArithmeticExpr.addChild(new StringLiteral(n.toString()));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(pa_c));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(qa_c));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(psu_i_c));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(qsu_i_c));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(n));
     sdbArithmeticExpr.setColumnKey(new ColumnKey(mc, xc));
 
     return sdbArithmeticExpr;
@@ -444,9 +446,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     ColumnKey columnKey;
     ColumnKey leftColumnKey =  left.getColKey();
     ColumnKey rightColumnKey = right.getColKey();
-    BigInteger p = new BigInteger(dbMeta.getP());
-    BigInteger q = new BigInteger(dbMeta.getQ());
-    BigInteger m = leftColumnKey.getM().multiply(rightColumnKey.getM()).mod(new BigInteger(dbMeta.getN()));
+    BigInteger m = leftColumnKey.getM().multiply(rightColumnKey.getM()).mod(n);
     BigInteger x = leftColumnKey.getX().add(rightColumnKey.getX()).mod(Crypto.evaluateTotient(p, q));
     columnKey = new ColumnKey(m,x);
     return columnKey;
@@ -499,7 +499,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       ColumnKey columnKeyS = getTableColumnKey(tableName, BasicFieldLiteral.S_COLUMN_NAME);
       BigInteger ms = columnKeyS.getM();
       BigInteger xs = columnKeyS.getX();
-      StringLiteral literalN = new StringLiteral(n.toString());
+      SecureIntLiteral literalN = new SecureIntLiteral(n);
 
       BigInteger msc = ms.multiply(mc).mod(n);
       BigInteger xsc = xs.add(xc).mod(Crypto.evaluateTotient(p, q));
@@ -516,8 +516,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
       sdbKeyUpExpr.addChild(sdbArithExpr);
       sdbKeyUpExpr.addChild(sField);
-      sdbKeyUpExpr.addChild(new StringLiteral(pqrc_z[0].toString()));
-      sdbKeyUpExpr.addChild(new StringLiteral(pqrc_z[1].toString()));
+      sdbKeyUpExpr.addChild(new SecureIntLiteral(pqrc_z[0]));
+      sdbKeyUpExpr.addChild(new SecureIntLiteral(pqrc_z[1]));
       sdbKeyUpExpr.addChild(literalN);
     }
 
@@ -555,10 +555,10 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     }
 
     //set parameter for sdb_mul
-    StringLiteral n = new StringLiteral(dbMeta.getN());
+    SecureIntLiteral literalN = new SecureIntLiteral(n);
     sdbArithmeticExpr.addChild(left);
     sdbArithmeticExpr.addChild(right);
-    sdbArithmeticExpr.addChild(n);
+    sdbArithmeticExpr.addChild(literalN);
     sdbArithmeticExpr.setColumnKey(columnKey);
     return sdbArithmeticExpr;
   }
@@ -571,8 +571,6 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     //set operator to sdb_add
     sdbArithmeticExpr.setOp(SdbArithmeticExpr.Operator.SDB_ADD);
     //generate a new column key for c
-    BigInteger p = new BigInteger(dbMeta.getP());
-    BigInteger q = new BigInteger(dbMeta.getQ());
     BigInteger mc = Crypto.generatePositiveRand(p, q);
     BigInteger xc = Crypto.generatePositiveRand(p, q);
     ColumnKey columnKeyC = new ColumnKey(mc, xc);
@@ -592,10 +590,10 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
       //prepare parameter for sdb_add
       Expr sField = new FieldLiteral(((FieldLiteral) left).getTbl(), BasicFieldLiteral.S_COLUMN_NAME, DataType.INT, true, columnKeyS);
-      StringLiteral p_a = new StringLiteral(pq_a[0].toString());
-      StringLiteral q_a = new StringLiteral(pq_a[1].toString());
-      StringLiteral p_b = new StringLiteral(pq_b[0].toString());
-      StringLiteral q_b = new StringLiteral(pq_b[1].toString());
+      SecureIntLiteral p_a = new SecureIntLiteral(pq_a[0]);
+      SecureIntLiteral q_a = new SecureIntLiteral(pq_a[1]);
+      SecureIntLiteral p_b = new SecureIntLiteral(pq_b[0]);
+      SecureIntLiteral q_b = new SecureIntLiteral(pq_b[1]);
 
       //set parameter for sdb_add(ae,be,se,pa,qa,pb,qb,n);
       sdbArithmeticExpr.addChild(left);
@@ -605,7 +603,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       sdbArithmeticExpr.addChild(q_a);
       sdbArithmeticExpr.addChild(p_b);
       sdbArithmeticExpr.addChild(q_b);
-      sdbArithmeticExpr.addChild(new StringLiteral(n.toString()));
+      sdbArithmeticExpr.addChild(new SecureIntLiteral(n));
       sdbArithmeticExpr.setColumnKey(columnKeyC);
       return sdbArithmeticExpr;
     }

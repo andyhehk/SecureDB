@@ -12,6 +12,7 @@ import java.math.BigInteger;
  */
 public class IntegerPlaintext extends AbstractPlaintext {
 
+  //TODO should use ENC TYPE to determine whether to encrypt the value by Paillier or secret sharing
   private boolean isSensitive;
   private BigInteger n;
   private BigInteger g;
@@ -83,12 +84,13 @@ public class IntegerPlaintext extends AbstractPlaintext {
 
   @Override
   public String toString(){
-    if (isSensitive == false){
+    if (!isSensitive){
       return plainText;
     }
     BigInteger itemKey = generateItemKey(g, p, q, rowId, columnKey);
     BigInteger encryptedValue = Crypto.encrypt(new BigInteger(plainText), itemKey, n);
-    return encryptedValue.toString();
+
+    return Crypto.getSecureString(encryptedValue);
   }
 
 
