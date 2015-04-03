@@ -295,7 +295,7 @@ public class TestQuery {
     ColumnType nameColumnType = new ColumnType(DataType.VARCHAR);
     nameColumnType.setLength(20);
     ColumnType sensitiveColumnType = new ColumnType(DataType.VARCHAR);
-    sensitiveColumnType.setLength(Crypto.TWO_THOUSAND_FORTY_EIGHT);
+    sensitiveColumnType.setLength(Crypto.defaultRandLength);
 
     //set basic field literals
     List<BasicFieldLiteral> literalList = new ArrayList<>();

@@ -3,6 +3,7 @@ package edu.hku.sdb.upload;
 import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.crypto.Crypto;
 import edu.hku.sdb.parse.TableName;
+import edu.hku.sdb.utility.ProfileUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -12,7 +13,6 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.CryptoPrimitive;
 import java.util.List;
 
 /**
@@ -33,6 +33,16 @@ public class UploadHandler {
   private FileSystem hdfs;
   private MetaStore metaStore;
   private TableName tableName;
+
+  private BigInteger p;
+  private BigInteger q;
+  private BigInteger n;
+  private BigInteger g;
+  private BigInteger nPlusOne;
+  private BigInteger nSquared;
+
+  List<ColumnMeta> allCols;
+
 
   public TableName getTableName() {
     return tableName;
@@ -91,14 +101,29 @@ public class UploadHandler {
   public void upload(){
     BufferedWriter bufferedWriter = getBufferedWriter();
     BufferedReader bufferedReader = null;
+
+    //TODO: should programatically get db name
+    DBMeta dbMeta = metaStore.getAllDBs().get(0);
+    n = new BigInteger(dbMeta.getN());
+    p = new BigInteger(dbMeta.getP());
+    q = new BigInteger(dbMeta.getQ());
+    g = new BigInteger(dbMeta.getG());
+
+    nPlusOne = n.add(BigInteger.ONE);
+    nSquared = n.multiply(n);
+
+    //TODO: should get the specific columns of that table instead of all columns
+    allCols = metaStore.getTbl(DBMeta.defaultDbName, tableName.getName()).getCols();
+
     try {
-      bufferedReader = new BufferedReader(new FileReader(sourceFile));
+      bufferedReader = new BufferedReader(new FileReader(sourceFile), 32768);
       String line;
       //Read and process plaintext line by line
       while ((line = bufferedReader.readLine()) != null) {
         String newLine = processLine(line);
         bufferedWriter.write(newLine);
       }
+      
       //close resources
       bufferedReader.close();
       bufferedWriter.close();
@@ -131,7 +156,7 @@ public class UploadHandler {
           public void progress() {
           }
       });
-      bufferedWriter = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+      bufferedWriter = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"), 32768);
     } catch (URISyntaxException | IOException e) {
       e.printStackTrace();
     }
@@ -143,17 +168,10 @@ public class UploadHandler {
   }
 
   private String processLine(String line){
-    String newLine = "";
+
+    StringBuffer newLine = new StringBuffer();
     String[] columnValues = line.split(";");
 
-    //TODO: should programatically get db name
-    DBMeta dbMeta = metaStore.getAllDBs().get(0);
-    //TODO: should get the specific columns of that table instead of all columns
-    List<ColumnMeta> allCols = metaStore.getTbl(DBMeta.defaultDbName, tableName.getName()).getCols();
-    BigInteger n = new BigInteger(dbMeta.getN());
-    BigInteger p = new BigInteger(dbMeta.getP());
-    BigInteger q = new BigInteger(dbMeta.getQ());
-    BigInteger g = new BigInteger(dbMeta.getG());
     //80 bit long rowId is sufficient
     BigInteger rowId = Crypto.generatePositiveRandShort(p, q);
 
@@ -173,7 +191,7 @@ public class UploadHandler {
       newLine = appendColumnString(newLine, columnIndex, plaintext);
     }
     //Adding rowId column
-    BigInteger encryptedR = Crypto.PaillierEncrypt(rowId, p, q);
+    BigInteger encryptedR = Crypto.paillierEncrypt(rowId, n, nPlusOne, nSquared);
     newLine = appendColumnString(newLine, columnValues.length, Crypto.getSecureString(encryptedR));
 
     //Adding s column
@@ -187,8 +205,7 @@ public class UploadHandler {
     BigInteger randomInt = Crypto.generatePositiveRandShort(p, q);
     IntegerPlaintext rPlaintext = getIntegerPlaintext(randomInt.toString(), n, p, q, g, rowId, allCols.get(rColumnIndex));
     newLine = appendColumnString(newLine, rColumnIndex, rPlaintext);
-
-    return newLine + "\n";
+    return newLine.toString() + "\n";
   }
 
   /**
@@ -222,11 +239,11 @@ public class UploadHandler {
    * @param plaintext
    * @return
    */
-  private String appendColumnString(String newLine, int columnIndex, Object plaintext) {
+  private StringBuffer appendColumnString(StringBuffer newLine, int columnIndex, Object plaintext) {
     if (columnIndex != 0){
-      newLine += ";";
+      newLine.append(";");
     }
-    newLine += plaintext.toString();
+    newLine.append(plaintext.toString());
     return newLine;
   }
 

@@ -2,7 +2,9 @@ package edu.hku.sdb.crypto;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Random;
 
+import edu.hku.sdb.utility.ProfileUtil;
 import org.apache.hadoop.io.Text;
 import thep.paillier.EncryptedInteger;
 import thep.paillier.PrivateKey;
@@ -11,29 +13,21 @@ import thep.paillier.exceptions.BigIntegerClassNotValid;
 
 public class Crypto {
 
-	public static int defaultCertainty = 10;
+	public static int defaultCertainty = 100;
   public static int FIVE_HUNDRED_AND_TWELVE = 512;
   public static int ONE_THOUSAND_TWENTY_FOUR = 1024;
-  public static int TWO_THOUSAND_FORTY_EIGHT = 2048;
   public static int EIGHTY = 80;
+
+  public static int defaultPrimeLength = FIVE_HUNDRED_AND_TWELVE;
+  public static int defaultRandLengthShort = EIGHTY;
+  public static int defaultRandLength = ONE_THOUSAND_TWENTY_FOUR;
 
 	/**
 	 * 
 	 * @return a random prime number with bit length = 512, certainty = 10
 	 */
 	public static BigInteger generateRandPrime() {
-		return generateRandPrime(ONE_THOUSAND_TWENTY_FOUR, defaultCertainty);
-	}
-
-	/**
-	 * 
-	 * @param numBits
-	 * @param certainty
-	 * @return a random prime number with bit length numBits and specified
-	 *         certainty
-	 */
-	private static BigInteger generateRandPrime(int numBits, int certainty) {
-		return new BigInteger(numBits, certainty, new SecureRandom());
+		return BigInteger.probablePrime(defaultPrimeLength, new SecureRandom());
 	}
 
 	/**
@@ -63,7 +57,7 @@ public class Crypto {
    * @return a random positive big integer co-prime with p,q & totient(p,q)
    */
   public static BigInteger generatePositiveRand(BigInteger p, BigInteger q){
-    return generatePositiveRandInternal(p, q, TWO_THOUSAND_FORTY_EIGHT);
+    return generatePositiveRandInternal(p, q, defaultRandLength);
   }
 
   /**
@@ -73,7 +67,7 @@ public class Crypto {
    * @return a random positive big integer co-prime with p,q & totient(p,q)
    */
   public static BigInteger generatePositiveRandShort(BigInteger p, BigInteger q){
-    return generatePositiveRandInternal(p, q, EIGHTY);
+    return generatePositiveRandInternal(p, q, defaultRandLengthShort);
   }
 
   private static BigInteger generatePositiveRandInternal(BigInteger p, BigInteger q, int numBits) {
@@ -144,22 +138,32 @@ public class Crypto {
 	}
 
 	/**
-	 * Encrypt a plaintext with Pailier Encryption algorithm. Adopted from thep.paillier package
+	 * (DEPRECATED due to poor performance of open source package) Encrypt a plaintext with Pailier Encryption algorithm. Adopted from thep.paillier package
 	 * @param plaintext
-	 * @param p
-	 * @param q
+	 * @param n
 	 * @return encrypted value using Paillier encryption
 	 */
-	public static BigInteger PaillierEncrypt(BigInteger plaintext, BigInteger p,
-			BigInteger q) {
+	private static BigInteger PaillierEncrypt(BigInteger plaintext, BigInteger n) {
 		try {
-			return new EncryptedInteger(plaintext, new PublicKey(TWO_THOUSAND_FORTY_EIGHT,
-					p.multiply(q))).getCipherVal();
+			return new EncryptedInteger(plaintext, new PublicKey(defaultRandLength,
+					n)).getCipherVal();
 		} catch (BigIntegerClassNotValid e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
+
+  public static BigInteger paillierEncrypt(BigInteger plaintext, BigInteger n, BigInteger nPlusOne, BigInteger nSquared){
+
+    //TODO DANGER! This is not secure. Should generate a random seed every time
+    //BigInteger r = generatePositiveRand(defaultRandLengthShort);
+    BigInteger r = new BigInteger("1");
+    BigInteger cipherText = nPlusOne.modPow(plaintext, nSquared);
+    BigInteger x = r.modPow(n, nSquared);
+    cipherText = cipherText.multiply(x).mod(nSquared);
+
+    return cipherText;
+  }
 
 	/**
 	 * Decrypt a plaintext with Pailier Decryption algorithm. Adopted from thep.paillier package
@@ -170,7 +174,7 @@ public class Crypto {
 	 */
 	public static BigInteger PaillierDecrypt(BigInteger ciphertext,
 			BigInteger p, BigInteger q) {
-		PrivateKey privateKey = new PrivateKey(TWO_THOUSAND_FORTY_EIGHT, p, q);
+		PrivateKey privateKey = new PrivateKey(defaultRandLength, p, q);
 		try {
 			return new EncryptedInteger(ciphertext).decrypt(privateKey);
 		} catch (BigIntegerClassNotValid e) {
@@ -178,6 +182,7 @@ public class Crypto {
 		}
 		return null;
 	}
+
 
   /**
    * Update column A with target columnKey<mc,mx> and plaintext [a]

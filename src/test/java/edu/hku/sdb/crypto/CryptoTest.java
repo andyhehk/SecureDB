@@ -162,8 +162,12 @@ public class CryptoTest extends TestCase {
 	public void testPailierEncryptDecrypt() {
 		BigInteger p = Crypto.generateRandPrime();
 		BigInteger q = Crypto.generateRandPrime();
+    BigInteger n = p.multiply(q);
+    BigInteger nPlusOne = n.add(BigInteger.ONE);
+    BigInteger nSquared = n.multiply(n);
+
     BigInteger plainText = Crypto.generatePositiveRand(p, q);
-		BigInteger cipherText = Crypto.PaillierEncrypt(plainText, p, q);
+		BigInteger cipherText = Crypto.paillierEncrypt(plainText, n, nPlusOne, nSquared);
 		assertEquals(plainText, Crypto.PaillierDecrypt(cipherText, p, q));
 	}
 

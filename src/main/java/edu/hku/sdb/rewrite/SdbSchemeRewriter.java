@@ -143,7 +143,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
   private BasicFieldLiteral buildSensitiveCreateField(String fieldName, TableName tableName, BigInteger p, BigInteger q) {
     ColumnType type = new ColumnType(DataType.VARCHAR);
-    type.setLength(Crypto.TWO_THOUSAND_FORTY_EIGHT);
+    type.setLength(Crypto.defaultRandLength);
     BigInteger m = Crypto.generatePositiveRand(p, q);
     BigInteger x = Crypto.generatePositiveRand(p, q);
     ColumnKey columnKey = new ColumnKey(m, x);
