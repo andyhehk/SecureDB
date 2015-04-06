@@ -12,14 +12,23 @@ import java.math.BigInteger;
  */
 public class IntegerPlaintext extends AbstractPlaintext {
 
-  //TODO should use ENC TYPE to determine whether to encrypt the value by Paillier or secret sharing
+  //TODO should use ENC TYPE to determine whether to encrypt the value by Paillier / SIES or secret sharing
   private boolean isSensitive;
   private BigInteger n;
   private BigInteger g;
   private BigInteger p;
   private BigInteger q;
+  private BigInteger totient;
   private BigInteger rowId;
   private ColumnKey columnKey;
+
+  public BigInteger getTotient() {
+    return totient;
+  }
+
+  public void setTotient(BigInteger totient) {
+    this.totient = totient;
+  }
 
   public ColumnKey getColumnKey() {
     return columnKey;
@@ -77,21 +86,14 @@ public class IntegerPlaintext extends AbstractPlaintext {
     this.n = n;
   }
 
-  private BigInteger generateItemKey(BigInteger g, BigInteger p, BigInteger q, BigInteger rowId, ColumnKey columnKey){
-    BigInteger itemKey = Crypto.generateItemKey(columnKey.getM(), columnKey.getX(), rowId, g, p, q);
-    return itemKey;
-  }
-
   @Override
   public String toString(){
     if (!isSensitive){
       return plainText;
     }
-    BigInteger itemKey = generateItemKey(g, p, q, rowId, columnKey);
+    BigInteger itemKey = Crypto.generateItemKeyOp2(columnKey.getM(), columnKey.getX(), rowId, g, n, totient, p, q);
     BigInteger encryptedValue = Crypto.encrypt(new BigInteger(plainText), itemKey, n);
 
     return Crypto.getSecureString(encryptedValue);
   }
-
-
 }

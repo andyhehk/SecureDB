@@ -195,10 +195,14 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
     //Insert row-id field at the end of selectionItem list
     if (baseRefs.size() == 1){
-      SelectionItem selectionItem = new SelectionItem();
-      Expr expr = new FieldLiteral(baseRefs.get(0).getTableName(), BasicFieldLiteral.ROW_ID_COLUMN_NAME, DataType.INT);
-      selectionItem.setExpr(expr);
-      selList.getItemList().add(selectionItem);
+      if (selList.involveSdbEncrytedCol()){
+        String tableName = baseRefs.get(0).getTableName();
+        SelectionItem selectionItem = new SelectionItem();
+        ColumnKey rowIdColumnKey = getTableColumnKey(tableName, BasicFieldLiteral.ROW_ID_COLUMN_NAME);
+        Expr expr = new FieldLiteral(tableName, BasicFieldLiteral.ROW_ID_COLUMN_NAME, DataType.INT, true, rowIdColumnKey);
+        selectionItem.setExpr(expr);
+        selList.getItemList().add(selectionItem);
+      }
     }
     else {
       //TODO in case of join, propagate keyUpdate to selList and whereClause
@@ -489,30 +493,27 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       BigInteger mc = columnKeyC.getM();
       BigInteger xc = columnKeyC.getX();
 
-      //ColumnKey columnKeyR = getTableColumnKey(tableName, BasicFieldLiteral.R_COLUMN_NAME);
-      //BigInteger mr = columnKeyR.getM();
-      //BigInteger xr = columnKeyR.getX();
+      ColumnKey columnKeyR = getTableColumnKey(tableName, BasicFieldLiteral.R_COLUMN_NAME);
+      BigInteger mr = columnKeyR.getM();
+      BigInteger xr = columnKeyR.getX();
 
-      //BigInteger mrc = mr.multiply(mc).mod(n);
-      //BigInteger xrc = xr.add(xc).mod(Crypto.evaluateTotient(p, q));
+      BigInteger mrc = mr.multiply(mc).mod(n);
+      BigInteger xrc = xr.add(xc).mod(Crypto.evaluateTotient(p, q));
 
       ColumnKey columnKeyS = getTableColumnKey(tableName, BasicFieldLiteral.S_COLUMN_NAME);
       BigInteger ms = columnKeyS.getM();
       BigInteger xs = columnKeyS.getX();
       SecureIntLiteral literalN = new SecureIntLiteral(n);
 
-      BigInteger msc = ms.multiply(mc).mod(n);
-      BigInteger xsc = xs.add(xc).mod(Crypto.evaluateTotient(p, q));
+      BigInteger[] pqrc_z = Crypto.keyUpdateClient(mrc, new BigInteger("1"), ms, xrc, new BigInteger("0"), xs, p, q);
 
-      BigInteger[] pqrc_z = Crypto.keyUpdateClient(msc, new BigInteger("1"), ms, xsc, new BigInteger("0"), xs, p, q);
-
-      FieldLiteral sField = new FieldLiteral(tableName, BasicFieldLiteral.S_COLUMN_NAME, DataType.INT);
+      FieldLiteral rField = new FieldLiteral(tableName, BasicFieldLiteral.R_COLUMN_NAME, DataType.INT);
       sdbArithExpr.setOp(SdbArithmeticExpr.Operator.SDB_MUL);
-      sdbArithExpr.addChild(sField);
+      sdbArithExpr.addChild(rField);
       sdbArithExpr.addChild(addExpr);
       sdbArithExpr.addChild(literalN);
 
-      //FieldLiteral sField = new FieldLiteral(tableName, BasicFieldLiteral.S_COLUMN_NAME, DataType.INT);
+      FieldLiteral sField = new FieldLiteral(tableName, BasicFieldLiteral.S_COLUMN_NAME, DataType.INT);
 
       sdbKeyUpExpr.addChild(sdbArithExpr);
       sdbKeyUpExpr.addChild(sField);

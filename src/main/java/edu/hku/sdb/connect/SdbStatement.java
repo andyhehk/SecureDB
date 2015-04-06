@@ -75,9 +75,11 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       String sourceFilePath = ((LoadStmt) analyzedNode).getFilePath();
       uploadHandler.setSourceFile(sourceFilePath);
 
-      String serverFilePath = "/user/yifan/employee" + new Random().nextInt(60000) + ".txt";
+      //TODO should read from config file instead of hard code
+      String serverFilePath = "/user/yifan/" + tableName.getName() + new Random().nextInt(60000) + ".txt";
       uploadHandler.setHDFS_URL("hdfs://localhost:9000");
       uploadHandler.setHDFS_FILE_PATH("hdfs://localhost:9000" + serverFilePath);
+
       uploadHandler.upload();
 
       ((LoadStmt) analyzedNode).setFilePath(serverFilePath);
@@ -119,6 +121,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   }
 
   private SdbResultSet getSdbResultSet(PlanNode planNode) throws RemoteException {
+    System.out.println("Executing ..." );
     executor = new Executor();
     SdbResultSet resultSet = new SdbResultSet();
     ExecutionState eState = new ExecutionState();
@@ -136,6 +139,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       e.printStackTrace();
       throw new RemoteException(e.getMessage());
     }
+    System.out.println("Plan Node generated.\n" );
     return planNode;
   }
 

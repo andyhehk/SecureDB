@@ -49,30 +49,33 @@ public class ExecutorTest {
   private Optimizer optimizer;
   private Executor executor;
   private Connection connection;
-  private String targetTableName = "create_test_4_1_" + new Random().nextInt(100);
 
+  private String targetTableName = "lineitem_1000000_enc_2";// + new Random().nextInt(100);
+  private String simpleCreateQuery = "CREATE TABLE " + targetTableName + " (L_ORDERKEY    INT,\n" +
+          "                             L_PARTKEY     INT,\n" +
+          "                             L_SUPPKEY     INT,\n" +
+          "                             L_LINENUMBER  INT,\n" +
+          "                             L_QUANTITY    INT ENC,\n" +
+          "                             L_EXTENDEDPRICE  INT ENC,\n" +
+          "                             L_DISCOUNT    INT ENC,\n" +
+          "                             L_TAX         INT,\n" +
+          "                             L_RETURNFLAG  VARCHAR(1),\n" +
+          "                             L_LINESTATUS  VARCHAR(1),\n" +
+          "                             L_SHIPDATE    VARCHAR(11),\n" +
+          "                             L_COMMITDATE  VARCHAR(11),\n" +
+          "                             L_RECEIPTDATE VARCHAR(11),\n" +
+          "                             L_SHIPINSTRUCT VARCHAR(25),\n" +
+          "                             L_SHIPMODE     VARCHAR(10),\n" +
+          "                             L_COMMENT      VARCHAR(44))";
 
-  private String simpleSelectQuery = "select salary from t2";
-  private String simpleMultipleSelectQuery = "select id, salary * 3 from " + targetTableName;
-  private String simpleSubtractSelectQuery = "select salary - 1 from " + targetTableName;
-  private String simpleSubtractSelectQueryEE = "select salary - s from " + targetTableName;
-  private String simpleAddSelectQueryEE = "select salary + s from " + targetTableName;
+  private String simpleSelectWhereQuery = "select L_LINENUMBER from " + targetTableName + " where L_QUANTITY > 49";
 
-  private String simpleSelectWhereQuery = "select salary from " + targetTableName + " where salary < 10000";
-
-  private String simpleCreateQuery = "CREATE TABLE " + targetTableName + " (id INT, name VARCHAR(20), salary INT ENC)";
-  private String simpleLoadQuery = "LOAD DATA LOCAL INPATH 'src/test/resources/upload/employee.txt' OVERWRITE INTO TABLE " + targetTableName;
-  private String simpleMultipleMultiECQuery = "select id, salary from " + targetTableName;
+  private String simpleLoadQuery = "LOAD DATA LOCAL INPATH 'src/test/resources/upload/lineitem_1000000.txt' OVERWRITE INTO TABLE " + targetTableName;
+  private String simpleMultipleMultiECQuery = "select L_ORDERKEY from " + targetTableName;
 
   @Before
   public void setUp(){
     prepareTestDB();
-    try {
-      //prepareMetaDBUpload();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
     assertNotNull(metaDB.getAllDBs().get(0));
   }
 
@@ -106,104 +109,6 @@ public class ExecutorTest {
     } catch (SQLException e) {
       e.printStackTrace();
     }
-  }
-
-  public void prepareMetaDBUpload() throws Exception {
-    p = Crypto.generateRandPrime();
-    q = Crypto.generateRandPrime();
-    n = p.multiply(q);
-    g = Crypto.generatePositiveRand(p ,q);
-
-    String dbName1 = "default";
-    db1 = new DBMeta(dbName1);
-
-    db1.setN(n.toString());
-    db1.setG(g.toString());
-    db1.setP(p.toString());
-    db1.setQ(q.toString());
-
-    metaDB.addDB(db1);
-
-    String tblName1 = targetTableName;
-    TableMeta tbl1 = new TableMeta(dbName1, tblName1.toUpperCase());
-    tbl1.setDbMeta(db1);
-    metaDB.addTbl(tbl1);
-    assertEquals(tbl1, metaDB.getTbl(dbName1.toUpperCase(), tblName1));
-
-    db1.getTbls().add(tbl1);
-    metaDB.addDB(db1);
-
-    String colName1 = "id";
-    String colName2 = "name";
-    String colName3 = "salary";
-    String colName4 = "rowId";
-    String colName5 = "R";
-    String colName6 = "S";
-
-    ColumnMeta col1 = new ColumnMeta(dbName1.toUpperCase(),
-            tblName1.toUpperCase(), colName1);
-    ColumnMeta col2 = new ColumnMeta(dbName1, tblName1.toUpperCase(),
-            colName2.toUpperCase());
-    ColumnMeta col3 = new ColumnMeta(dbName1, tblName1.toUpperCase(),
-            colName3.toUpperCase());
-    ColumnMeta col4 = new ColumnMeta(dbName1, tblName1.toUpperCase(),
-            colName4.toUpperCase());
-    ColumnMeta col5 = new ColumnMeta(dbName1, tblName1.toUpperCase(),
-            colName5.toUpperCase());
-    ColumnMeta col6 = new ColumnMeta(dbName1, tblName1.toUpperCase(),
-            colName6.toUpperCase());
-
-    col1.setType(DataType.INT);
-    col2.setType(DataType.CHAR);
-    col3.setType(DataType.INT);
-    col4.setType(DataType.INT);
-    col5.setType(DataType.INT);
-    col6.setType(DataType.INT);
-
-    col3.setColkey(new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
-    col4.setColkey(new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
-    col5.setColkey(new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
-    col6.setColkey(new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
-
-    col1.setSensitive(false);
-    col2.setSensitive(false);
-    col3.setSensitive(true);
-    col4.setSensitive(true);
-    col5.setSensitive(true);
-    col6.setSensitive(true);
-
-    col1.setTableMeta(tbl1);
-    col2.setTableMeta(tbl1);
-    col3.setTableMeta(tbl1);
-    col4.setTableMeta(tbl1);
-    col5.setTableMeta(tbl1);
-    col6.setTableMeta(tbl1);
-
-    metaDB.addCol(col1);
-    metaDB.addCol(col2);
-    metaDB.addCol(col3);
-    metaDB.addCol(col4);
-    metaDB.addCol(col5);
-    metaDB.addCol(col6);
-
-    tbl1.getCols().add(col1);
-    tbl1.getCols().add(col2);
-    tbl1.getCols().add(col3);
-    tbl1.getCols().add(col4);
-    tbl1.getCols().add(col5);
-    tbl1.getCols().add(col6);
-
-    metaDB.addTbl(tbl1);
-
-    TableName tableNameObj = new TableName();
-    tableNameObj.setName(tblName1);
-    uploadHandler = new UploadHandler(metaDB, tableNameObj);
-    uploadHandler.setHDFS_URL("file:///");
-    String homeDir = System.getenv("HOME");
-    uploadHandler.setSourceFile("src/test/resources/upload/employee.txt");
-    uploadHandler.setHDFS_FILE_PATH("file://" + homeDir + "/employee.txt");
-    uploadHandler.setLocalMode(true);
-    testUploadIntegrated();
   }
 
   public void testUploadIntegrated(){

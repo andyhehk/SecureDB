@@ -68,36 +68,31 @@ public class CryptoTest extends TestCase {
 		assertTrue(!firstRand.equals(secondRand));
 	}
 
-	public void testGenerateItemKey1() {
-		assertEquals(new BigInteger("32"), Crypto.generateItemKey(
-				new BigInteger("2"), new BigInteger("2"), new BigInteger("8"),
-				new BigInteger("2"), new BigInteger("5"), new BigInteger("7")));
-	}
+  //This method is deprecated.
+//	public void testGenerateItemKey1() {
+//		assertEquals(new BigInteger("32"), Crypto.generateItemKey(
+//				new BigInteger("2"), new BigInteger("2"), new BigInteger("8"),
+//				new BigInteger("2"), new BigInteger("5"), new BigInteger("7")));
+//	}
 
-	public void testGenerateItemKey2() {
-		assertEquals(new BigInteger("8"), Crypto.generateItemKey(
-				new BigInteger("2"), new BigInteger("2"), new BigInteger("1"),
-				new BigInteger("2"), new BigInteger("5"), new BigInteger("7")));
-	}
-
-	public void testGenerateItemKey3() {
-
-		BigInteger itemKey = Crypto
-				.generateItemKey(
-						new BigInteger("20686139707"),
-						new BigInteger("3949673333612"),
-						new BigInteger("25458163831"),
-						new BigInteger("526631133645616033980"),
-						new BigInteger(
-								"13381418623214727587437247106170095945191359410765179156151809065341458743599113643820767819224626539634002433392648336651723690747518211610218927601568823"),
-						new BigInteger(
-								"6804688895422554648792548642105479511973881515271617258279580587887409482982376538544184457823535138084697746276682826853000739663322061212950993288918457"));
-
-		assertEquals(
-				new BigInteger(
-						"83427039086531613950882788147752476627307818700941480670093277899983359358750093285864139780015418480875478864487353680538884707146952770317837584060671765712859895657238437094602688125304900948957685837161651074583841799591158986315889810089701095550001261353548918894922731831119513865758249750755090462588"),
-				itemKey);
-	}
+  //This method is deprecated.
+//	public void testGenerateItemKey3() {
+//		BigInteger itemKey = Crypto
+//				.generateItemKey(
+//						new BigInteger("20686139707"),
+//						new BigInteger("3949673333612"),
+//						new BigInteger("25458163831"),
+//						new BigInteger("526631133645616033980"),
+//						new BigInteger(
+//								"13381418623214727587437247106170095945191359410765179156151809065341458743599113643820767819224626539634002433392648336651723690747518211610218927601568823"),
+//						new BigInteger(
+//								"6804688895422554648792548642105479511973881515271617258279580587887409482982376538544184457823535138084697746276682826853000739663322061212950993288918457"));
+//
+//		assertEquals(
+//				new BigInteger(
+//						"83427039086531613950882788147752476627307818700941480670093277899983359358750093285864139780015418480875478864487353680538884707146952770317837584060671765712859895657238437094602688125304900948957685837161651074583841799591158986315889810089701095550001261353548918894922731831119513865758249750755090462588"),
+//				itemKey);
+//	}
 
 	public void testEncrypt1() {
 
@@ -159,17 +154,24 @@ public class CryptoTest extends TestCase {
 		assertEquals(new BigInteger("20686139707"), plainText);
 	}
 
-	public void testPailierEncryptDecrypt() {
-		BigInteger p = Crypto.generateRandPrime();
-		BigInteger q = Crypto.generateRandPrime();
-    BigInteger n = p.multiply(q);
-    BigInteger nPlusOne = n.add(BigInteger.ONE);
-    BigInteger nSquared = n.multiply(n);
 
-    BigInteger plainText = Crypto.generatePositiveRand(p, q);
-		BigInteger cipherText = Crypto.paillierEncrypt(plainText, n, nPlusOne, nSquared);
-		assertEquals(plainText, Crypto.PaillierDecrypt(cipherText, p, q));
-	}
+  //This method is deprecated.
+//	public void testPailierEncryptDecrypt() {
+//		BigInteger p = Crypto.generateRandPrime();
+//		BigInteger q = Crypto.generateRandPrime();
+//    BigInteger n = p.multiply(q);
+//    BigInteger nPlusOne = n.add(BigInteger.ONE);
+//    BigInteger nSquared = n.multiply(n);
+//
+//    BigInteger plainText1 = Crypto.generatePositiveRand(p, q);
+//		BigInteger cipherText1 = Crypto.paillierEncrypt(plainText1, n, nPlusOne, nSquared);
+//		assertEquals(plainText1, Crypto.PaillierDecrypt(cipherText1, p, q));
+//
+//    BigInteger plainText2 = Crypto.generatePositiveRand(p, q);
+//    BigInteger cipherText2 = Crypto.paillierEncrypt(plainText2, n, nPlusOne, nSquared);
+//    assertEquals(plainText1.add(plainText2).mod(n), Crypto.PaillierDecrypt(cipherText1.multiply(cipherText2), p, q));
+//  }
+
 
   public void testSDBEncryptDecrypt(){
     BigInteger p = Crypto.generateRandPrime();
@@ -177,12 +179,13 @@ public class CryptoTest extends TestCase {
     BigInteger n = p.multiply(q);
     BigInteger r = Crypto.generatePositiveRand(p, q);
     BigInteger g = Crypto.generatePositiveRand(p, q);
+    BigInteger totient = Crypto.evaluateTotient(p, q);
 
     BigInteger ma = Crypto.generatePositiveRand(p, q);
     BigInteger xa = Crypto.generatePositiveRand(p, q);
 
     BigInteger plaintext = Crypto.generatePositiveRand(p, q);
-    BigInteger ak = Crypto.generateItemKey(ma,xa,r,g,p,q);
+    BigInteger ak = Crypto.generateItemKeyOp2(ma, xa, r, g, n, totient, p, q);
     BigInteger ae = Crypto.encrypt(plaintext,ak, n);
     assertEquals(plaintext, Crypto.decrypt(ae,ak,n));
   }
@@ -193,6 +196,7 @@ public class CryptoTest extends TestCase {
     BigInteger n = p.multiply(q);
     BigInteger r = Crypto.generatePositiveRand(p, q);
     BigInteger g = Crypto.generatePositiveRand(p, q);
+    BigInteger totient = Crypto.evaluateTotient(p, q);
 
     BigInteger ma = Crypto.generatePositiveRand(p, q);
     BigInteger xa = Crypto.generatePositiveRand(p, q);
@@ -206,10 +210,10 @@ public class CryptoTest extends TestCase {
     BigInteger mc = Crypto.generatePositiveRand(p, q);
     BigInteger xc = Crypto.generatePositiveRand(p, q);
 
-    BigInteger ak = Crypto.generateItemKey(ma, xa, r, g, p, q);
-    BigInteger bk = Crypto.generateItemKey(mb, xb, r, g, p, q);
-    BigInteger ck = Crypto.generateItemKey(mc, xc, r, g, p, q);
-    BigInteger sk = Crypto.generateItemKey(ms, xs, r, g, p, q);
+    BigInteger ak = Crypto.generateItemKeyOp2(ma, xa, r, g, n, totient, p, q);
+    BigInteger bk = Crypto.generateItemKeyOp2(mb, xb, r, g, n, totient, p, q);
+    BigInteger ck = Crypto.generateItemKeyOp2(mc, xc, r, g, n, totient, p, q);
+    BigInteger sk = Crypto.generateItemKeyOp2(ms, xs, r, g, n, totient, p, q);
 
     BigInteger a = Crypto.encrypt(new BigInteger("400"),ak, n);
     BigInteger b = Crypto.encrypt(new BigInteger("9"),bk, n);
@@ -300,9 +304,9 @@ public class CryptoTest extends TestCase {
     BigInteger xc = new BigInteger("11");
 
     //item key for A,C,S
-    BigInteger ak = Crypto.generateItemKey(ma, xa, r, g, p, q);
-    BigInteger ck = Crypto.generateItemKey(mc, xc, r, g, p, q);
-    BigInteger sk = Crypto.generateItemKey(ms, xs, r, g, p, q);
+    BigInteger ak = Crypto.generateItemKeyOp2(ma, xa, r, g, n, totient, p, q);
+    BigInteger ck = Crypto.generateItemKeyOp2(mc, xc, r, g, n, totient, p, q);
+    BigInteger sk = Crypto.generateItemKeyOp2(ms, xs, r, g, n, totient, p, q);
 
     //Encrypt S column
     BigInteger s = Crypto.encrypt(new BigInteger("1"),sk, n);
@@ -343,9 +347,9 @@ public class CryptoTest extends TestCase {
     BigInteger xc = new BigInteger("11");
 
     //item key for A,C,S
-    BigInteger ak = Crypto.generateItemKey(ma, xa, r, g, p, q);
-    BigInteger ck = Crypto.generateItemKey(mc, xc, r, g, p, q);
-    BigInteger sk = Crypto.generateItemKey(ms, xs, r, g, p, q);
+    BigInteger ak = Crypto.generateItemKeyOp2(ma, xa, r, g, n, totient, p, q);
+    BigInteger ck = Crypto.generateItemKeyOp2(mc, xc, r, g, n, totient, p, q);
+    BigInteger sk = Crypto.generateItemKeyOp2(ms, xs, r, g, n, totient, p, q);
 
     //Encrypt A, S column
     BigInteger s = Crypto.encrypt(new BigInteger("1"), sk, n);
@@ -361,26 +365,20 @@ public class CryptoTest extends TestCase {
 
     BigInteger cUpdated = UDFHandler.add(a, s, s, pq_a[0], pq_a[1], pq_b[0], pq_b[1], n);
     BigInteger cDerypted = Crypto.decrypt(cUpdated, ck, n);
-    System.out.print(cUpdated);
-    System.out.print(cDerypted);
     assertEquals(new BigInteger("10"), cDerypted);
   }
 
   public void testAddEELarge() throws Exception{
 //    A prime number p
     BigInteger p = Crypto.generateRandPrime();
-    //BigInteger p = new BigInteger( "108305886586923656282885439496701604527807585700802941291984158176731774318559922302650399168384292946532982976308846847454848372617873985192356708618779021061351905120669483794663670722165716539221899575406491337361342757808232408976845166871740828194049412320882061899941245512568285056752126713587792824823");
     //A prime number q
     BigInteger q = Crypto.generateRandPrime();
-    //BigInteger q = new BigInteger( "170243105156000882338170972569851699890461302302949931263980746967784993550651282692100709267606479033887461141092017609269862716854010622067948725653928307025152784518693735975177301256366600407937655802398220152395753846761046337947261173738226581371352438518035786538781458921510816541203660099142571200533");
     //n = p * q
     BigInteger n = p.multiply(q);
-    //BigInteger n = new BigInteger( "18438330439231549513529142628143117394418342202020171376233012956640089743986678409384517152022038470054861321971108803797884602331065944334646151798229981121103361380880357451110624012488483312426617021876680489526589949854077195522584334968265738179543740043014879048867823722275680896346102438564154329711579947695029931889935453636356784518999651911256687757172613155747874310515981087585662737793679915426678463006699215828128939178188686128981735380458596738946398276793835852111394832393343019132107744887726094542929862672603952176570125410293301088030560047475363288468855712215653072495093304205698473230659");
 
     BigInteger totient = Crypto.evaluateTotient(p,q);
     BigInteger r = Crypto.generatePositiveRand(p, q);
     BigInteger g = Crypto.generatePositiveRand(p, q);
-    //BigInteger g = new BigInteger( "3589709890606198139886061666879631399039087930242458533454116790611266775028262116235651864886577428510563945386136206951357381432522712877576718544657286475543594030982395143131150615548293742778330655661950369009242748344146141491098617081592935923821583124760277682345823196377138033041366689621581905256743899155759647503830053329175774873092502304114579676762134664655671244387806478862190554172584629711662669389925162813964772655061766676305382905782958411698816561455569780166271547385436085297027728532569574240081358588380903929845503877998327801409673048322856988736551207751479826099150026704205863351131");
 
     //column key for column A
     BigInteger ma = Crypto.generatePositiveRand(p, q);
@@ -389,17 +387,15 @@ public class CryptoTest extends TestCase {
     //column key for additional column S
     BigInteger ms = Crypto.generatePositiveRand(p, q);
     BigInteger xs = Crypto.generatePositiveRand(p, q);
-    //BigInteger ms = new BigInteger( "1045585175076788779631571318166324970185217563544470516343837811429917711117743799988231392340912225150510105666587076941638955544121480225714918477205447030168117018059164039245233689744188024258432920446383840395351970574772304040657825405621544085215933531116308425412199100380962097039368237313801414214984143729282848608579082960380242358192473571703312984103793823312556076720183594026777136946480290122223298414517245685386662986667042700295750750705222325085909259087616016789330308243547696352103447408158176863564720040376231653679133009473258565535855730888311138890510866842528102018638622940025890685697");
-    //BigInteger xs = new BigInteger( "11224524279357903815029501157042762891361567320385734620933610685525227598683974369899934193955654661664285908319575261212016638533871562269898860117999055406527793401795268864967395548651527296536361240124176263536457220577975284299707306419185385675355820024944682104933040889174447647984522267900445233156014520052819478262936758113352629237892507106696099562403317292248715697274631834007311575904493868330353174642634136516504793897896629676091679803029805320294505735401304506479538013085216984050230716731886392558131996744745321894464237853874541854885319368903621607324998989837351775010539088775467226849729");
 
     //new column key C for key update operation
     BigInteger mc = Crypto.generatePositiveRand(p, q);
     BigInteger xc = Crypto.generatePositiveRand(p, q);
 
     //item key for A,C,S
-    BigInteger ak = Crypto.generateItemKey(ma, xa, r, g, p, q);
-    BigInteger ck = Crypto.generateItemKey(mc, xc, r, g, p, q);
-    BigInteger sk = Crypto.generateItemKey(ms, xs, r, g, p, q);
+    BigInteger ak = Crypto.generateItemKeyOp2(ma, xa, r, g, n, totient, p, q);
+    BigInteger ck = Crypto.generateItemKeyOp2(mc, xc, r, g, n, totient, p, q);
+    BigInteger sk = Crypto.generateItemKeyOp2(ms, xs, r, g, n, totient, p, q);
 
     //Encrypt A, S column
     BigInteger s = Crypto.encrypt(new BigInteger("1"),sk, n);
@@ -414,8 +410,6 @@ public class CryptoTest extends TestCase {
 
     BigInteger cUpdated = UDFHandler.add(a, s, s, pq_a[0], pq_a[1], pq_b[0], pq_b[1], n);
     BigInteger cDerypted = Crypto.decrypt(cUpdated, ck, n);
-    System.out.println(cUpdated);
-    System.out.println(cDerypted);
     assertEquals(new BigInteger("10"), cDerypted);
   }
 /*
@@ -512,20 +506,20 @@ public class CryptoTest extends TestCase {
     BigInteger xr = Crypto.generatePositiveRand(p, q);
 
     //item key for A,C,S
-    BigInteger ak = Crypto.generateItemKey(ma, xa, row_id, g, p, q);
-    BigInteger sk = Crypto.generateItemKey(ms, xs, row_id, g, p, q);
+    BigInteger ak = Crypto.generateItemKeyOp2(ma, xa, row_id, g, n, totient, p, q);
+    BigInteger sk = Crypto.generateItemKeyOp2(ms, xs, row_id, g, n, totient, p, q);
+    BigInteger rk = Crypto.generateItemKeyOp2(mr, xr, row_id, g, n, totient, p, q);
 
     //A PLAINTEXT
     BigInteger aPlaintext = Crypto.generatePositiveRandShort(p, q);
-            //new BigInteger(String.valueOf(new Random().nextInt(10000)));
     System.out.println(aPlaintext);
 
-    //Encrypt A, S column
+    //Encrypt A, S, R column
     BigInteger s = Crypto.encrypt(new BigInteger("1"), sk, n);
     BigInteger a = Crypto.encrypt(aPlaintext, ak, n);
-    BigInteger r = Crypto.encrypt(Crypto.generatePositiveRandShort(p, q), ak, n);
+    BigInteger r = Crypto.encrypt(Crypto.generatePositiveRandShort(p, q), rk, n);
 
-    BigInteger u = aPlaintext.subtract(new BigInteger("100"));
+    BigInteger u = aPlaintext.subtract(new BigInteger("0"));
     testCompareInternal(p, q, n, ma, xa, ms, xs, s, a, u, mr, xr, r);
 
     u = aPlaintext.subtract(new BigInteger("100000000"));
@@ -574,25 +568,21 @@ public class CryptoTest extends TestCase {
 
     BigInteger aMinusUCipherText = UDFHandler.add(a, s, s, pa_c, qa_c, psu_i_c, qsu_i_c, n);
 
-    //TODO DANGER! hack with s instead of r, this is not secure
-    //params should be mrc, xrc, multi(r, aMinusUCipherText, n);
-    BigInteger msc = ms.multiply(mc).mod(n);
-    BigInteger xsc = xs.add(xc).mod(Crypto.evaluateTotient(p, q));
-    BigInteger[] pqrc_z = Crypto.keyUpdateClient(msc, new BigInteger("1"), ms, xsc, new BigInteger("0"), xs, p, q);
-    BigInteger rTimesaMinusUCipherText = UDFHandler.multi(s, aMinusUCipherText, n);
-
-//    BigInteger mrc = mr.multiply(mc).mod(n);
-//    BigInteger xrc = xr.add(xc).mod(Crypto.evaluateTotient(p, q));
-//    BigInteger[] pqrc_z = Crypto.keyUpdateClient(mrc, new BigInteger("1"), ms, xrc, new BigInteger("0"), xs, p, q);
-//    BigInteger rTimesaMinusUCipherText = UDFHandler.multi(r, aMinusUCipherText, n);
+    BigInteger mrc = mr.multiply(mc).mod(n);
+    BigInteger xrc = xr.add(xc).mod(Crypto.evaluateTotient(p, q));
+    BigInteger[] pqrc_z = Crypto.keyUpdateClient(mrc, new BigInteger("1"), ms, xrc, new BigInteger("0"), xs, p, q);
+    BigInteger rTimesaMinusUCipherText = UDFHandler.multi(r, aMinusUCipherText, n);
 
     BigInteger result = UDFHandler.keyUpdate(rTimesaMinusUCipherText, s, pqrc_z[0], pqrc_z[1], n);
     BigInteger halfN = n.subtract(BigInteger.ONE).divide(new BigInteger("2"));
-    System.out.println("testCompareLarge: " + result.compareTo(halfN) + "  " + result + " with u = " + u);
+    //System.out.println("testCompareLarge: " + result.compareTo(halfN) + "  " + result + " with u = " + u);
   }
 
   public void testCompare() {
     assertTrue(UDFHandler.compare(new BigInteger("100"), new BigInteger("128")) > 0);
+    assertTrue(UDFHandler.compare(new BigInteger("0"), new BigInteger("128")) == 0);
   }
+
+
 
 }

@@ -90,6 +90,9 @@ public class BaseTableRef extends TableRef {
    */
   @Override
   public boolean involveSdbEncrytedCol() {
+    if (onClause == null){
+      return false;
+    }
     return onClause.involveSdbEncrytedCol();
   }
 

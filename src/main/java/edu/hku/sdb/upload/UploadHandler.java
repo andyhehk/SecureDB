@@ -40,6 +40,8 @@ public class UploadHandler {
   private BigInteger g;
   private BigInteger nPlusOne;
   private BigInteger nSquared;
+  private BigInteger totient;
+  private String rowFormat = "\\|";
 
   List<ColumnMeta> allCols;
 
@@ -108,7 +110,7 @@ public class UploadHandler {
     p = new BigInteger(dbMeta.getP());
     q = new BigInteger(dbMeta.getQ());
     g = new BigInteger(dbMeta.getG());
-
+    totient = Crypto.evaluateTotient(p, q);
     nPlusOne = n.add(BigInteger.ONE);
     nSquared = n.multiply(n);
 
@@ -164,62 +166,70 @@ public class UploadHandler {
   }
 
   public String processLineForTest(String line){
+    
+    DBMeta dbMeta = metaStore.getAllDBs().get(0);
+    n = new BigInteger(dbMeta.getN());
+    p = new BigInteger(dbMeta.getP());
+    q = new BigInteger(dbMeta.getQ());
+    g = new BigInteger(dbMeta.getG());
+    totient = Crypto.evaluateTotient(p, q);
+    nPlusOne = n.add(BigInteger.ONE);
+    nSquared = n.multiply(n);
+    allCols = metaStore.getTbl(DBMeta.defaultDbName, tableName.getName()).getCols();
+
     return processLine(line);
   }
 
   private String processLine(String line){
 
     StringBuffer newLine = new StringBuffer();
-    String[] columnValues = line.split(";");
+    String[] columnValues = line.split(rowFormat);
 
     //80 bit long rowId is sufficient
     BigInteger rowId = Crypto.generatePositiveRandShort(p, q);
 
     for (int columnIndex = 0; columnIndex < columnValues.length; columnIndex++){
-
       ColumnMeta columnMeta = allCols.get(columnIndex);
-
       AbstractPlaintext plaintext;
+
       if (columnMeta.getType() == DataType.CHAR || columnMeta.getType() == DataType.VARCHAR){
         plaintext = new StringPlaintext();
         plaintext.setPlainText(columnValues[columnIndex]);
-      }
-      else {
+      } else {
         //For plaintext of integer type, initiate the object with columnKeys
-        plaintext = getIntegerPlaintext(columnValues[columnIndex], n, p, q, g, rowId, columnMeta);
+        plaintext = getIntegerPlaintext(columnValues[columnIndex], rowId, columnMeta);
       }
       newLine = appendColumnString(newLine, columnIndex, plaintext);
     }
     //Adding rowId column
-    BigInteger encryptedR = Crypto.paillierEncrypt(rowId, n, nPlusOne, nSquared);
+    int rowIdColumnIndex = columnValues.length;
+    ColumnKey rowIdColumnKey = allCols.get(rowIdColumnIndex).getColkey();
+    BigInteger encryptedR = Crypto.SIESEncrypt(rowId, rowIdColumnKey.getM(), rowIdColumnKey.getX(), n);
     newLine = appendColumnString(newLine, columnValues.length, Crypto.getSecureString(encryptedR));
 
     //Adding s column
     int sColumnIndex = columnValues.length + 1;
-    IntegerPlaintext sPlaintext = getIntegerPlaintext("1", n, p, q, g, rowId, allCols.get(sColumnIndex));
+    IntegerPlaintext sPlaintext = getIntegerPlaintext("1", rowId, allCols.get(sColumnIndex));
     newLine = appendColumnString(newLine, sColumnIndex, sPlaintext);
 
     //Adding r column
     int rColumnIndex = columnValues.length + 2;
     //80 bit long r value is sufficient
     BigInteger randomInt = Crypto.generatePositiveRandShort(p, q);
-    IntegerPlaintext rPlaintext = getIntegerPlaintext(randomInt.toString(), n, p, q, g, rowId, allCols.get(rColumnIndex));
+    IntegerPlaintext rPlaintext = getIntegerPlaintext(randomInt.toString(), rowId, allCols.get(rColumnIndex));
     newLine = appendColumnString(newLine, rColumnIndex, rPlaintext);
+
     return newLine.toString() + "\n";
   }
 
   /**
    * Initiate a integerPlaintext object
    * @param columnValue
-   * @param n
-   * @param p
-   * @param q
-   * @param g
    * @param rowId
    * @param columnMeta
    * @return
    */
-  private IntegerPlaintext getIntegerPlaintext(String columnValue, BigInteger n, BigInteger p, BigInteger q, BigInteger g, BigInteger rowId, ColumnMeta columnMeta) {
+  private IntegerPlaintext getIntegerPlaintext(String columnValue, BigInteger rowId, ColumnMeta columnMeta) {
     IntegerPlaintext integerPlaintext = new IntegerPlaintext();
     integerPlaintext.setPlainText(columnValue);
     integerPlaintext.setSensitive(columnMeta.isSensitive());
@@ -227,6 +237,7 @@ public class UploadHandler {
     integerPlaintext.setQ(q);
     integerPlaintext.setG(g);
     integerPlaintext.setN(n);
+    integerPlaintext.setTotient(totient);
     integerPlaintext.setRowId(rowId);
     integerPlaintext.setColumnKey(columnMeta.getColkey());
     return integerPlaintext;

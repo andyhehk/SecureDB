@@ -77,6 +77,9 @@ public class UDFHandler {
    * @return either -1, 0 or 1.
    */
   public static int compare(BigInteger a, BigInteger b){
+    if (a.equals(BigInteger.ZERO)){
+      return 0;
+    }
     return b.compareTo(a);
   }
 }

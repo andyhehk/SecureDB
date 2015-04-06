@@ -7,17 +7,19 @@ public class ProfileUtil {
 
   long start;
   long end;
+  boolean isPrecise = false;
 
   public ProfileUtil() {
-    start = System.currentTimeMillis();
+    start = isPrecise ? System.nanoTime() : System.currentTimeMillis();
   }
 
-  private void end(){
-    end = System.currentTimeMillis();
+  public ProfileUtil(boolean isPrecise){
+    this.isPrecise = isPrecise;
+    start = isPrecise ? System.nanoTime() : System.currentTimeMillis();
   }
 
   public long getDuration(){
-    end();
+    end = isPrecise ? System.nanoTime() : System.currentTimeMillis();
     return end - start;
   }
 }

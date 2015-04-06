@@ -18,6 +18,7 @@ public class RemoteQuery extends RemoteSQL {
           .getLogger(RemoteQuery.class);
   private List<BasicTupleSlot> resultLists;
   private int rowIndex = -1;
+  boolean initialized = false;
 
   public RemoteQuery(String query, Connection connection, RowDesc rowDesc) {
     super(query, connection);
@@ -32,6 +33,10 @@ public class RemoteQuery extends RemoteSQL {
  */
   @Override
   public BasicTupleSlot nextTuple(){
+    if (!initialized){
+      init();
+    }
+
     rowIndex ++;
     if (rowIndex == resultLists.size()){
       return null;
@@ -78,6 +83,7 @@ public class RemoteQuery extends RemoteSQL {
     } catch (SQLException e) {
       e.printStackTrace();
     }
+    initialized = true;
   }
 
   @Override
