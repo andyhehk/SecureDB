@@ -2,6 +2,8 @@ package edu.hku.sdb.upload;
 
 import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.parse.TableName;
+import edu.hku.sdb.utility.ProfileUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -11,7 +13,6 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.CryptoPrimitive;
 import java.util.List;
 
 /**
@@ -31,6 +32,28 @@ public class UploadHandler {
   private boolean localMode;
   private FileSystem hdfs;
   private MetaStore metaStore;
+  private TableName tableName;
+
+  private BigInteger p;
+  private BigInteger q;
+  private BigInteger n;
+  private BigInteger g;
+  private BigInteger nPlusOne;
+  private BigInteger nSquared;
+  private BigInteger totient;
+  private String rowFormat = "\\|";
+
+  List<ColumnMeta> allCols;
+
+
+  public TableName getTableName() {
+    return tableName;
+  }
+
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
+  }
+
 
   public MetaStore getMetaStore() {
     return metaStore;
@@ -72,21 +95,37 @@ public class UploadHandler {
     this.localMode = localMode;
   }
 
-  public UploadHandler(MetaStore metaStore){
+  public UploadHandler(MetaStore metaStore, TableName tableName){
     setMetaStore(metaStore);
+    setTableName(tableName);
   }
 
   public void upload(){
     BufferedWriter bufferedWriter = getBufferedWriter();
     BufferedReader bufferedReader = null;
+
+    //TODO: should programatically get db name
+    DBMeta dbMeta = metaStore.getAllDBs().get(0);
+    n = new BigInteger(dbMeta.getN());
+    p = new BigInteger(dbMeta.getP());
+    q = new BigInteger(dbMeta.getQ());
+    g = new BigInteger(dbMeta.getG());
+    totient = Crypto.evaluateTotient(p, q);
+    nPlusOne = n.add(BigInteger.ONE);
+    nSquared = n.multiply(n);
+
+    //TODO: should get the specific columns of that table instead of all columns
+    allCols = metaStore.getTbl(DBMeta.defaultDbName, tableName.getName()).getCols();
+
     try {
-      bufferedReader = new BufferedReader(new FileReader(sourceFile));
+      bufferedReader = new BufferedReader(new FileReader(sourceFile), 32768);
       String line;
       //Read and process plaintext line by line
       while ((line = bufferedReader.readLine()) != null) {
         String newLine = processLine(line);
         bufferedWriter.write(newLine);
       }
+      
       //close resources
       bufferedReader.close();
       bufferedWriter.close();
@@ -119,70 +158,78 @@ public class UploadHandler {
           public void progress() {
           }
       });
-      bufferedWriter = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+      bufferedWriter = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"), 32768);
     } catch (URISyntaxException | IOException e) {
       e.printStackTrace();
     }
     return bufferedWriter;
   }
 
-  private String processLine(String line){
-    String newLine = "";
-    String[] columnValues = line.split(";");
-
-    //TODO: should programatically get db name
+  public String processLineForTest(String line){
+    
     DBMeta dbMeta = metaStore.getAllDBs().get(0);
-    //TODO: should get the specific columns of that table instead of all columns
-    List<ColumnMeta> allCols = metaStore.getAllCols();
-    BigInteger n = new BigInteger(dbMeta.getN());
-    BigInteger p = new BigInteger(dbMeta.getP());
-    BigInteger q = new BigInteger(dbMeta.getQ());
-    BigInteger g = new BigInteger(dbMeta.getG());
-    BigInteger rowId = Crypto.generatePositiveRand(p, q);
+    n = new BigInteger(dbMeta.getN());
+    p = new BigInteger(dbMeta.getP());
+    q = new BigInteger(dbMeta.getQ());
+    g = new BigInteger(dbMeta.getG());
+    totient = Crypto.evaluateTotient(p, q);
+    nPlusOne = n.add(BigInteger.ONE);
+    nSquared = n.multiply(n);
+    allCols = metaStore.getTbl(DBMeta.defaultDbName, tableName.getName()).getCols();
+
+    return processLine(line);
+  }
+
+  private String processLine(String line){
+
+    StringBuffer newLine = new StringBuffer();
+    String[] columnValues = line.split(rowFormat);
+
+    //80 bit long rowId is sufficient
+    BigInteger rowId = Crypto.generatePositiveRandShort(p, q);
 
     for (int columnIndex = 0; columnIndex < columnValues.length; columnIndex++){
-
       ColumnMeta columnMeta = allCols.get(columnIndex);
-
       AbstractPlaintext plaintext;
-      if (columnMeta.getType() == DataType.CHAR){
+
+      if (columnMeta.getType() == DataType.CHAR || columnMeta.getType() == DataType.VARCHAR){
         plaintext = new StringPlaintext();
         plaintext.setPlainText(columnValues[columnIndex]);
-      }
-      else {
+      } else {
         //For plaintext of integer type, initiate the object with columnKeys
-        plaintext = getIntegerPlaintext(columnValues[columnIndex], n, p, q, g, rowId, columnMeta);
+        plaintext = getIntegerPlaintext(columnValues[columnIndex], rowId, columnMeta);
       }
       newLine = appendColumnString(newLine, columnIndex, plaintext);
     }
     //Adding rowId column
-    BigInteger encryptedR = Crypto.PaillierEncrypt(rowId, p, q);
-    newLine = appendColumnString(newLine, columnValues.length, encryptedR);
+    int rowIdColumnIndex = columnValues.length;
+    ColumnKey rowIdColumnKey = allCols.get(rowIdColumnIndex).getColkey();
+    BigInteger encryptedR = Crypto.SIESEncrypt(rowId, rowIdColumnKey.getM(), rowIdColumnKey.getX(), n);
+    newLine = appendColumnString(newLine, columnValues.length, Crypto.getSecureString(encryptedR));
 
     //Adding s column
     int sColumnIndex = columnValues.length + 1;
-    newLine = appendHelperColumn(newLine, new BigInteger("1"), allCols.get(sColumnIndex), n, p, q, g, rowId, sColumnIndex);
+    IntegerPlaintext sPlaintext = getIntegerPlaintext("1", rowId, allCols.get(sColumnIndex));
+    newLine = appendColumnString(newLine, sColumnIndex, sPlaintext);
 
     //Adding r column
     int rColumnIndex = columnValues.length + 2;
-    BigInteger randomInt = Crypto.generatePositiveRand(p, q);
-    newLine = appendHelperColumn(newLine, randomInt, allCols.get(rColumnIndex), n, p, q, g, rowId, rColumnIndex);
+    //80 bit long r value is sufficient
+    BigInteger randomInt = Crypto.generatePositiveRandShort(p, q);
+    IntegerPlaintext rPlaintext = getIntegerPlaintext(randomInt.toString(), rowId, allCols.get(rColumnIndex));
+    newLine = appendColumnString(newLine, rColumnIndex, rPlaintext);
 
-    return newLine + "\n";
+    return newLine.toString() + "\n";
   }
 
   /**
    * Initiate a integerPlaintext object
    * @param columnValue
-   * @param n
-   * @param p
-   * @param q
-   * @param g
    * @param rowId
    * @param columnMeta
    * @return
    */
-  private IntegerPlaintext getIntegerPlaintext(String columnValue, BigInteger n, BigInteger p, BigInteger q, BigInteger g, BigInteger rowId, ColumnMeta columnMeta) {
+  private IntegerPlaintext getIntegerPlaintext(String columnValue, BigInteger rowId, ColumnMeta columnMeta) {
     IntegerPlaintext integerPlaintext = new IntegerPlaintext();
     integerPlaintext.setPlainText(columnValue);
     integerPlaintext.setSensitive(columnMeta.isSensitive());
@@ -190,15 +237,10 @@ public class UploadHandler {
     integerPlaintext.setQ(q);
     integerPlaintext.setG(g);
     integerPlaintext.setN(n);
+    integerPlaintext.setTotient(totient);
     integerPlaintext.setRowId(rowId);
     integerPlaintext.setColumnKey(columnMeta.getColkey());
     return integerPlaintext;
-  }
-
-  private String appendHelperColumn(String newLine, BigInteger columnValue, ColumnMeta columnMeta, BigInteger n, BigInteger p, BigInteger q, BigInteger g, BigInteger rowId, int rColumnIndex) {
-    IntegerPlaintext integerPlaintext = getIntegerPlaintext(columnValue.toString(), n, p, q, g, rowId, columnMeta);
-    newLine = appendColumnString(newLine, rColumnIndex, integerPlaintext);
-    return newLine;
   }
 
   /**
@@ -208,11 +250,11 @@ public class UploadHandler {
    * @param plaintext
    * @return
    */
-  private String appendColumnString(String newLine, int columnIndex, Object plaintext) {
+  private StringBuffer appendColumnString(StringBuffer newLine, int columnIndex, Object plaintext) {
     if (columnIndex != 0){
-      newLine += ";";
+      newLine.append(";");
     }
-    newLine += plaintext.toString();
+    newLine.append(plaintext.toString());
     return newLine;
   }
 

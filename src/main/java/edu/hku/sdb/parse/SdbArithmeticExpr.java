@@ -51,6 +51,11 @@ public class SdbArithmeticExpr extends Expr {
     return columnKey;
   }
 
+  @Override
+  public ColumnKey getColKey() {
+    return columnKey;
+  }
+
   public void setColumnKey(ColumnKey columnKey) {
     this.columnKey = columnKey;
   }

@@ -2,6 +2,7 @@ package edu.hku.sdb.udf;
 
 import java.math.BigInteger;
 
+import edu.hku.sdb.crypto.Crypto;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.Text;
 import edu.hku.sdb.crypto.UDFHandler;
@@ -15,13 +16,13 @@ public class SDBAddUDF extends UDF {
 			return null;
 		}
 
-		BigInteger result = UDFHandler.add(new BigInteger(a.toString()),
-				new BigInteger(b.toString()), new BigInteger(s.toString()),
-				new BigInteger(pa.toString()), new BigInteger(qa.toString()),
-				new BigInteger(pb.toString()), new BigInteger(qb.toString()),
-				new BigInteger(n.toString()));
+		BigInteger result = UDFHandler.add(Crypto.getSecureBigInt(a),
+            Crypto.getSecureBigInt(b), Crypto.getSecureBigInt(s),
+            Crypto.getSecureBigInt(pa), Crypto.getSecureBigInt(qa),
+            Crypto.getSecureBigInt(pb), Crypto.getSecureBigInt(qb),
+            Crypto.getSecureBigInt(n));
 
-		return new Text(result.toString());
+		return Crypto.getSecureText(result);
 	}
 
 }

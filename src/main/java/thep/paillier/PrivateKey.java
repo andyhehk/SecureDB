@@ -59,7 +59,7 @@ public class PrivateKey implements Serializable {
 		this.pub = new PublicKey(bits, n);
 		this.mu = this.lambda.modInverse(this.pub.getN());
 	}
-	
+
 	/**
 	 * Returns lambda which is calculated as LCM(p-1,q-1)
 	 * 

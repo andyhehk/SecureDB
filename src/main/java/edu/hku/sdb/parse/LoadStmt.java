@@ -40,7 +40,7 @@ public class LoadStmt implements ParseNode {
 
   @Override
   public String toSql() {
-    return "LOAD DATA " + (overWrite ? "LOCAL" : "") + " INPATH '" + filePath + "' OVERWRITE INTO TABLE " + tableName.getName();
+    return "LOAD DATA" + " INPATH '" + filePath + "' " + (overWrite ? "LOCAL" : "") + " INTO TABLE " + tableName.getName();
   }
 
   @Override

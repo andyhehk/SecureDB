@@ -340,16 +340,18 @@ public class SelectStmt extends QueryStmt {
         return true;
     }
 
-    if (whereClause.involveSdbEncrytedCol()) {
+    if (whereClause != null && whereClause.involveSdbEncrytedCol()) {
       return true;
     }
 
-    for (Expr group : groupingExprs) {
-      if (group.involveSdbEncrytedCol())
-        return true;
+    if (groupingExprs != null) {
+      for (Expr group : groupingExprs) {
+        if (group.involveSdbEncrytedCol())
+          return true;
+      }
     }
 
-    if (havingExpr.involveSdbEncrytedCol()) {
+    if (havingExpr != null && havingExpr.involveSdbEncrytedCol()) {
       return true;
     }
 

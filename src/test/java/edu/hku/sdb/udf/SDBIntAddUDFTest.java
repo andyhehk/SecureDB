@@ -1,8 +1,10 @@
 package edu.hku.sdb.udf;
 
-import org.apache.hadoop.io.Text;
+import edu.hku.sdb.crypto.Crypto;
 
 import junit.framework.TestCase;
+
+import java.math.BigInteger;
 
 public class SDBIntAddUDFTest extends TestCase {
 
@@ -18,8 +20,10 @@ public class SDBIntAddUDFTest extends TestCase {
 	}
 
 	public void testEvaluate1() {
-		assertEquals(new Text("25"),
-				udf.evaluate(new Text("9"), new Text("16"), new Text("35")));
+		assertEquals(Crypto.getSecureText(new BigInteger("25")),
+            udf.evaluate(Crypto.getSecureText(new BigInteger("9")),
+                    Crypto.getSecureText(new BigInteger("16")),
+                    Crypto.getSecureText(new BigInteger("35"))));
 	}
 
 }

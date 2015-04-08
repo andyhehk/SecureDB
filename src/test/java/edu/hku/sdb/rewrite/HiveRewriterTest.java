@@ -36,6 +36,12 @@ public class HiveRewriterTest {
   private String simpleSQLMulEE = "SELECT b * id AS C FROM T2";
   private String simpleSQLMulEC = "SELECT b * 10 AS C FROM T2";
   private String simpleSQLAddEE = "SELECT b + id AS C FROM T2";
+
+  private String simpleSQLSubEC = "SELECT b - 10 AS C FROM T2";
+  private String simpleSQLWhereSubEC = "SELECT b - 10 AS C FROM T2 WHERE b < 1";
+
+
+
   private String simpleCreate = "CREATE TABLE employee (id INT, name VARCHAR(20), salary INT ENC, age INT)";
   private String simpleLoad = "LOAD DATA LOCAL INPATH '/User/Yifan/employee.txt' OVERWRITE INTO TABLE test_create_1";
 
@@ -81,20 +87,23 @@ public class HiveRewriterTest {
 
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
-    ColumnMeta col1 = new ColumnMeta(dbName, "T2", "s", DataType.INT, true,
-            new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
+    String tableName = "T2";
     ColumnMeta col3 = new ColumnMeta(dbName, "T2", "id", DataType.INT, true,
             new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
     ColumnMeta col4 = new ColumnMeta(dbName, "T2", "b", DataType.INT, true,
             new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
     ColumnMeta col5 = new ColumnMeta(dbName, "T2", "c");
+    ColumnMeta col6 = new ColumnMeta(dbName, "T2", "s", DataType.INT, true,
+            new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
+    ColumnMeta col7 = new ColumnMeta(dbName, "T2", "r", DataType.INT, true,
+            new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
 
-    cols.add(col1);
     cols.add(col3);
     cols.add(col4);
     cols.add(col5);
+    cols.add(col6);
+    cols.add(col7);
 
-    String tableName = "T2";
     TableMeta tableMeta = new TableMeta(dbName, tableName);
     tableMeta.setCols(cols);
     List<TableMeta> tbls = new ArrayList<TableMeta>();
@@ -136,6 +145,18 @@ public class HiveRewriterTest {
   }
 
   @Test
+  public void testRewriteComparison() throws Exception {
+    ParseNode parseNode = testObj.analyze(parser.parse(simpleSQLSubEC));
+    sdbSchemeRewriter.rewrite(parseNode);
+    System.out.println(parseNode.toSql());
+
+    parseNode = testObj.analyze(parser.parse(simpleSQLWhereSubEC));
+    sdbSchemeRewriter.rewrite(parseNode);
+    System.out.println(parseNode.toSql());
+  }
+
+
+  //@Test
   public void testRewriteCreate() throws Exception{
     ParseNode parseNode = testObj.analyze(parser.parse(simpleCreate));
     sdbSchemeRewriter.rewrite(parseNode);

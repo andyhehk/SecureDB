@@ -1,7 +1,10 @@
 package edu.hku.sdb.udf;
 
+import edu.hku.sdb.crypto.Crypto;
 import org.apache.hadoop.io.Text;
 import junit.framework.TestCase;
+
+import java.math.BigInteger;
 
 public class SDBKeyUpdateUDFTest extends TestCase {
 
@@ -17,14 +20,21 @@ public class SDBKeyUpdateUDFTest extends TestCase {
 	}
 
 	public void testEvaluate1() {
-		assertEquals(new Text("21"), udf.evaluate(new Text("9"),
-				new Text("23"), new Text("4"), new Text("14"), new Text("35")));
+		assertEquals(Crypto.getSecureText(new BigInteger("21")), udf.evaluate(
+            Crypto.getSecureText(new BigInteger("9")),
+            Crypto.getSecureText(new BigInteger("23")),
+            Crypto.getSecureText(new BigInteger("4")),
+            Crypto.getSecureText(new BigInteger("14")),
+            Crypto.getSecureText(new BigInteger("35"))));
 	}
 
 	public void testEvaluate2() {
-		assertEquals(new Text("496849390869414279802"), udf.evaluate(new Text(
-				"22493371767"), new Text("2451"), new Text("4"), new Text(
-				"134211"), new Text("526631133691760337517")));
+		assertEquals(Crypto.getSecureText(new BigInteger("496849390869414279802")),
+            udf.evaluate(Crypto.getSecureText(new BigInteger("22493371767")),
+                    Crypto.getSecureText(new BigInteger("2451")),
+                    Crypto.getSecureText(new BigInteger("4")),
+                    Crypto.getSecureText(new BigInteger("134211")),
+                    Crypto.getSecureText(new BigInteger("526631133691760337517"))));
 	}
 
 }

@@ -2,7 +2,9 @@ package edu.hku.sdb.crypto;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.HashMap;
 
+import org.apache.hadoop.io.Text;
 import thep.paillier.EncryptedInteger;
 import thep.paillier.PrivateKey;
 import thep.paillier.PublicKey;
@@ -10,30 +12,31 @@ import thep.paillier.exceptions.BigIntegerClassNotValid;
 
 public class Crypto {
 
-	public static int defaultCertainty = 10;
+	public static int defaultCertainty = 100;
+  public static int FIVE_HUNDRED_AND_TWELVE = 512;
   public static int ONE_THOUSAND_TWENTY_FOUR = 1024;
-  public static int TWO_THOUSAND_FORTY_EIGHT = 2048;
+  public static int EIGHTY = 80;
+  public static int THIRTY_TWO = 32;
+
+  public static int defaultPrimeLength = FIVE_HUNDRED_AND_TWELVE;
+  public static int defaultRandLengthShort = EIGHTY;
+  public static int defaultRandLength = ONE_THOUSAND_TWENTY_FOUR;
+
+  public static HashMap<String, BigInteger> modPowMap = new HashMap<>();
 
 	/**
 	 * 
 	 * @return a random prime number with bit length = 512, certainty = 10
 	 */
 	public static BigInteger generateRandPrime() {
-		return generateRandPrime(ONE_THOUSAND_TWENTY_FOUR, defaultCertainty);
+		return BigInteger.probablePrime(defaultPrimeLength, new SecureRandom());
 	}
 
-	/**
-	 * 
-	 * @param numBits
-	 * @param certainty
-	 * @return a random prime number with bit length numBits and specified
-	 *         certainty
-	 */
-	private static BigInteger generateRandPrime(int numBits, int certainty) {
-		return new BigInteger(numBits, certainty, new SecureRandom());
-	}
+  public static BigInteger generateRandPrime(int length) {
+    return BigInteger.probablePrime(length, new SecureRandom());
+  }
 
-	/**
+  /**
 	 * 
 	 * @param p
 	 * @param q
@@ -60,11 +63,33 @@ public class Crypto {
    * @return a random positive big integer co-prime with p,q & totient(p,q)
    */
   public static BigInteger generatePositiveRand(BigInteger p, BigInteger q){
+    return generatePositiveRandInternal(p, q, defaultRandLength);
+  }
+
+  public static BigInteger generatePositiveRand(BigInteger p, BigInteger q, int numBits){
+    return generatePositiveRandInternal(p, q, numBits);
+  }
+
+  /**
+   * Generates a positive random number of 2048 bits, which is less than n, and co-prime with both n and totient(n).
+   * @param p
+   * @param q
+   * @return a random positive big integer co-prime with p,q & totient(p,q)
+   */
+  public static BigInteger generatePositiveRandShort(BigInteger p, BigInteger q){
+    return generatePositiveRandInternal(p, q, defaultRandLengthShort);
+  }
+
+  public static BigInteger generatePositiveRandExShort(BigInteger p, BigInteger q){
+    return generatePositiveRandInternal(p, q, THIRTY_TWO);
+  }
+
+  private static BigInteger generatePositiveRandInternal(BigInteger p, BigInteger q, int numBits) {
     BigInteger n = p.multiply(q);
     BigInteger totient = Crypto.evaluateTotient(p, q);
     BigInteger r = null;
     while(true){
-      r = generatePositiveRand(TWO_THOUSAND_FORTY_EIGHT);
+      r = generatePositiveRand(numBits);
       try{
         BigInteger rReverseN = r.modInverse(n);
         BigInteger rReverseTotient = r.modInverse(totient);
@@ -78,7 +103,8 @@ public class Crypto {
     return r;
   }
 
-	/**
+
+  /**
 	 * Generates an item key based on columnKey<m,x> and row-id.
 	 * @param m m value of columnKey whose value is less than (p * q)
 	 * @param x x value of columnKey whose value is less than (p * q)
@@ -88,7 +114,7 @@ public class Crypto {
 	 * @param q
 	 * @return item key based on m, x, r, g, p, q
 	 */
-	public static BigInteger generateItemKey(BigInteger m, BigInteger x,
+  private static BigInteger generateItemKey(BigInteger m, BigInteger x,
 			BigInteger r, BigInteger g, BigInteger p, BigInteger q) {
 
 		BigInteger n = p.multiply(q);
@@ -97,7 +123,34 @@ public class Crypto {
     BigInteger grx = g.modPow(power, n);
 
     return (m.multiply(grx)).mod(n);
+  }
 
+  public static BigInteger generateItemKeyOp2(BigInteger m, BigInteger x,
+			BigInteger r, BigInteger g, BigInteger n, BigInteger totient, BigInteger p, BigInteger q) {
+
+    String key = g.toString()+"::"+x.toString()+"::"+n.toString();
+    BigInteger gx;
+    if (!modPowMap.containsKey(key)){
+      gx = g.modPow(x.mod(totient), n);
+      modPowMap.put(key, gx);
+    }
+    else {
+      gx = modPowMap.get(key);
+    }
+    BigInteger power = r.mod(totient);
+    BigInteger grx = Crypto.modPow(gx, power, p, q);
+
+    return (m.multiply(grx)).mod(n);
+  }
+
+
+  private static BigInteger modPow(BigInteger base, BigInteger power, BigInteger p, BigInteger q){
+    BigInteger basePowerModQ = base.modPow(power, q);
+    BigInteger basePowerModP = base.modPow(power, p);
+    BigInteger pInverseQ = p.modInverse(q);
+
+    BigInteger result = ( basePowerModQ.subtract(basePowerModP).multiply(pInverseQ)).mod(q).multiply(p).add(basePowerModP);
+    return result;
   }
 
 	/**
@@ -126,22 +179,29 @@ public class Crypto {
 	}
 
 	/**
-	 * Encrypt a plaintext with Pailier Encryption algorithm. Adopted from thep.paillier package
+	 * (DEPRECATED due to poor performance of open source package) Encrypt a plaintext with Pailier Encryption algorithm. Adopted from thep.paillier package
 	 * @param plaintext
-	 * @param p
-	 * @param q
+	 * @param n
 	 * @return encrypted value using Paillier encryption
 	 */
-	public static BigInteger PaillierEncrypt(BigInteger plaintext, BigInteger p,
-			BigInteger q) {
+	private static BigInteger PaillierEncrypt(BigInteger plaintext, BigInteger n) {
 		try {
-			return new EncryptedInteger(plaintext, new PublicKey(TWO_THOUSAND_FORTY_EIGHT,
-					p.multiply(q))).getCipherVal();
+			return new EncryptedInteger(plaintext, new PublicKey(defaultRandLength,
+					n)).getCipherVal();
 		} catch (BigIntegerClassNotValid e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
+
+  private static BigInteger paillierEncrypt(BigInteger plaintext, BigInteger n, BigInteger nPlusOne, BigInteger nSquared){
+    BigInteger r = generatePositiveRand(defaultRandLengthShort);
+    BigInteger cipherText = nPlusOne.modPow(plaintext, nSquared);
+    BigInteger x = r.modPow(n, nSquared);
+    cipherText = cipherText.multiply(x).mod(nSquared);
+
+    return cipherText;
+  }
 
 	/**
 	 * Decrypt a plaintext with Pailier Decryption algorithm. Adopted from thep.paillier package
@@ -150,9 +210,9 @@ public class Crypto {
 	 * @param q
 	 * @return decrypted value using Paillier encryption
 	 */
-	public static BigInteger PaillierDecrypt(BigInteger ciphertext,
+  private static BigInteger PaillierDecrypt(BigInteger ciphertext,
 			BigInteger p, BigInteger q) {
-		PrivateKey privateKey = new PrivateKey(TWO_THOUSAND_FORTY_EIGHT, p, q);
+		PrivateKey privateKey = new PrivateKey(defaultRandLength, p, q);
 		try {
 			return new EncryptedInteger(ciphertext).decrypt(privateKey);
 		} catch (BigIntegerClassNotValid e) {
@@ -160,6 +220,18 @@ public class Crypto {
 		}
 		return null;
 	}
+
+  public static BigInteger SIESEncrypt(BigInteger plainText, BigInteger K, BigInteger ki, BigInteger p){
+    BigInteger result = K.multiply(plainText).add(ki).mod(p);
+    return result;
+  }
+
+  public static BigInteger SIESDecrypt(BigInteger cipherText, BigInteger m, BigInteger x, BigInteger n){
+    BigInteger KInverse = m.modInverse(n);
+    BigInteger result = (cipherText.subtract(x).mod(n)).multiply(KInverse).mod(n);
+    return result;
+  }
+
 
   /**
    * Update column A with target columnKey<mc,mx> and plaintext [a]
@@ -186,14 +258,31 @@ public class Crypto {
 		BigInteger newP = (xsInverse.multiply(xcMinusXa)).mod(totient);
 
     //prepare numbers for q
-    BigInteger msp = ms.modPow(newP, n);
+    BigInteger msp =  Crypto.modPow(ms, newP, p, q);
     BigInteger mcInverse = mc.modInverse(n);
-		BigInteger newQ = (ma.multiply(msp).multiply(mcInverse)).mod(n);
+		BigInteger newQ = ((ma.mod(n)).multiply(msp).multiply(mcInverse)).mod(n);
 
 		newPQ[0] = newP;
 		newPQ[1] = newQ;
 
 		return newPQ;
 	}
+
+  public static BigInteger getSecureBigInt(String cipherString){
+    return new BigInteger(cipherString, Character.MAX_RADIX);
+  }
+
+  public static BigInteger getSecureBigInt(Text cipherString){
+    return new BigInteger(cipherString.toString(), Character.MAX_RADIX);
+  }
+
+  public static Text getSecureText(BigInteger cipherString){
+    return new Text(cipherString.toString(Character.MAX_RADIX));
+  }
+
+  public static String getSecureString(BigInteger cipherString){
+    return cipherString.toString(Character.MAX_RADIX);
+  }
+
 
 }

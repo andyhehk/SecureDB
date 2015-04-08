@@ -122,6 +122,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
     try {
       con = DriverManager.getConnection(connectionURL, username, password);
       java.sql.Statement stmt = con.createStatement();
+
       // register UDFs
       stmt.execute("add jar SDB-0.1-SNAPSHOT.jar");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.SDBIntAddUDF'");
@@ -129,6 +130,8 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.SDBIntAddUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_keyUp AS 'edu.hku.sdb.udf.SDBKeyUpdateUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_mul AS 'edu.hku.sdb.udf.SDBMultiUDF'");
+      stmt.execute("CREATE TEMPORARY FUNCTION sdb_compare AS 'edu.hku.sdb.udf.SDBCompareUDF'");
+
     } catch (SQLException e) {
       e.printStackTrace();
     }

@@ -68,7 +68,18 @@ public class UDFHandler {
 	public static BigInteger integerAdd(BigInteger a, BigInteger b, BigInteger n) {
 		return a.add(b).mod(n);
 	}
-	
-	
 
+
+  /**
+   * returns -1 if a is greater than b, 1 if a is less than b.
+   * @param a
+   * @param b
+   * @return either -1, 0 or 1.
+   */
+  public static int compare(BigInteger a, BigInteger b){
+    if (a.equals(BigInteger.ZERO)){
+      return 0;
+    }
+    return b.compareTo(a);
+  }
 }
