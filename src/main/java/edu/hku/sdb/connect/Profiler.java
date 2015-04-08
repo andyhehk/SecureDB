@@ -12,6 +12,17 @@ public interface Profiler  extends Remote {
 
   public long getClientTotalTime() throws RemoteException;
 
+  public long getClientParseTime() throws RemoteException;
+
+  public long getClientAnalyseTime() throws RemoteException;
+
+  public long getClientRewriteTime() throws RemoteException;
+
+  public long getClientExecutionTime() throws RemoteException;
+
   public long getServerTotalTime() throws RemoteException;
+
+
+
 
 }

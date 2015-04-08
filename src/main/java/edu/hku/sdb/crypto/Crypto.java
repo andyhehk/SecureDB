@@ -22,7 +22,7 @@ public class Crypto {
   public static int defaultRandLengthShort = EIGHTY;
   public static int defaultRandLength = ONE_THOUSAND_TWENTY_FOUR;
 
-  public static HashMap<String, BigInteger> modPowMap = new HashMap<>();
+  public static HashMap<String, BigInteger> modPowMap = new HashMap<String, BigInteger>();
 
 	/**
 	 * 

@@ -111,18 +111,9 @@ public class ExecutorTest {
     }
   }
 
-  public void testUploadIntegrated(){
-    uploadHandler.upload();
-  }
-
-
   public void testSimpleSelect() throws Exception{
 
-//    String testQuery = simpleMultipleSelectQuery;
-//    String testQuery = simpleSubtractSelectQuery;
-//    String testQuery = simpleSubtractSelectQueryEE;
-//    String testQuery = simpleAddSelectQueryEE;
-    String testQuery = simpleSelectWhereQuery;
+      String testQuery = simpleSelectWhereQuery;
 
     // Parse & analyse
     System.out.println("Parsing " + testQuery);

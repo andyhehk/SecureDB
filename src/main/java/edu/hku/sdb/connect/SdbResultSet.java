@@ -44,6 +44,10 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
   private SDBProfiler sdbProfiler;
   private String remoteSQLQuery;
 
+  public void setSdbProfiler(SDBProfiler sdbProfiler) {
+    this.sdbProfiler = sdbProfiler;
+  }
+
   public SdbResultSet() throws RemoteException {
     super();
     tuple = new ArrayList<>();
@@ -168,6 +172,26 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
   @Override
   public long getClientTotalTime() throws RemoteException {
     return sdbProfiler.getClientTotalTime();
+  }
+
+  @Override
+  public long getClientParseTime() throws RemoteException {
+    return sdbProfiler.getClientParseTime();
+  }
+
+  @Override
+  public long getClientAnalyseTime() throws RemoteException {
+    return sdbProfiler.getClientAnalyseTime();
+  }
+
+  @Override
+  public long getClientRewriteTime() throws RemoteException {
+    return sdbProfiler.getClientRewriteTime();
+  }
+
+  @Override
+  public long getClientExecutionTime() throws RemoteException {
+    return sdbProfiler.getClientExecuteTime();
   }
 
   @Override
