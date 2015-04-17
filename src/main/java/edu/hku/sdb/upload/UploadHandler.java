@@ -41,7 +41,9 @@ public class UploadHandler {
   private BigInteger nPlusOne;
   private BigInteger nSquared;
   private BigInteger totient;
-  private String rowFormat = "\\|";
+
+  private String defaultRowFormat = "\\|";
+  private String rowFormat = defaultRowFormat;
 
   List<ColumnMeta> allCols;
 

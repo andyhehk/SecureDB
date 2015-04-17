@@ -25,7 +25,6 @@ import edu.hku.sdb.conf.SdbConf;
 public class Catalog {
 
   private MetaStore metadb;
-  private Connection clientdbCon;
   private Connection serverdbCon;
 
   public Catalog() {
@@ -64,21 +63,6 @@ public class Catalog {
    */
   public void setMetadb(MetaStore metadb) {
     this.metadb = metadb;
-  }
-
-  /**
-   * @return the clientdbCon
-   */
-  public Connection getClientdbCon() {
-    return clientdbCon;
-  }
-
-  /**
-   * @param clientdbCon
-   *          the clientdbCon to set
-   */
-  public void setClientdbCon(Connection clientdbCon) {
-    this.clientdbCon = clientdbCon;
   }
 
   /**

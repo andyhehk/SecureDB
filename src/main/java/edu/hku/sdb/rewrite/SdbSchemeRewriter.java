@@ -40,6 +40,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   BigInteger q;
   BigInteger n;
   BigInteger g;
+  BigInteger totient;
 
   /**
    * @param dbMeta
@@ -88,6 +89,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     q = new BigInteger(dbMeta.getQ());
     n = new BigInteger(dbMeta.getN());
     g = new BigInteger(dbMeta.getG());
+    totient = Crypto.evaluateTotient(p, q);
 
     rewriteTableRefs(selStmt.getTableRefs(), selStmt.getSelectList(),
         selStmt.getWhereClause(), selStmt.getGroupingExprs());
@@ -160,7 +162,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         Expr expr = selItem.getExpr();
         if (expr instanceof NormalArithmeticExpr) {
           if (expr.involveSdbEncrytedCol()){
-            selItem.setAlias("c" + new Random().nextInt(1000));
+            selItem.setAlias(expr.toSql());
             selItem.setExpr(rewriteNorArithExpr((NormalArithmeticExpr) expr));
           }
         }
@@ -324,8 +326,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
           }
           //EP mode
           else {
-            UnSupportedException e = new UnSupportedException("EP mode of subtract is not supported yet");
-            throw e;
+            return rewriteSubtractEP((FieldLiteral) left, (FieldLiteral) right);
           }
       }
     }
@@ -334,31 +335,20 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   }
 
   private SdbArithmeticExpr rewriteSubtractEE(FieldLiteral left, FieldLiteral right) {
-    FieldLiteral leftField = left;
-    FieldLiteral rightField = right;
 
-    ColumnKey columnKeyS = null;
     boolean isSen = true;
-    String tableName = leftField.getTbl();
+    String tableName = left.getTbl();
     String columnName = BasicFieldLiteral.S_COLUMN_NAME;
-    for (TableMeta tableMeta : dbMeta.getTbls()){
-      if (tableMeta.getTblName().equals(tableName)){
-        for (ColumnMeta columnMeta : tableMeta.getCols()){
-          if (columnMeta.getColName().equals(columnName)){
-            columnKeyS = columnMeta.getColkey();
-          }
-        }
-      }
-    }
+    ColumnKey columnKeyS = getTableColumnKey(tableName, columnName);
 
     DataType type = DataType.INT;
     FieldLiteral sField = new FieldLiteral(tableName, columnName, type, isSen, columnKeyS);
 
-    BigInteger ma = leftField.getColKey().getM();
-    BigInteger xa = leftField.getColKey().getX();
+    BigInteger ma = left.getColKey().getM();
+    BigInteger xa = left.getColKey().getX();
 
-    BigInteger mb = rightField.getColKey().getM();
-    BigInteger xb = rightField.getColKey().getX();
+    BigInteger mb = right.getColKey().getM();
+    BigInteger xb = right.getColKey().getX();
 
     BigInteger ms = columnKeyS.getM();
     BigInteger xs = columnKeyS.getX();
@@ -381,8 +371,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     sdbArithmeticExpr.setOp(SdbArithmeticExpr.Operator.SDB_ADD);
 
     //Ae, Be, Se, pa_c,qa_c, pb_i_c, qb_i_c, n
-    sdbArithmeticExpr.addChild(leftField);
-    sdbArithmeticExpr.addChild(rightField);
+    sdbArithmeticExpr.addChild(left);
+    sdbArithmeticExpr.addChild(right);
     sdbArithmeticExpr.addChild(sField);
     sdbArithmeticExpr.addChild(new SecureIntLiteral(pa_c));
     sdbArithmeticExpr.addChild(new SecureIntLiteral(qa_c));
@@ -446,6 +436,61 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     return sdbArithmeticExpr;
   }
 
+  //TODO this function is not working
+  private Expr rewriteSubtractEP(FieldLiteral left, FieldLiteral right) {
+    String tableName =  left.getTbl();
+    String columnName = BasicFieldLiteral.S_COLUMN_NAME;
+    ColumnKey columnKeyS = getTableColumnKey(tableName, columnName);
+    DataType type = DataType.INT;
+    FieldLiteral sField = new FieldLiteral(tableName, columnName, type, true, columnKeyS);
+
+    BigInteger ma = left.getColKey().getM();
+    BigInteger xa = left.getColKey().getX();
+
+    BigInteger mp_n = Crypto.generatePositiveRand(p, q);
+    BigInteger xp_n = Crypto.generatePositiveRand(p, q);
+
+    BigInteger ms = columnKeyS.getM();
+    BigInteger xs = columnKeyS.getX();
+    BigInteger[] pqp_n = Crypto.keyUpdateClient(new BigInteger("1"), mp_n, ms, new BigInteger("0"), xp_n, xs, p, q);
+
+    BigInteger mpn_i = n.subtract(BigInteger.ONE).multiply(mp_n).mod(n);
+    BigInteger xpn_i = xp_n;
+
+    BigInteger mc = Crypto.generatePositiveRand(p, q);
+    BigInteger xc = Crypto.generatePositiveRand(p ,q);
+
+    BigInteger[] pqa_c = Crypto.keyUpdateClient(ma, mc, ms, xa, xc, xs, p, q);
+    BigInteger pa_c = pqa_c[0];
+    BigInteger qa_c = pqa_c[1];
+
+    BigInteger[] pqn_i_c = Crypto.keyUpdateClient(mpn_i, mc, ms, xpn_i, xc, xs, p, q);
+    BigInteger ppn_i_c = pqn_i_c[0];
+    BigInteger qpn_i_c = pqn_i_c[1];
+
+    SecureIntLiteral literalN = new SecureIntLiteral(n);
+    SdbKeyUpdateExpr sdbKeyUpExpr = new SdbKeyUpdateExpr();
+    sdbKeyUpExpr.addChild(right);
+    sdbKeyUpExpr.addChild(sField);
+    sdbKeyUpExpr.addChild(new SecureIntLiteral(pqp_n[0]));
+    sdbKeyUpExpr.addChild(new SecureIntLiteral(pqp_n[1]));
+    sdbKeyUpExpr.addChild(literalN);
+
+    SdbArithmeticExpr sdbArithmeticExpr = new SdbArithmeticExpr();
+    sdbArithmeticExpr.setOp(SdbArithmeticExpr.Operator.SDB_ADD);
+    sdbArithmeticExpr.addChild(left);
+    sdbArithmeticExpr.addChild(sdbKeyUpExpr);
+    sdbArithmeticExpr.addChild(sField);
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(pa_c));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(qa_c));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(ppn_i_c));
+    sdbArithmeticExpr.addChild(new SecureIntLiteral(qpn_i_c));
+    sdbArithmeticExpr.addChild(literalN);
+    sdbArithmeticExpr.setColumnKey(new ColumnKey(mc, xc));
+
+    return sdbArithmeticExpr;
+  }
+
   private ColumnKey sdbMultiGetColumnKeyEE(FieldLiteral left, FieldLiteral right) {
     ColumnKey columnKey;
     ColumnKey leftColumnKey =  left.getColKey();
@@ -465,7 +510,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     Expr left = binPred.getChild(0);
     Expr right = binPred.getChild(1);
 
-    // TODO support nested binary predicate.
+//    TODO support nested binary predicate.
     if (checkNotNull(left).hasChild(1) || checkNotNull(right).hasChild(1)) {
       UnSupportedException e = new UnSupportedException(
           "nested binary predicate!");
@@ -476,57 +521,75 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     SdbArithmeticExpr sdbArithExpr = new SdbArithmeticExpr();
     SdbKeyUpdateExpr sdbKeyUpExpr = new SdbKeyUpdateExpr();
 
-    // EE mode
-    if (left.involveSdbEncrytedCol() && right.involveSdbEncrytedCol()) {
+    Expr addExpr = null;
+    String tableName = null;
 
+    //EP mode
+    if (left.involveSdbEncrytedCol() && !right.involveSdbEncrytedCol() && (right instanceof FieldLiteral)) {
+      LOG.debug("rewriteNorBinPredicate EP Mode");
+      FieldLiteral leftField = (FieldLiteral) left;
+      tableName = ((FieldLiteral) left).getTbl();
+      addExpr = rewriteSubtractEP(leftField, (FieldLiteral) right);
     }
-
+    // EE mode
+    else if (left.involveSdbEncrytedCol() && right.involveSdbEncrytedCol()) {
+      LOG.debug("rewriteNorBinPredicate EC Mode");
+      FieldLiteral leftField = (FieldLiteral) left;
+      FieldLiteral rightField = (FieldLiteral) right;
+      tableName = ((FieldLiteral) left).getTbl();
+      addExpr = rewriteSubtractEE(leftField, rightField);
+    }
     // EC mode
     else if (left.involveSdbEncrytedCol() || right.involveSdbEncrytedCol()) {
       LOG.debug("rewriteNorBinPredicate EC Mode");
       FieldLiteral leftField = (FieldLiteral) left;
       IntLiteral rightInt = (IntLiteral) right;
-      String tableName = ((FieldLiteral) left).getTbl();
-      Expr addExpr = rewriteSubtractEC(leftField, rightInt);
-
-      ColumnKey columnKeyC = addExpr.getColKey();
-      BigInteger mc = columnKeyC.getM();
-      BigInteger xc = columnKeyC.getX();
-
-      ColumnKey columnKeyR = getTableColumnKey(tableName, BasicFieldLiteral.R_COLUMN_NAME);
-      BigInteger mr = columnKeyR.getM();
-      BigInteger xr = columnKeyR.getX();
-
-      BigInteger mrc = mr.multiply(mc).mod(n);
-      BigInteger xrc = xr.add(xc).mod(Crypto.evaluateTotient(p, q));
-
-      ColumnKey columnKeyS = getTableColumnKey(tableName, BasicFieldLiteral.S_COLUMN_NAME);
-      BigInteger ms = columnKeyS.getM();
-      BigInteger xs = columnKeyS.getX();
-      SecureIntLiteral literalN = new SecureIntLiteral(n);
-
-      BigInteger[] pqrc_z = Crypto.keyUpdateClient(mrc, new BigInteger("1"), ms, xrc, new BigInteger("0"), xs, p, q);
-
-      FieldLiteral rField = new FieldLiteral(tableName, BasicFieldLiteral.R_COLUMN_NAME, DataType.INT);
-      sdbArithExpr.setOp(SdbArithmeticExpr.Operator.SDB_MUL);
-      sdbArithExpr.addChild(rField);
-      sdbArithExpr.addChild(addExpr);
-      sdbArithExpr.addChild(literalN);
-
-      FieldLiteral sField = new FieldLiteral(tableName, BasicFieldLiteral.S_COLUMN_NAME, DataType.INT);
-
-      sdbKeyUpExpr.addChild(sdbArithExpr);
-      sdbKeyUpExpr.addChild(sField);
-      sdbKeyUpExpr.addChild(new SecureIntLiteral(pqrc_z[0]));
-      sdbKeyUpExpr.addChild(new SecureIntLiteral(pqrc_z[1]));
-      sdbKeyUpExpr.addChild(literalN);
+      tableName = ((FieldLiteral) left).getTbl();
+      addExpr = rewriteSubtractEC(leftField, rightInt);
     }
+
+    //prepare udf
+    prepareUdf(sdbArithExpr, sdbKeyUpExpr, addExpr, tableName);
 
     SdbBinPredicate sdbBinPred = new SdbBinPredicate(binPred.getOp(),
         sdbArithExpr, sdbKeyUpExpr);
     sdbBinPred.setThreshold(n.subtract(BigInteger.ONE).divide(new BigInteger("2")));
 
     return sdbBinPred;
+  }
+
+  private void prepareUdf(SdbArithmeticExpr sdbArithExpr, SdbKeyUpdateExpr sdbKeyUpExpr, Expr addExpr, String tableName) {
+    ColumnKey columnKeyC = addExpr.getColKey();
+    BigInteger mc = columnKeyC.getM();
+    BigInteger xc = columnKeyC.getX();
+
+    ColumnKey columnKeyR = getTableColumnKey(tableName, BasicFieldLiteral.R_COLUMN_NAME);
+    BigInteger mr = columnKeyR.getM();
+    BigInteger xr = columnKeyR.getX();
+
+    BigInteger mrc = mr.multiply(mc).mod(n);
+    BigInteger xrc = xr.add(xc).mod(Crypto.evaluateTotient(p, q));
+
+    ColumnKey columnKeyS = getTableColumnKey(tableName, BasicFieldLiteral.S_COLUMN_NAME);
+    BigInteger ms = columnKeyS.getM();
+    BigInteger xs = columnKeyS.getX();
+    SecureIntLiteral literalN = new SecureIntLiteral(n);
+
+    BigInteger[] pqrc_z = Crypto.keyUpdateClient(mrc, new BigInteger("1"), ms, xrc, new BigInteger("0"), xs, p, q);
+
+    FieldLiteral rField = new FieldLiteral(tableName, BasicFieldLiteral.R_COLUMN_NAME, DataType.INT);
+    sdbArithExpr.setOp(SdbArithmeticExpr.Operator.SDB_MUL);
+    sdbArithExpr.addChild(rField);
+    sdbArithExpr.addChild(addExpr);
+    sdbArithExpr.addChild(literalN);
+
+    FieldLiteral sField = new FieldLiteral(tableName, BasicFieldLiteral.S_COLUMN_NAME, DataType.INT);
+
+    sdbKeyUpExpr.addChild(sdbArithExpr);
+    sdbKeyUpExpr.addChild(sField);
+    sdbKeyUpExpr.addChild(new SecureIntLiteral(pqrc_z[0]));
+    sdbKeyUpExpr.addChild(new SecureIntLiteral(pqrc_z[1]));
+    sdbKeyUpExpr.addChild(literalN);
   }
 
   private ParseNode rewriteAddEE(ParseNode parseTree) {
