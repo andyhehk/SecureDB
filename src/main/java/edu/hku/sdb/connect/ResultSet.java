@@ -34,4 +34,5 @@ public interface ResultSet extends Remote {
 
   public String getRemoteSQLQuery() throws RemoteException;
 
+  public Long getLong(int columnIndex) throws RemoteException;
 }

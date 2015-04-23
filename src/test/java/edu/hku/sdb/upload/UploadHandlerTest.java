@@ -41,6 +41,8 @@ public class UploadHandlerTest {
   private BigInteger g;
   private BigInteger p;
   private BigInteger q;
+  private BigInteger totient;
+
   ColumnKey columnKeySalary;
   ColumnKey columnKeyRowId;
   /**
@@ -101,6 +103,7 @@ public class UploadHandlerTest {
     q = Crypto.generateRandPrime();
     n = p.multiply(q);
     g = Crypto.generatePositiveRand(p ,q);
+    totient = Crypto.evaluateTotient(p,q);
 
     MetaStore metaDB = new MetaStore(pm);
 
@@ -183,7 +186,6 @@ public class UploadHandlerTest {
     uploadHandler.setHDFS_URL("file:///");
     String homeDir = System.getenv("HOME");
     uploadHandler.setHDFS_FILE_PATH("file://"+homeDir+"/employee_test_mid.txt");
-
 //    uploadHandler.setHDFS_URL("hdfs://localhost:9000");
 //    uploadHandler.setHDFS_FILE_PATH("hdfs://localhost:9000/user/yifan/employee.txt");
 
@@ -192,19 +194,19 @@ public class UploadHandlerTest {
 
   }
 
-  @Test
-     public void testUploadIntegrated(){
-    uploadHandler.upload();
-  }
-
 //  @Test
-//  public void testUpload() {
-//    String encryptedLine = (uploadHandler.processLineForTest("1|James|4"));
-//    String[] columnValues = encryptedLine.split(";");
-//    BigInteger r = Crypto.SIESDecrypt(Crypto.getSecureBigInt(columnValues[3]), columnKeyRowId.getM(), columnKeyRowId.getX(), new BigInteger(db1.getP()).multiply(new BigInteger(db1.getQ())));
-//    BigInteger itemKey = Crypto.generateItemKey(columnKeySalary.getM(), columnKeySalary.getX(), r, g,p,q);
-//    BigInteger salaryDecrypted =  Crypto.decrypt(Crypto.getSecureBigInt(columnValues[2]), itemKey, n);
-//    assertEquals(new BigInteger("4"), salaryDecrypted);
+//     public void testUploadIntegrated(){
+//    uploadHandler.upload();
 //  }
+
+  @Test
+  public void testUpload() {
+    String encryptedLine = (uploadHandler.processLineForTest("1|James|4"));
+    String[] columnValues = encryptedLine.split(";");
+    BigInteger r = Crypto.SIESDecrypt(Crypto.getSecureBigInt(columnValues[3]), columnKeyRowId.getM(), columnKeyRowId.getX(), new BigInteger(db1.getP()).multiply(new BigInteger(db1.getQ())));
+    BigInteger itemKey = Crypto.generateItemKeyOp2(columnKeySalary.getM(), columnKeySalary.getX(), r, g, n, totient, p, q);
+    BigInteger salaryDecrypted =  Crypto.decrypt(Crypto.getSecureBigInt(columnValues[2]), itemKey, n);
+    assertEquals(new BigInteger("4"), salaryDecrypted);
+  }
 
 }

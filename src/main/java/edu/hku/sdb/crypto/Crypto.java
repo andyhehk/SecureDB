@@ -22,7 +22,7 @@ public class Crypto {
   public static int defaultRandLengthShort = EIGHTY;
   public static int defaultRandLength = ONE_THOUSAND_TWENTY_FOUR;
 
-  public static HashMap<String, BigInteger> modPowMap = new HashMap<>();
+  public static HashMap<String, BigInteger> modPowMap = new HashMap<String, BigInteger>();
 
 	/**
 	 * 
@@ -144,7 +144,7 @@ public class Crypto {
   }
 
 
-  private static BigInteger modPow(BigInteger base, BigInteger power, BigInteger p, BigInteger q){
+  public static BigInteger modPow(BigInteger base, BigInteger power, BigInteger p, BigInteger q){
     BigInteger basePowerModQ = base.modPow(power, q);
     BigInteger basePowerModP = base.modPow(power, p);
     BigInteger pInverseQ = p.modInverse(q);

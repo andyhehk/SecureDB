@@ -17,9 +17,12 @@
 
 package edu.hku.sdb.exec;
 
+import edu.hku.sdb.connect.SDBResultSetMetaData;
 import edu.hku.sdb.plan.RemoteSQLDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -71,5 +74,18 @@ public abstract class RemoteSQL extends PlanNode<RemoteSQLDesc> {
       return false;
     }
     return true;
+  }
+
+  public SDBResultSetMetaData getResultSetMetaData(){
+    SDBResultSetMetaData sdbMetaData = null;
+    try {
+      sdbMetaData = new SDBResultSetMetaData();
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    }
+    List<BasicColumnDesc> basicColumnDescList = nodeDesc.getRowDesc().getSignature();
+    //Remove row_id before init resultSetMetaData for localDecrypt
+    sdbMetaData.setColumnList(basicColumnDescList);
+    return sdbMetaData;
   }
 }

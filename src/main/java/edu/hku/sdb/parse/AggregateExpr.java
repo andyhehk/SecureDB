@@ -19,9 +19,42 @@ package edu.hku.sdb.parse;
 
 public class AggregateExpr extends Expr {
 
+  public AggregateExpr(Expr expr, AggregateType type) {
+    this.expr = expr;
+    this.type = type;
+  }
+
+  private Expr expr;
+  private AggregateType type;
+
+  public Expr getExpr() {
+    return expr;
+  }
+
+  public void setExpr(Expr expr) {
+    this.expr = expr;
+  }
+
+
+
+  public enum AggregateType{
+    COUNT("count"),
+    SUM("sum");
+
+    private final String description;
+    private AggregateType(String description) {
+      this.description = description;
+    }
+
+    @Override
+    public String toString() {
+      return description;
+    }
+  }
+
+
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    return type.toString() + "(" + expr.toSql() + ")";
   }
 
   /* (non-Javadoc)
@@ -29,8 +62,9 @@ public class AggregateExpr extends Expr {
    */
   @Override
   public boolean involveSdbEncrytedCol() {
-    // TODO Auto-generated method stub
     return false;
   }
+
+
 
 }

@@ -38,8 +38,8 @@ public class HiveRewriterTest {
   private String simpleSQLAddEE = "SELECT b + id AS C FROM T2";
 
   private String simpleSQLSubEC = "SELECT b - 10 AS C FROM T2";
-  private String simpleSQLWhereSubEC = "SELECT b - 10 AS C FROM T2 WHERE b < 1";
-
+  private String simpleSQLWhereSubEC = "SELECT b - 10 AS C FROM T2 WHERE b < 1 and 1 = 1";
+  private String countQuery = "SELECT count(b) FROM T2 WHERE b < 1";
 
 
   private String simpleCreate = "CREATE TABLE employee (id INT, name VARCHAR(20), salary INT ENC, age INT)";
@@ -150,9 +150,14 @@ public class HiveRewriterTest {
     sdbSchemeRewriter.rewrite(parseNode);
     System.out.println(parseNode.toSql());
 
-    parseNode = testObj.analyze(parser.parse(simpleSQLWhereSubEC));
+//    parseNode = testObj.analyze(parser.parse(simpleSQLWhereSubEC));
+//    sdbSchemeRewriter.rewrite(parseNode);
+//    System.out.println(parseNode.toSql());
+
+    parseNode = testObj.analyze(parser.parse(countQuery));
     sdbSchemeRewriter.rewrite(parseNode);
     System.out.println(parseNode.toSql());
+
   }
 
 

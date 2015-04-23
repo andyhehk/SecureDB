@@ -41,7 +41,9 @@ public class UploadHandler {
   private BigInteger nPlusOne;
   private BigInteger nSquared;
   private BigInteger totient;
-  private String rowFormat = "\\|";
+
+  private String defaultRowFormat = "\\|";
+  private String rowFormat = defaultRowFormat;
 
   List<ColumnMeta> allCols;
 
@@ -142,6 +144,8 @@ public class UploadHandler {
   private BufferedWriter getBufferedWriter() {
     BufferedWriter bufferedWriter = null;
     Configuration configuration = new Configuration();
+    System.setProperty("HADOOP_USER_NAME", "haibin");
+    //configuration.
     if (localMode){
       configuration.set("mapred.job.tracker", "local");
     }

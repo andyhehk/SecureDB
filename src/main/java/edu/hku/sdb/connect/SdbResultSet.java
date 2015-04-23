@@ -44,6 +44,10 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
   private SDBProfiler sdbProfiler;
   private String remoteSQLQuery;
 
+  public void setSdbProfiler(SDBProfiler sdbProfiler) {
+    this.sdbProfiler = sdbProfiler;
+  }
+
   public SdbResultSet() throws RemoteException {
     super();
     tuple = new ArrayList<>();
@@ -148,12 +152,53 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
     //column index starts from 1 in JDBC
     Object columnData = tuple.get(index)[columnIndex - 1];
     if (columnData instanceof BigInteger){
-      return Integer.valueOf(columnData.toString());
+      Integer result = null;
+      try{
+        result = Integer.valueOf(columnData.toString());
+      }
+      catch (NumberFormatException e){
+        System.out.println(e.getMessage());
+      }
+      if (result == null){
+        result = 0;
+      }
+      return result;
     }
     if (columnData instanceof String){
       return Integer.valueOf((String) columnData);
     }
     return (Integer) columnData;
+  }
+
+  /**
+   * Get the Long at column index
+   * @param columnIndex the index of column, starting from 1
+   * @return integer at specified column
+   * @throws RemoteException
+   */
+  public Long getLong(int columnIndex) throws RemoteException{
+    //column index starts from 1 in JDBC
+    Object columnData = tuple.get(index)[columnIndex - 1];
+    if (columnData instanceof BigInteger){
+      Long result = null;
+      try{
+        result = Long.valueOf(columnData.toString());
+      }
+      catch (NumberFormatException e){
+        System.out.println(e.getMessage());
+      }
+      if (result == null){
+        result = new Long(0);
+      }
+      return result;
+    }
+    if (columnData instanceof String){
+      return Long.valueOf((String) columnData);
+    }
+    if (columnData instanceof Integer){
+      return Long.valueOf(columnData.toString());
+    }
+    return (Long) columnData;
   }
 
   private void getNext(){
@@ -168,6 +213,26 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
   @Override
   public long getClientTotalTime() throws RemoteException {
     return sdbProfiler.getClientTotalTime();
+  }
+
+  @Override
+  public long getClientParseTime() throws RemoteException {
+    return sdbProfiler.getClientParseTime();
+  }
+
+  @Override
+  public long getClientAnalyseTime() throws RemoteException {
+    return sdbProfiler.getClientAnalyseTime();
+  }
+
+  @Override
+  public long getClientRewriteTime() throws RemoteException {
+    return sdbProfiler.getClientRewriteTime();
+  }
+
+  @Override
+  public long getClientExecutionTime() throws RemoteException {
+    return sdbProfiler.getClientExecuteTime();
   }
 
   @Override

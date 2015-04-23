@@ -17,6 +17,7 @@
 
 package edu.hku.sdb.exec;
 
+import edu.hku.sdb.connect.SDBResultSetMetaData;
 import edu.hku.sdb.connect.SdbResultSet;
 import edu.hku.sdb.plan.RemoteSQLDesc;
 import org.slf4j.Logger;
@@ -38,6 +39,8 @@ public class Executor {
     }
     else if (plan instanceof CreateTbl){
       plan.init();
+    } else if (plan instanceof RemoteSQL){
+      executeRemoteQuery(plan, eState, resultSet);
     }
 
   }
@@ -58,6 +61,36 @@ public class Executor {
       //set server execution time
       resultSet.setServerTotalTime(((LocalDecrypt) plan).getServerExecutionTime());
       resultSet.setRemoteSQLQuery(((LocalDecrypt) plan).getRemoteSQLQuery());
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    }
+
+    //TODO find a better way to handle batch fetch
+    resultSet.setTuple(resultList);
+    resultSet.seteState(eState);
+    resultSet.setPlanNode(plan);
+    resultSet.setExecutor(this);
+
+    LOG.debug(resultList.size() + " records computed, saved in resultSet");
+  }
+
+  private void executeRemoteQuery(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
+    List<Object[]> resultList = resultSet.getTuple();
+    BasicTupleSlot basicTupleSlot = plan.nextTuple();
+    while (basicTupleSlot != null){
+      resultList.add(basicTupleSlot.nextTuple().toArray());
+      basicTupleSlot = plan.nextTuple();
+    }
+
+    try {
+      //set client & server SdbMetaData
+      //TODO set metaData
+      if (resultSet.getResultSetMetaData() == null){
+        resultSet.setSdbResultSetMetaData(((RemoteSQL) plan).getResultSetMetaData());
+      }
+      //set server execution time
+      resultSet.setServerTotalTime(((RemoteSQL) plan).getServerExecutionTime());
+
     } catch (RemoteException e) {
       e.printStackTrace();
     }

@@ -9,7 +9,7 @@ public class LoadStmt implements ParseNode {
 
   String filePath;
   TableName tableName;
-  boolean overWrite = false;
+  boolean overWrite = true;
 
   public String getFilePath() {
     return filePath;
@@ -40,7 +40,7 @@ public class LoadStmt implements ParseNode {
 
   @Override
   public String toSql() {
-    return "LOAD DATA" + " INPATH '" + filePath + "' " + (overWrite ? "LOCAL" : "") + " INTO TABLE " + tableName.getName();
+    return "LOAD DATA" + " INPATH '" + filePath + "' " + (overWrite ? "OVERWRITE" : "") + " INTO TABLE " + tableName.getName();
   }
 
   @Override

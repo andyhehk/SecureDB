@@ -462,6 +462,15 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       case HiveLexer.Identifier:
         selectItem.setAlias(child.getText());
         continue;
+      case HiveParser.TOK_FUNCTION:
+        AggregateExpr.AggregateType type = null;
+        if (child.getChild(0).toString().equals(AggregateExpr.AggregateType.COUNT.toString())){
+          type = AggregateExpr.AggregateType.COUNT;
+        }
+        FieldLiteral fieldLiteral = new FieldLiteral(child.getChild(1).getChild(0).toString(), DataType.INT);
+        AggregateExpr aggregateExpr = new AggregateExpr(fieldLiteral, type);
+        selectItem.setExpr(aggregateExpr);
+        continue;
       }
     }
 

@@ -28,6 +28,7 @@ import edu.hku.sdb.parse.*;
 import edu.hku.sdb.rewrite.SdbSchemeRewriter;
 import edu.hku.sdb.rewrite.UnSupportedException;
 import edu.hku.sdb.upload.UploadHandler;
+import edu.hku.sdb.utility.ProfileUtil;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
@@ -47,6 +48,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   private Optimizer optimizer;
   private Executor executor;
   private SdbResultSet sdbResultSet;
+  private SDBProfiler sdbProfiler;
 
   private MetaStore metaDb;
   private Connection serverConnection;
@@ -61,6 +63,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   @Override
   public ResultSet executeQuery(String query) throws RemoteException  {
 
+    sdbProfiler = new SDBProfiler();
     // get execution start time
     long startTimeStamp = System.currentTimeMillis();
 
@@ -76,11 +79,14 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       uploadHandler.setSourceFile(sourceFilePath);
 
       //TODO should read from config file instead of hard code
-      String serverFilePath = "/user/yifan/" + tableName.getName() + new Random().nextInt(60000) + ".txt";
-      uploadHandler.setHDFS_URL("hdfs://localhost:9000");
-      uploadHandler.setHDFS_FILE_PATH("hdfs://localhost:9000" + serverFilePath);
+      String serverFilePath = "/user/haibin/" + tableName.getName() + new Random().nextInt(60000) + ".txt";
+      String hdfsURL = "hdfs://galaxy046:54310";
+      uploadHandler.setHDFS_URL(hdfsURL);
+      uploadHandler.setHDFS_FILE_PATH(hdfsURL + serverFilePath);
 
+      ProfileUtil profileUtil = new ProfileUtil();
       uploadHandler.upload();
+      System.out.println("Upload time: " + profileUtil.getDuration());
 
       ((LoadStmt) analyzedNode).setFilePath(serverFilePath);
       String loadQuery = analyzedNode.toSql();
@@ -95,38 +101,42 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
 
     } else {
 
+      long rewriteStartTimestamp = System.currentTimeMillis();
       // Rewrite
       rewriteNode(analyzedNode);
 
       // Optimize
       PlanNode planNode = getPlanNode(analyzedNode);
 
+      long rewriteEndTimestamp = System.currentTimeMillis();
+      sdbProfiler.setClientRewriteTime(rewriteEndTimestamp - rewriteStartTimestamp);
+
+
       // Execute
       sdbResultSet = getSdbResultSet(planNode);
 
       // get execution end time
       setExecutionTime(startTimeStamp);
+
+      System.out.println(sdbProfiler.toString());
+
       return sdbResultSet;
     }
   }
 
   private void setExecutionTime(long startTimeStamp) {
     long endTimeStamp = System.currentTimeMillis();
-    sdbResultSet.setTotalTime(endTimeStamp - startTimeStamp);
+    long totalTime = endTimeStamp - startTimeStamp;
+    sdbProfiler.setTotalTime(totalTime);
     try {
-      sdbResultSet.setClientTotalTime(sdbResultSet.getTotalTime() - sdbResultSet.getServerTotalTime());
+      long serverTotalTime = sdbResultSet.getServerTotalTime();
+      sdbProfiler.setServerTotalTime(serverTotalTime);
+      sdbProfiler.setClientTotalTime(totalTime - serverTotalTime);
+      sdbProfiler.setClientExecuteTime(sdbProfiler.getExecuteTime() - sdbResultSet.getServerTotalTime());
+      sdbResultSet.setSdbProfiler(sdbProfiler);
     } catch (RemoteException e) {
       e.printStackTrace();
     }
-  }
-
-  private SdbResultSet getSdbResultSet(PlanNode planNode) throws RemoteException {
-    System.out.println("Executing ..." );
-    executor = new Executor();
-    SdbResultSet resultSet = new SdbResultSet();
-    ExecutionState eState = new ExecutionState();
-    executor.execute(planNode, eState, resultSet);
-    return resultSet;
   }
 
   private PlanNode getPlanNode(ParseNode analyzedNode) throws RemoteException {
@@ -139,15 +149,30 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       e.printStackTrace();
       throw new RemoteException(e.getMessage());
     }
-    System.out.println("Plan Node generated.\n" );
+    System.out.println("Plan Node generated.\n");
     return planNode;
   }
 
+  private SdbResultSet getSdbResultSet(PlanNode planNode) throws RemoteException {
+    System.out.println("Executing ..." );
+    long executeStartTimestamp = System.currentTimeMillis();
+    executor = new Executor();
+    SdbResultSet resultSet = new SdbResultSet();
+    ExecutionState eState = new ExecutionState();
+    executor.execute(planNode, eState, resultSet);
+    long executeEndTimestamp = System.currentTimeMillis();
+    sdbProfiler.setExecuteTime(executeEndTimestamp - executeStartTimestamp);
+    System.out.println("Execution Done.");
+    return resultSet;
+  }
+
   private void rewriteNode(ParseNode analyzedNode) throws RemoteException {
+
     System.out.println("Rewriting " + analyzedNode.toSql());
     sdbSchemeRewriter = new SdbSchemeRewriter(metaDb.getAllDBs().get(0));
     try {
       sdbSchemeRewriter.rewrite(analyzedNode);
+
     } catch (UnSupportedException e) {
       e.printStackTrace();
       throw new RemoteException(e.getMessage());
@@ -156,13 +181,20 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
 
   private ParseNode getParseNode(String query) throws RemoteException {
     System.out.println("Parsing " + query);
+
+    long parseStartTimestamp = System.currentTimeMillis();
+
     parser = new ParseDriver();
     semanticAnalyzer = new SemanticAnalyzer(metaDb);
     ASTNode parsedNode = null;
     ParseNode analyzedNode = null;
     try {
       parsedNode = parser.parse(query);
+      long parseEndTimestamp = System.currentTimeMillis();
+      sdbProfiler.setClientParseTime(parseEndTimestamp - parseStartTimestamp);
       analyzedNode = semanticAnalyzer.analyze(parsedNode);
+      long analyseEndTimestamp = System.currentTimeMillis();
+      sdbProfiler.setClientAnalyseTime(analyseEndTimestamp - parseEndTimestamp);
     } catch (ParseException e) {
       e.printStackTrace();
     } catch (SemanticException e) {

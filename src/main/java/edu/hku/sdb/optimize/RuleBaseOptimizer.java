@@ -94,6 +94,61 @@ public class RuleBaseOptimizer extends Optimizer {
   @Override
   protected PlanNode optimizeSelStmt(SelectStmt selStmt, Connection connection, MetaStore metaStore) throws UnSupportedException {
 
+    if (selStmt.getSelectList().involveSdbEncrytedCol()){
+      return getEncryptedPlanNode(selStmt, connection);
+    } else {
+      return getNonEncPlanNode(selStmt, connection);
+    }
+  }
+
+  private PlanNode getNonEncPlanNode(SelectStmt selStmt, Connection connection) {
+    String query = selStmt.toSql().toLowerCase();
+    RowDesc remoteRowDesc = new RowDesc();
+
+    List<BasicColumnDesc> basicColumnDescList = new ArrayList<BasicColumnDesc>();
+
+    for (SelectionItem selectionItem : selStmt.getSelectList().getItemList()) {
+      // default columnName is ""
+      String columnName = "";
+      // default column clazz is Integer
+      Class clazz = Integer.class;
+      String alias = selectionItem.getAlias();
+      Expr expr = selectionItem.getExpr();
+      // obtain columnName in case of FieldLiteral
+      if (expr instanceof FieldLiteral) {
+        columnName = ((FieldLiteral) expr).getName();
+        // obtain clazz information
+        switch (((FieldLiteral) expr).getType()) {
+          case CHAR:
+          case VARCHAR:
+            clazz = String.class;
+            break;
+          case INT:
+          default:
+            clazz = Integer.class;
+        }
+      } else if (expr instanceof SdbArithmeticExpr) {
+        columnName = alias;
+      } else if (expr instanceof AggregateExpr){
+        columnName = expr.toSql();
+      }
+
+      if (alias.equals("")) {
+        alias = columnName;
+      }
+
+      // create column desc for remoteSQL
+      BasicColumnDesc basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
+      basicColumnDescList.add(basicColumnDesc);
+    }
+
+    // create remoteSQL Node
+    remoteRowDesc.setSignature(basicColumnDescList);
+    RemoteQuery remoteQuery = new RemoteQuery(query, connection, remoteRowDesc);
+    return remoteQuery;
+  }
+
+  private PlanNode getEncryptedPlanNode(SelectStmt selStmt, Connection connection) {
     String query = selStmt.toSql().toLowerCase();
     RowDesc remoteRowDesc = new RowDesc();
     RowDesc localDecryptRowDesc = new RowDesc();
@@ -102,7 +157,6 @@ public class RuleBaseOptimizer extends Optimizer {
     List<BasicColumnDesc> columnDescList = new ArrayList<BasicColumnDesc>();
 
     for (SelectionItem selectionItem : selStmt.getSelectList().getItemList()){
-
       // default columnName is ""
       String columnName = "";
       // default column clazz is Integer
@@ -121,6 +175,17 @@ public class RuleBaseOptimizer extends Optimizer {
           default:  clazz = Integer.class;
         }
       }
+      else if (expr instanceof SdbArithmeticExpr){
+        columnName = alias;
+      } else if (expr instanceof NormalArithmeticExpr){
+        columnName = expr.toSql();
+      }
+
+      //TODO fix alias
+      if (alias.equals("")){
+        alias = columnName;
+      }
+
       // create column desc for remoteSQL
       BasicColumnDesc basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
       basicColumnDescList.add(basicColumnDesc);
