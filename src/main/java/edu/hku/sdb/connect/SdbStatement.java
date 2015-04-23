@@ -28,6 +28,7 @@ import edu.hku.sdb.parse.*;
 import edu.hku.sdb.rewrite.SdbSchemeRewriter;
 import edu.hku.sdb.rewrite.UnSupportedException;
 import edu.hku.sdb.upload.UploadHandler;
+import edu.hku.sdb.utility.ProfileUtil;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
@@ -78,11 +79,14 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       uploadHandler.setSourceFile(sourceFilePath);
 
       //TODO should read from config file instead of hard code
-      String serverFilePath = "/user/yifan/" + tableName.getName() + new Random().nextInt(60000) + ".txt";
-      uploadHandler.setHDFS_URL("hdfs://localhost:9000");
-      uploadHandler.setHDFS_FILE_PATH("hdfs://localhost:9000" + serverFilePath);
+      String serverFilePath = "/user/haibin/" + tableName.getName() + new Random().nextInt(60000) + ".txt";
+      String hdfsURL = "hdfs://galaxy046:54310";
+      uploadHandler.setHDFS_URL(hdfsURL);
+      uploadHandler.setHDFS_FILE_PATH(hdfsURL + serverFilePath);
 
+      ProfileUtil profileUtil = new ProfileUtil();
       uploadHandler.upload();
+      System.out.println("Upload time: " + profileUtil.getDuration());
 
       ((LoadStmt) analyzedNode).setFilePath(serverFilePath);
       String loadQuery = analyzedNode.toSql();

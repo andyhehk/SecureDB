@@ -60,6 +60,10 @@ public class RemoteQuery extends RemoteSQL {
       ResultSet resultSet = statement.executeQuery(query);
       List<BasicColumnDesc> basicColumnDescList = nodeDesc.getRowDesc().getSignature();
 
+      // profile server query execution time
+      long endTimeStamp = System.currentTimeMillis();
+      setServerExecutionTime(endTimeStamp - startTimeStamp);
+
       //buffer all results in resultList
       while (resultSet.next()) {
         TupleSlot tupleSlot = new TupleSlot();
@@ -75,10 +79,6 @@ public class RemoteQuery extends RemoteSQL {
       }
       resultSet.close();
       statement.close();
-
-      // profile server query execution time
-      long endTimeStamp = System.currentTimeMillis();
-      setServerExecutionTime(endTimeStamp - startTimeStamp);
 
     } catch (SQLException e) {
       e.printStackTrace();

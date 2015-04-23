@@ -144,7 +144,7 @@ public class Crypto {
   }
 
 
-  private static BigInteger modPow(BigInteger base, BigInteger power, BigInteger p, BigInteger q){
+  public static BigInteger modPow(BigInteger base, BigInteger power, BigInteger p, BigInteger q){
     BigInteger basePowerModQ = base.modPow(power, q);
     BigInteger basePowerModP = base.modPow(power, p);
     BigInteger pInverseQ = p.modInverse(q);

@@ -60,11 +60,11 @@ public class ParserTest extends TestCase
   public void setUp() {
     this.parseDriver = new ParseDriver();
 
-    this.stmtArraySimple = " ";
-    this.stmtArrayOneLevel = "select id, sum(price*quantity) from (select id, price, quantity from A JOIN B ) t group by id;";
+    this.stmtArraySimple = "select salary * 12 from employee";
+    this.stmtArrayOneLevel = "select count(id), sum(price*quantity) from (select id, price, quantity from A JOIN B ) t group by id;";
 
     try {
-      printVizTree(new ParseDriver().parse(showTableQuery));
+      printVizTree(new ParseDriver().parse(stmtArraySimple));
     } catch (ParseException e) {
       e.printStackTrace();
     }
