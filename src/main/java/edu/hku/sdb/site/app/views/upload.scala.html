@@ -1,0 +1,48 @@
+@(title: String)(header: String)(databases: List[Database])
+
+@base(title)(header){
+ <!-- /.row -->
+ <div class="row">
+     <div class="col-lg-12">
+		<div class="panel panel-default">
+             <div class="panel-body">
+		         <div>
+		             <p>
+		                 <strong>Product Table</strong>
+		                 <span class="pull-right text-muted">40% Complete</span>
+		             </p>
+		             <div class="progress progress-striped active">
+		                 <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 40%">
+		                     <span class="sr-only">40% Complete (success)</span>
+		                 </div>
+		             </div>
+		         </div>
+			</div>
+		</div>
+     </div>
+ </div>
+ <!-- /.row -->
+
+<div class="modal fade" id="uploadModel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+       <div class="modal-content">
+           <div class="modal-header">
+               <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+               <h4 class="modal-title" id="myModalLabel">Upload Progress</h4>
+           </div>
+           <div class="modal-body">
+               Table upload done!
+           </div>
+           <div class="modal-footer">
+               <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+               <a href="table.html">
+               		<button type="button" class="btn btn-primary">View table</button>
+               </a>
+           </div>
+       </div>
+       <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+	
+}(databases)

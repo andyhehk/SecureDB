@@ -1,0 +1,14 @@
+@(tables: List[Table])
+
+@for(a_table <- tables) {
+   <li>
+       <a href="#">@a_table.getTableName() Table <span class="fa arrow"></span></a>
+       <ul class="nav nav-third-level">
+       @for(an_attribute <- a_table.getAttributes()) {
+           <li>
+               <a href="#">@an_attribute.getName() @if(an_attribute.getSensitive){ENC} </a>
+           </li>
+       }
+       </ul>
+   </li>	
+}

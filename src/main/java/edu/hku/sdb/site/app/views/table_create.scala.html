@@ -1,0 +1,22 @@
+@(title: String)(header: String)(databases: List[Database])(uploadTableModel: Option[UploadTableModel])
+
+@base(title)(header){
+    <div class="row" xmlns="http://www.w3.org/1999/html">
+        <div class="col-lg-12">
+                <!-- /.panel -->
+            <button type="button" class="btn btn-outline btn-primary btn-tab">Edit Query</button>
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <form action="/upload/data" method="GET" >
+                        <label>Table Name</label>
+                        <input type="text" name="tableName" class="form-control" placeholder="employee_test_1"/>
+                        <br>
+                        <label>Query</label>
+                        <input type="text" name="query" class="form-control" placeholder="Sample query: CREATE TABLE employee_test_1 (id INT, name VARCHAR(10), salary INT ENC)"/>
+                        <input type="submit" value="Create Table" class="btn btn-primary" id="querySubmitBtn"/>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}(databases)
