@@ -1,0 +1,8 @@
+This is the folder for SecureDB web interface. 
+
+lib/SDB-0.1-SNAPSHOT.jar shall be updated if the SDB connector interface changes. 
+
+To start the web interface, execute
+
+$./activator
+run
