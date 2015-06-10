@@ -21,6 +21,8 @@ import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.conf.ConnectionConf;
 import edu.hku.sdb.conf.DbConf;
 import edu.hku.sdb.conf.SdbConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
@@ -37,6 +39,8 @@ import java.util.Properties;
 
 public class SdbConnection extends UnicastRemoteObject implements Connection,
         Serializable {
+
+  private static final Logger LOG = LoggerFactory.getLogger(SdbConnection.class);
 
   private static final long serialVersionUID = 227L;
   private static final String SERVICE_NAME = "Statement";
@@ -67,7 +71,11 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
         MetaStore metaDb = getMetaDbConnection(sdbConf.getMetadbConf());
         java.sql.Connection serverConnection = getServerConnection(sdbConf.getServerdbConf());
 
+        LOG.debug("Connecting to metastore DB");
+        LOG.debug("Connecting to server DB");
+
         //create sdbStatement
+        LOG.debug("Creating sdb statement");
         SdbStatement sdbStatement = new SdbStatement(metaDb, serverConnection);
         serviceUrl = connectionConf.getSdbAddress() + ":"
                 + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
@@ -87,6 +95,9 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
   private MetaStore getMetaDbConnection(DbConf dbConf) {
     //TODO: get params from dbConf
     String driver = dbConf.getJdbcDriverName();
+
+    LOG.debug("Connecting to Metastore with driver: " + driver);
+
     Properties properties = new Properties();
     properties.setProperty("javax.jdo.option.ConnectionURL",
             "jdbc:derby:metastore_db;create=true");
@@ -110,6 +121,9 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
   private java.sql.Connection getServerConnection(DbConf dbConf) {
     String hiveDriverName = dbConf.getJdbcDriverName();
     String connectionURL = dbConf.getJdbcUrl() + "/" + dbConf.getDatabaseName();
+
+    LOG.debug("Connecting server: " + connectionURL);
+
     String username = dbConf.getUsername();
     String password = dbConf.getPassword();
     try {
@@ -123,6 +137,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
       con = DriverManager.getConnection(connectionURL, username, password);
       java.sql.Statement stmt = con.createStatement();
 
+      LOG.debug("Registering UDFS in server: " + connectionURL);
       // register UDFs
       stmt.execute("add jar SDB-0.1-SNAPSHOT.jar");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.SDBIntAddUDF'");

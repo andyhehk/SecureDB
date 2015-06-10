@@ -18,7 +18,6 @@
 package edu.hku.sdb.connect;
 
 import edu.hku.sdb.catalog.MetaStore;
-import edu.hku.sdb.conf.ConnectionConf;
 import edu.hku.sdb.exec.ExecutionState;
 import edu.hku.sdb.exec.Executor;
 import edu.hku.sdb.exec.PlanNode;
@@ -29,6 +28,8 @@ import edu.hku.sdb.rewrite.SdbSchemeRewriter;
 import edu.hku.sdb.rewrite.UnSupportedException;
 import edu.hku.sdb.upload.UploadHandler;
 import edu.hku.sdb.utility.ProfileUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
@@ -39,6 +40,8 @@ import java.util.Random;
 
 public class SdbStatement extends UnicastRemoteObject implements Statement,
         Serializable {
+
+  private static final Logger LOG = LoggerFactory.getLogger(SdbStatement.class);
 
   private static final long serialVersionUID = 427L;
 
@@ -63,6 +66,8 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   @Override
   public ResultSet executeQuery(String query) throws RemoteException {
 
+    LOG.info("Executing query: " + query);
+
     sdbProfiler = new SDBProfiler();
     // get execution start time
     long startTimeStamp = System.currentTimeMillis();
@@ -71,7 +76,6 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     ParseNode analyzedNode = getParseNode(query);
 
     if (analyzedNode instanceof LoadStmt) {
-
       // another programme encrypts & uploads the data
       TableName tableName = ((LoadStmt) analyzedNode).getTableName();
       UploadHandler uploadHandler = new UploadHandler(metaDb, tableName);
@@ -83,6 +87,8 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       String hdfsURL = "hdfs://galaxy046:54310";
       uploadHandler.setHDFS_URL(hdfsURL);
       uploadHandler.setHDFS_FILE_PATH(hdfsURL + serverFilePath);
+
+      LOG.info("Loading data from " + sourceFilePath + " to server " + hdfsURL);
 
       ProfileUtil profileUtil = new ProfileUtil();
       uploadHandler.upload();

@@ -24,9 +24,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 
-/**
- * Created by Eric Haibin Lin on 22/3/15.
- */
 public class SDBResultSetMetaData extends UnicastRemoteObject implements ResultSetMetaData,
         Serializable {
 
