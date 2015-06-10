@@ -71,11 +71,11 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
         MetaStore metaDb = getMetaDbConnection(sdbConf.getMetadbConf());
         java.sql.Connection serverConnection = getServerConnection(sdbConf.getServerdbConf());
 
-        LOG.debug("Connecting to metastore DB");
-        LOG.debug("Connecting to server DB");
+        LOG.info("Connecting to metastore DB");
+        LOG.info("Connecting to server DB");
 
         //create sdbStatement
-        LOG.debug("Creating sdb statement");
+        LOG.info("Creating sdb statement");
         SdbStatement sdbStatement = new SdbStatement(metaDb, serverConnection);
         serviceUrl = connectionConf.getSdbAddress() + ":"
                 + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
@@ -96,7 +96,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
     //TODO: get params from dbConf
     String driver = dbConf.getJdbcDriverName();
 
-    LOG.debug("Connecting to Metastore with driver: " + driver);
+    LOG.info("Connecting to Metastore with driver: " + driver);
 
     Properties properties = new Properties();
     properties.setProperty("javax.jdo.option.ConnectionURL",
@@ -122,7 +122,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
     String hiveDriverName = dbConf.getJdbcDriverName();
     String connectionURL = dbConf.getJdbcUrl() + "/" + dbConf.getDatabaseName();
 
-    LOG.debug("Connecting server: " + connectionURL);
+    LOG.info("Connecting server: " + connectionURL);
 
     String username = dbConf.getUsername();
     String password = dbConf.getPassword();

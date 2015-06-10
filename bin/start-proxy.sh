@@ -46,6 +46,8 @@ for jar in ${SDB_LIB}/*.jar; do
     fi
 done
 
+CLASSPATH+=$SDB_HIVE_JDBC_JAR
+
 SDB_OPTS="${SDB_OPTS} start --sdbconf ${SDB_CONF_DIR}"
 
 java -cp "$CLASSPATH" edu.hku.sdb.driver.SdbDriver $SDB_OPTS "$@"

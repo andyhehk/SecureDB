@@ -28,7 +28,6 @@
 
     <properties>
         <!-- Build properties -->
-        <sdb.path.to.root>..</sdb.path.to.root>
     </properties>
 
     <artifactId>sdb-udfs</artifactId>

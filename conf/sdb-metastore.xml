@@ -61,7 +61,7 @@
 
     <property>
         <name>edu.hku.sdb.conf.jdbc.url</name>
-        <value>jdbc:derby:memory:metastore_db;create=true</value>
+        <value>jdbc:derby:metastore_db;create=true</value>
     </property>
 
 </configuration>

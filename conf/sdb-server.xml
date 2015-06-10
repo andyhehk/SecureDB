@@ -61,7 +61,7 @@
 
     <property>
         <name>edu.hku.sdb.conf.jdbc.url</name>
-        <value>jdbc:hive2://galaxy046:10000/default</value>
+        <value>jdbc:hive2://galaxy046:10000</value>
     </property>
 
 </configuration>
