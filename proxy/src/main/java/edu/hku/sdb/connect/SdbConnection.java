@@ -17,10 +17,12 @@
 
 package edu.hku.sdb.connect;
 
+import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.conf.ConnectionConf;
 import edu.hku.sdb.conf.DbConf;
 import edu.hku.sdb.conf.SdbConf;
+import edu.hku.sdb.crypto.Crypto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +30,7 @@ import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -114,7 +117,23 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
 
     PersistenceManagerFactory pmf = JDOHelper.getPersistenceManagerFactory(properties);
     PersistenceManager pm = pmf.getPersistenceManager();
-    return new MetaStore(pm);
+    MetaStore metaStore = new MetaStore(pm);
+
+    //create default database if empty
+    if (metaStore.getAllDBs().size() == 0) {
+      String dbName = "default";
+      DBMeta dbMeta = new DBMeta(dbName);
+      BigInteger p = Crypto.generateRandPrime();
+      BigInteger q = Crypto.generateRandPrime();
+      BigInteger n = p.multiply(q);
+      BigInteger g = Crypto.generatePositiveRand(p, q);
+      dbMeta.setN(n.toString());
+      dbMeta.setP(p.toString());
+      dbMeta.setQ(q.toString());
+      dbMeta.setG(g.toString());
+      metaStore.addDB(dbMeta);
+    }
+    return metaStore;
   }
 
 
