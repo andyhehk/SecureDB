@@ -1,0 +1,50 @@
+@(title: String)(header: String)(databases: List[Database])(uploadTableModel: Option[UploadTableModel])
+
+@base(title)(header){
+<!--
+~  Licensed to the Apache Software Foundation (ASF) under one or more
+~  contributor license agreements.  See the NOTICE file distributed with
+~  this work for additional information regarding copyright ownership.
+~  The ASF licenses this file to You under the Apache License, Version 2.0
+~ (the "License"); you may not use this file except in compliance with
+~ the License.  You may obtain a copy of the License at
+~
+~  http://www.apache.org/licenses/LICENSE-2.0
+~
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+-->
+
+<div class="row" xmlns="http://www.w3.org/1999/html">
+    <div class="col-lg-12">
+        <!-- /.panel -->
+        <button type="button" class="btn btn-outline btn-primary btn-tab">Choose Data to Upload</button>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                @*<input type="file" name="file" id="fileChosen" class="form-control" placeholder=""/>*@
+                @*<br>*@
+
+                <form action="/upload/done" method="GET" id="upload-data-form">
+                    <label>Table Name</label>
+                    <input type="text" name="tableName" class="form-control" placeholder="employee_test_1"/>
+                    <br>
+                    <label>Data Source File</label>
+                    <input type="text" class="form-control" name="filePath"
+                           placeholder="Sample File Location: /Users/Yifan/sdb/securedb/src/test/resources/upload/employee.txt"/>
+                    <input type="submit" value="Upload Data" class="btn btn-primary" id="querySubmitBtn"/>
+                </form>
+
+                <!-- Jquery Validation JavaScript -->
+                <script src="@routes.Assets.at("javascripts/jquery.validate.min.js")" type="text/javascript"></script>
+                    <script src="@routes.Assets.at("javascripts/upload-validate.js")" type="text/javascript"></script>
+                @*
+                <script>setValidate();</script>
+                *@
+            </div>
+        </div>
+    </div>
+</div>
+}(databases)

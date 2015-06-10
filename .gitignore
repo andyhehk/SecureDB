@@ -2,8 +2,19 @@
 .DS_Store
 
 # Maven
+logs/
 log/
 target/
 
 #IDEA
 .idea
+*.iml
+
+#Eclipse
+.classpath
+.project
+.settings/
+
+#Derby
+metastore_db/
+derby.log

@@ -1,199 +1,178 @@
+<!--
+  ~  Licensed to the Apache Software Foundation (ASF) under one or more
+  ~  contributor license agreements.  See the NOTICE file distributed with
+  ~  this work for additional information regarding copyright ownership.
+  ~  The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~  http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>edu.hku.sdb</groupId>
-	<artifactId>SDB</artifactId>
-	<version>0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+    <groupId>edu.hku.sdb</groupId>
+    <artifactId>sdb</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-	<name>SDB</name>
-	<url>http://maven.apache.org</url>
+    <name>SDB</name>
+    <url>http://maven.apache.org</url>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+    <modules>
+        <module>common</module>
+        <module>connector</module>
+        <module>proxy</module>
+        <module>udfs</module>
+    </modules>
 
-	<dependencies>
-		<dependency>
-			<groupId>javax.jdo</groupId>
-			<artifactId>jdo-api</artifactId>
-			<version>3.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-		</dependency>
-		<!-- We should not embed the database connectors, but the tests are depended 
-			on them -->
-		<dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derby</artifactId>
-			<version>10.11.1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.antlr</groupId>
-			<artifactId>antlr-runtime</artifactId>
-			<version>3.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-common</artifactId>
-			<version>2.4.1</version>
-		</dependency>
+    <properties>
+
+        <!-- Build properties -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <sdb.path.to.root>.</sdb.path.to.root>
+
+        <!-- Plugin and Plugin Dependency Versions -->
+        <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
+        <maven.compiler.plugin.version>3.2</maven.compiler.plugin.version>
+        <maven.dependency.plugin.version>2.8</maven.dependency.plugin.version>
+        <maven.release.plugin.version>2.5.1</maven.release.plugin.version>
+        <maven.shade.plugin.version>2.2</maven.shade.plugin.version>
+        <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
+        <datanucleus.maven.plugin.version>4.0.0-release</datanucleus.maven.plugin.version>
+        <rmic.maven.plugin.version>1.2.1</rmic.maven.plugin.version>
+
+        <!-- Library Dependency Versions -->
+        <antlr.runtime.version>3.4</antlr.runtime.version>
+        <datanucleus.core.version>4.0.0-release</datanucleus.core.version>
+        <datanucleus.api.jdo.version>4.0.0-release</datanucleus.api.jdo.version>
+        <datanucleus.rdbms.version>4.0.0-release</datanucleus.rdbms.version>
+        <derby.version>10.11.1.1</derby.version>
+        <guava.version>18.0</guava.version>
+        <hadoop.common.version>2.4.1</hadoop.common.version>
+        <hadoop.hdfs.version>2.4.1</hadoop.hdfs.version>
+        <hive.jdbc.version>0.12.0</hive.jdbc.version>
+        <jdo.api.version>3.0.1</jdo.api.version>
+        <junit.version>4.12</junit.version>
+        <log4j.version>1.7.10</log4j.version>
+    </properties>
+
+    <!--
+        <distributionManagement>
+            <snapshotRepository>
+                <id>snapshot-repo</id>
+                <url>https://github.com/qboy40408657/SDB-maven/raw/master/snapshots</url>
+            </snapshotRepository>
+        </distributionManagement>
+    -->
+
+
+    <dependencies>
         <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-hdfs</artifactId>
-            <version>2.4.1</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.hive</groupId>
-            <artifactId>hive-jdbc</artifactId>
-            <version>0.12.0</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
-		<dependency>
-			<groupId>org.datanucleus</groupId>
-			<artifactId>datanucleus-core</artifactId>
-			<version>4.0.0-release</version>
-		</dependency>
-		<dependency>
-			<groupId>org.datanucleus</groupId>
-			<artifactId>datanucleus-api-jdo</artifactId>
-			<version>4.0.0-release</version>
-		</dependency>
-		<dependency>
-			<groupId>org.datanucleus</groupId>
-			<artifactId>datanucleus-rdbms</artifactId>
-			<version>4.0.0-release</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.10</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
-	<distributionManagement>
-		<snapshotRepository>
-			<id>snapshot-repo</id>
-			<url>https://github.com/qboy40408657/SDB-maven/raw/master/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
+    <build>
 
-	<developers>
-		<developer>
-			<id>andyhehk</id>
-			<name>Andy He</name>
-			<email>hochion@gmail.com</email>
-			<url>http://www4.comp.polyu.edu.hk/~cszahe</url>
-		</developer>
-
-		<developer>
-			<id>eric-haibin-lin</id>
-			<name>Eric Haibin Lin</name>
-			<email>linhaibin.eric@gmail.com</email>
-		</developer>
-
-	</developers>
-
-	<build>
-		<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
-		<testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
-
-		<plugins>
-			<!-- plugins are always listed in sorted order by groupId, artifectId -->
-			<plugin>
-				<groupId>org.antlr</groupId>
-				<artifactId>antlr3-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>antlr</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
-					<includes>
-						<include>**/HiveLexer.g</include>
-						<include>**/HiveParser.g</include>
-					</includes>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.2</version>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>2.5.1</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.18.1</version>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>rmic-maven-plugin</artifactId>
-				<version>1.2.1</version>
-
-				<executions>
-					<execution>
-						<id>rmi compilation</id>
-						<goals>
-							<goal>rmic</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>
-									<includes>
-									</includes>
-									<iiop>false</iiop>
-								</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-
-			</plugin>
-
-			<plugin>
-				<groupId>org.datanucleus</groupId>
-				<artifactId>datanucleus-maven-plugin</artifactId>
-				<version>4.0.0-release</version>
-				<configuration>
-					<api>JDO</api>
-					<verbose>true</verbose>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>enhance</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-		</plugins>
-	</build>
+        <plugins>
+            <!-- plugins are always listed in sorted order by groupId, artifectId -->
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+            <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${maven.assembly.plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>${maven.dependency.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/${sdb.path.to.root}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <excludeTransitive>false</excludeTransitive>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-artifact</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>${project.packaging}</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.basedir}/${sdb.path.to.root}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>${maven.release.plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven.shade.plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
 
