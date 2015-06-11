@@ -45,11 +45,14 @@ public class TestQuery {
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
     ColumnMeta col4 = new ColumnMeta(dbName, "T2", "b", DataType.INT, true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+    ColumnMeta col5 = new ColumnMeta(dbName, "T2", "c", DataType.INT, false,
+            null);
 
     cols.add(col1);
     cols.add(col2);
     cols.add(col3);
     cols.add(col4);
+    cols.add(col5);
 
     return cols;
   }
@@ -105,6 +108,57 @@ public class TestQuery {
     return selStmt;
   }
 
+  /**
+   * Prepare a selection statement with a single join operator with both sensitive
+   * columns and insensitive columns.
+   *
+   * @return
+   */
+  public static ParseNode prepareAnsJoinMixSen() {
+    SelectStmt selStmt = new SelectStmt();
+
+    SelectionList selectList = new SelectionList();
+    List<TableRef> tableRefs = new ArrayList<TableRef>();
+
+    NormalArithmeticExpr arithExpr = new NormalArithmeticExpr(Operator.ADD);
+    FieldLiteral a = new FieldLiteral("T1", "a", DataType.INT, true,
+            new ColumnKey("1", "3"));
+    FieldLiteral c = new FieldLiteral("T2", "c", DataType.INT, false,
+            null);
+    a.setUp2date(true);
+    c.setUp2date(true);
+    arithExpr.addChild(a);
+    arithExpr.addChild(c);
+    selectList.getItemList().add(new SelectionItem(arithExpr, ""));
+
+    Expr whereClause = new NormalBinPredicate(BinOperator.GT, c,
+            new FloatLiteral("1.0"));
+
+    BaseTableRef tbl1 = new BaseTableRef("T1", "");
+    BaseTableRef tbl2 = new BaseTableRef("T2", "");
+
+    tbl1.setJoinOp(JoinOperator.INNER_JOIN);
+    tbl2.setJoinOp(JoinOperator.INNER_JOIN);
+    tbl2.setLeftTblRef(tbl1);
+    NormalBinPredicate onClause = new NormalBinPredicate(BinOperator.EQ);
+    FieldLiteral id1 = new FieldLiteral("T1", "id", DataType.INT, true,
+            new ColumnKey("1", "3"));
+    FieldLiteral id2 = new FieldLiteral("T2", "id", DataType.INT, true,
+            new ColumnKey("1", "3"));
+    id1.setUp2date(true);
+    id2.setUp2date(true);
+    onClause.addChild(id1);
+    onClause.addChild(id2);
+    tbl2.setOnClause(onClause);
+    tableRefs.add(tbl1);
+    tableRefs.add(tbl2);
+
+    selStmt.setSelectList(selectList);
+    selStmt.setTableRefs(tableRefs);
+    selStmt.setWhereClause(whereClause);
+
+    return selStmt;
+  }
 
   /**
    * Prepare a selection statement with a single join and a group-by.

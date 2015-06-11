@@ -152,6 +152,23 @@ public class SemanticAnalyzerTest {
     }
   }
 
+  @Test
+  public void testAnalyzeJoinMixSen() {
+    String command = "SELECT a + c FROM T1 JOIN T2 ON T1.id = T2.id WHERE c > 1.0";
+
+    try {
+      ASTNode astTree = parser.parse(command);
+
+      ParseNode resultTree;
+
+      ParseNode ansTree = TestQuery.prepareAnsJoinMixSen();
+      resultTree = testObj.analyze(astTree);
+
+      assertEquals(ansTree, resultTree);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 
   @Test
   public void testCreateStmt() {

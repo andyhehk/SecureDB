@@ -206,8 +206,12 @@ public class ColumnMeta {
    * @param colkey the colkey to set
    */
   public void setColkey(ColumnKey colkey) {
-    this.m = colkey.getM().toString();
-    this.x = colkey.getX().toString();
+    if(colkey != null) {
+      if(colkey.getM() != null && colkey.getX() != null) {
+        this.m = colkey.getM().toString();
+        this.x = colkey.getX().toString();
+      }
+    }
   }
 
 }

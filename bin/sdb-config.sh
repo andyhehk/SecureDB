@@ -37,6 +37,7 @@ export SDB_LIB="$SDB_HOME/lib"
 export SDB_CONF_DIR="$SDB_HOME/conf"
 
 export SDB_PROXY_LIB="$SDB_HOME/proxy/lib"
+export SDB_UDFS_HIVE_DIR="$SDB_HOME/udfs/udfs-hive"
 
 for jar in ${SDB_PROXY_LIB}/hive-jdbc/*.jar; do
     SDB_HIVE_JDBC_JAR+=:$jar;
@@ -44,4 +45,4 @@ done
 
 export COMMON_JAR=`ls $SDB_LIB/sdb-common*.jar`
 export PROXY_JAR=`ls $SDB_LIB/sdb-proxy*.jar`
-export UDFS_HIVE_JAR=`ls $SDB_LIB/sdb-udfs-hive*.jar`
+export UDFS_HIVE_JAR=`ls $SDB_UDFS_HIVE_DIR/target/sdb-udfs-hive*.jar`

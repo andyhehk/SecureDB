@@ -39,6 +39,7 @@
         <!-- Build properties -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sdb.path.to.root>.</sdb.path.to.root>
+        <java.compile.version>1.7</java.compile.version>
 
         <!-- Plugin and Plugin Dependency Versions -->
         <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
@@ -105,14 +106,6 @@
         <plugins>
             <!-- plugins are always listed in sorted order by groupId, artifectId -->
             <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
-            <plugin>
             <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>${maven.assembly.plugin.version}</version>
@@ -151,6 +144,7 @@
                                     <type>${project.packaging}</type>
                                 </artifactItem>
                             </artifactItems>
+                            <!-- This dir should be the same as the one in clean -->
                             <outputDirectory>${project.basedir}/${sdb.path.to.root}/lib</outputDirectory>
                         </configuration>
                     </execution>
@@ -170,6 +164,26 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.plugin.version}</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.6.1</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <!-- This dir should be the same as the one in copy dependency -->
+                            <directory>${project.basedir}/${sdb.path.to.root}/lib/</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>${java.compile.version}</source>
+                    <target>${java.compile.version}</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>
