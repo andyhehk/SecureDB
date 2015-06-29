@@ -14,55 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package edu.hku.sdb.parse;
 
-public class FloatLiteral extends LiteralExpr {
+import java.math.BigInteger;
 
-  private final float value;
+public class BigIntLiteral extends LiteralExpr {
 
-  public FloatLiteral(float value) {
+  BigInteger value;
+
+  public  BigIntLiteral(BigInteger value) {
     this.value = value;
   }
 
-  public FloatLiteral(String value) {
-    this.value = Float.parseFloat(value);
-    ;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof FloatLiteral))
-      return false;
-
-    return value == ((FloatLiteral) obj).value;
-  }
-
-  @Override
-  public String toString() {
-    return String.valueOf(value);
-  }
-
-  /**
-   * @return the value
-   */
-  public float getValue() {
+  public BigInteger getValue() {
     return value;
   }
 
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.ParseNode#toSql()
-   */
-  @Override
-  public String toSql() {
-    return Float.toString(value);
+  public void setValue(BigInteger value) {
+    this.value = value;
   }
 
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
-   */
+
+  @Override
+  public String toSql() {
+    return value.toString();
+  }
+
   @Override
   public boolean involveSdbEncrytedCol() {
-    // TODO Auto-generated method stub
     return false;
   }
 }

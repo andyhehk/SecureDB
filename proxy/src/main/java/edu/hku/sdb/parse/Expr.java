@@ -74,7 +74,7 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
   public void notifyAllFields() {
     for (FieldLiteral field : referredByList) {
       field.setReferedExpr(this);
-      field.notifyField();
+      field.updateColKey();
     }
   }
 
@@ -84,7 +84,7 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
       return false;
 
     Expr exprObj = (Expr) obj;
-    return children.equals(exprObj.children);
+    return referredByList.equals(exprObj.getReferredByList()) && children.equals(exprObj.children);
   }
 
   /**
@@ -103,4 +103,5 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
     return null;
   }
 
+  public void setColKey(ColumnKey colKey) {}
 }

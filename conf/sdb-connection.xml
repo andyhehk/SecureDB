@@ -33,7 +33,7 @@
 
     <property>
         <name>edu.hku.sdb.conf.connection.maxconnumber</name>
-        <value>3</value>
+        <value>100</value>
     </property>
 
     <property>

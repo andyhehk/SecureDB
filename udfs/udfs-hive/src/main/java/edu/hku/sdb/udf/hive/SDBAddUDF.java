@@ -27,18 +27,13 @@ import org.apache.hadoop.io.Text;
 
 public class SDBAddUDF extends UDF {
 
-  public Text evaluate(Text a, Text b, Text s, Text pa, Text qa, Text pb,
-                       Text qb, Text n) {
-    if (a == null || b == null || s == null || pa == null || qa == null
-            || pb == null || qb == null || n == null) {
+  public Text evaluate(Text a, Text b, Text n) {
+    if (a == null || b == null || n == null) {
       return null;
     }
 
     BigInteger result = UDFHandler.add(TypeCast.textToBigInt(a),
-            TypeCast.textToBigInt(b), TypeCast.textToBigInt(s),
-            TypeCast.textToBigInt(pa), TypeCast.textToBigInt(qa),
-            TypeCast.textToBigInt(pb), TypeCast.textToBigInt(qb),
-            TypeCast.textToBigInt(n));
+            TypeCast.textToBigInt(b), TypeCast.textToBigInt(n));
 
     return TypeCast.bigIntToText(result);
   }

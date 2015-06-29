@@ -95,8 +95,8 @@ public class HiveRewriterTest {
     BigInteger n = p.multiply(q);
     BigInteger g = Crypto.generatePositiveRand(p, q);
     dbMeta.setN(n.toString());
-    dbMeta.setP(p.toString());
-    dbMeta.setQ(q.toString());
+    dbMeta.setPrime1(p.toString());
+    dbMeta.setPrime2(q.toString());
     dbMeta.setG(g.toString());
 
 
@@ -143,19 +143,19 @@ public class HiveRewriterTest {
   public void testRewrite() throws Exception {
     ParseNode parseNode = testObj.analyze(parser.parse(simpleSQL1));
     sdbSchemeRewriter.rewrite(parseNode);
-    System.out.println(parseNode.toSql());
+//    System.out.println(parseNode.toSql());
 
     parseNode = testObj.analyze(parser.parse(simpleSQLMulEE));
     sdbSchemeRewriter.rewrite(parseNode);
-    System.out.println(parseNode.toSql());
+//    System.out.println(parseNode.toSql());
 
     parseNode = testObj.analyze(parser.parse(simpleSQLMulEC));
     sdbSchemeRewriter.rewrite(parseNode);
-    System.out.println(parseNode.toSql());
+//    System.out.println(parseNode.toSql());
 
     parseNode = testObj.analyze(parser.parse(simpleSQLAddEE));
     sdbSchemeRewriter.rewrite(parseNode);
-    System.out.println(parseNode.toSql());
+//    System.out.println(parseNode.toSql());
 
   }
 
@@ -163,7 +163,7 @@ public class HiveRewriterTest {
   public void testRewriteComparison() throws Exception {
     ParseNode parseNode = testObj.analyze(parser.parse(simpleSQLSubEC));
     sdbSchemeRewriter.rewrite(parseNode);
-    System.out.println(parseNode.toSql());
+//    System.out.println(parseNode.toSql());
 
 //    parseNode = testObj.analyze(parser.parse(simpleSQLWhereSubEC));
 //    sdbSchemeRewriter.rewrite(parseNode);
@@ -171,7 +171,7 @@ public class HiveRewriterTest {
 
     parseNode = testObj.analyze(parser.parse(countQuery));
     sdbSchemeRewriter.rewrite(parseNode);
-    System.out.println(parseNode.toSql());
+//    System.out.println(parseNode.toSql());
 
   }
 
@@ -180,10 +180,10 @@ public class HiveRewriterTest {
   public void testRewriteCreate() throws Exception {
     ParseNode parseNode = testObj.analyze(parser.parse(simpleCreate));
     sdbSchemeRewriter.rewrite(parseNode);
-    System.out.println(parseNode.toSql());
+//    System.out.println(parseNode.toSql());
 
     parseNode = testObj.analyze(parser.parse(simpleLoad));
-    System.out.println(parseNode.toSql());
+//    System.out.println(parseNode.toSql());
   }
 
 }

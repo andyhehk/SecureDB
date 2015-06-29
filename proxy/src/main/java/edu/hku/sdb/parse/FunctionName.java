@@ -14,55 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package edu.hku.sdb.parse;
 
-public class FloatLiteral extends LiteralExpr {
+import static com.google.common.base.Preconditions.checkNotNull;
 
-  private final float value;
+public class FunctionName {
 
-  public FloatLiteral(float value) {
-    this.value = value;
-  }
+  private String name;
 
-  public FloatLiteral(String value) {
-    this.value = Float.parseFloat(value);
-    ;
+  public FunctionName(String name) {
+    this.name = checkNotNull(name.toLowerCase(), "The function name is null");
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof FloatLiteral))
+    if (!(obj instanceof FunctionName))
       return false;
 
-    return value == ((FloatLiteral) obj).value;
+    FunctionName nameObj = (FunctionName) obj;
+
+    if(!name.equals(nameObj.getName()))
+      return false;
+
+    return true;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = checkNotNull(name.toLowerCase(), "The function name is null");
   }
 
   @Override
   public String toString() {
-    return String.valueOf(value);
-  }
-
-  /**
-   * @return the value
-   */
-  public float getValue() {
-    return value;
-  }
-
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.ParseNode#toSql()
-   */
-  @Override
-  public String toSql() {
-    return Float.toString(value);
-  }
-
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
-   */
-  @Override
-  public boolean involveSdbEncrytedCol() {
-    // TODO Auto-generated method stub
-    return false;
+    return "Function name: "  + name;
   }
 }

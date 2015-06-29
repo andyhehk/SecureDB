@@ -26,9 +26,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Eric Haibin Lin on 28/3/15.
- */
 public class RemoteQuery extends RemoteSQL {
 
   private static final Logger LOG = LoggerFactory

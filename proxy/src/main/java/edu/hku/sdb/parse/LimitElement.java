@@ -14,55 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package edu.hku.sdb.parse;
 
-public class FloatLiteral extends LiteralExpr {
+public class LimitElement {
+  Expr lmtExpr;
 
-  private final float value;
-
-  public FloatLiteral(float value) {
-    this.value = value;
+  public LimitElement(Expr lmtExpr) {
+    this.lmtExpr = lmtExpr;
   }
 
-  public FloatLiteral(String value) {
-    this.value = Float.parseFloat(value);
-    ;
+  public Expr getLmtExpr() {
+    return lmtExpr;
+  }
+
+  public void setLmtExpr(Expr lmtExpr) {
+    this.lmtExpr = lmtExpr;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof FloatLiteral))
+    if (!(obj instanceof LimitElement))
       return false;
 
-    return value == ((FloatLiteral) obj).value;
+    LimitElement limitObj = (LimitElement) obj;
+
+    return lmtExpr.equals(limitObj.getLmtExpr());
   }
 
   @Override
   public String toString() {
-    return String.valueOf(value);
+    return lmtExpr.toString();
   }
 
-  /**
-   * @return the value
-   */
-  public float getValue() {
-    return value;
-  }
-
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.ParseNode#toSql()
-   */
-  @Override
   public String toSql() {
-    return Float.toString(value);
-  }
-
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
-   */
-  @Override
-  public boolean involveSdbEncrytedCol() {
-    // TODO Auto-generated method stub
-    return false;
+    return lmtExpr.toSql();
   }
 }

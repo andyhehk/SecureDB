@@ -197,7 +197,6 @@ public class ParseDriver {
 
     if (lexer.getErrors().size() == 0 && parser.errors.size() == 0) {
       LOG.info("Parse Completed");
-      System.out.println("OK");
     } else if (lexer.getErrors().size() != 0) {
       throw new ParseException(lexer.getErrors());
     } else {

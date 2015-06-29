@@ -18,6 +18,7 @@
 package edu.hku.sdb.parse;
 
 import com.google.common.base.Joiner;
+import edu.hku.sdb.catalog.ColumnKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,8 @@ import java.util.List;
 public class SdbKeyUpdateExpr extends Expr {
 
   private final String op = "sdb_keyUp";
+
+  private ColumnKey colKey;
 
   @Override
   public boolean equals(Object obj) {
@@ -56,4 +59,12 @@ public class SdbKeyUpdateExpr extends Expr {
     return true;
   }
 
+  public void setColKey(ColumnKey colKey) {
+    this.colKey = colKey;
+  }
+
+  @Override
+  public ColumnKey getColKey() {
+    return colKey;
+  }
 }

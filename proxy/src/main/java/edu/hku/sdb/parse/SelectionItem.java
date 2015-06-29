@@ -43,7 +43,8 @@ public class SelectionItem implements ParseNode {
   public SelectionItem(Expr expr, String alias) {
     this.expr = expr;
     // Make sure alias is not null
-    this.alias = checkNotNull(alias, "Alias is null");
+    checkNotNull(alias, "Alias is null");
+    this.alias = alias.toLowerCase();
   }
 
   @Override
@@ -54,11 +55,7 @@ public class SelectionItem implements ParseNode {
     SelectionItem selitemObj = (SelectionItem) obj;
 
     if ((expr == null) != (selitemObj.expr == null)) {
-      String err = (expr == null) ? "Left selection item is null, while "
-              + "right selection item is: " + selitemObj.expr
-              : "Left selection item is: " + expr
-              + ", while right selection item is null";
-      LOG.debug(err);
+      LOG.debug("Selection item is not equal!");
       return false;
     }
 
@@ -91,7 +88,8 @@ public class SelectionItem implements ParseNode {
    */
   public void setAlias(String alias) {
     // Make sure alias is not null
-    this.alias = checkNotNull(alias, "Alias is null");
+    checkNotNull(alias, "Alias is null");
+    this.alias = alias.toLowerCase();
   }
 
   /*
@@ -115,12 +113,23 @@ public class SelectionItem implements ParseNode {
     if (alias.equals(""))
       return expr.toSql();
     else
-      return expr.toSql();// + " AS " + alias;
+      return expr.toSql() + " AS " + alias;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("Expr: " + expr + "|");
+    if(!alias.equals(""))
+    sb.append("Alias: " + alias + "\t");
+
+    return sb.toString();
   }
 
   /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
-   */
+     * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
+     */
   @Override
   public boolean involveSdbEncrytedCol() {
     return expr.involveSdbEncrytedCol();

@@ -18,7 +18,6 @@
 package edu.hku.sdb.optimize;
 
 import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.catalog.DataType;
 import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.exec.*;
 import edu.hku.sdb.parse.*;
@@ -29,8 +28,6 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
-
-import static edu.hku.sdb.catalog.DataType.*;
 
 public class RuleBaseOptimizer extends Optimizer {
 
@@ -129,7 +126,7 @@ public class RuleBaseOptimizer extends Optimizer {
           default:
             clazz = Integer.class;
         }
-      } else if (expr instanceof SdbArithmeticExpr) {
+      } else if (expr instanceof SdbTransformExpr) {
         columnName = alias;
       } else if (expr instanceof AggregateExpr) {
         columnName = expr.toSql();
@@ -178,7 +175,7 @@ public class RuleBaseOptimizer extends Optimizer {
           default:
             clazz = Integer.class;
         }
-      } else if (expr instanceof SdbArithmeticExpr) {
+      } else if (expr instanceof SdbTransformExpr) {
         columnName = alias;
       } else if (expr instanceof NormalArithmeticExpr) {
         columnName = expr.toSql();

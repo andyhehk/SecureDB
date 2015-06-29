@@ -18,7 +18,7 @@
 package edu.hku.sdb.parse;
 
 public enum JoinOperator {
-  INNER_JOIN("INNER JOIN"),
+  INNER_JOIN("JOIN"),
   LEFT_OUTER_JOIN("LEFT OUTER JOIN"),
   LEFT_SEMI_JOIN("LEFT SEMI JOIN"),
   LEFT_ANTI_JOIN("LEFT ANTI JOIN"),

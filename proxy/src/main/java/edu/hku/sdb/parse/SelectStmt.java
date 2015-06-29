@@ -39,12 +39,21 @@ public class SelectStmt extends QueryStmt {
   private Expr havingExpr; // original having clause
 
   // havingClause with aliases and agg output resolved
-  protected Expr havingPred;
+//  protected Expr havingPred;
 
   private BigInteger p;
   private BigInteger q;
   private BigInteger n;
   private BigInteger g;
+
+  public SelectStmt() {
+    super(null, null);
+  }
+
+  public SelectStmt(ArrayList<OrderByElement> orderByElements, LimitElement
+          limitElement) {
+    super(orderByElements, limitElement);
+  }
 
   public BigInteger getP() {
     return p;
@@ -86,8 +95,7 @@ public class SelectStmt extends QueryStmt {
           throws SemanticException {
     // Resolve the nested queries and join clauses first if any.
     for (TableRef tblRef : tableRefs) {
-      tblRef
-              .analyze(metaDB, tableRefs.toArray(new ParseNode[tableRefs.size()]));
+      tblRef.analyze(metaDB, tableRefs.toArray(new ParseNode[tableRefs.size()]));
     }
 
     // Resolve the table names of the selection items.
@@ -100,18 +108,44 @@ public class SelectStmt extends QueryStmt {
               tableRefs.toArray(new ParseNode[tableRefs.size()]));
 
     // Resolve the table names of the grouping fields
-    // It must be called after selection item resolved their table names.
+    // It must be called after selection items resolved their table names.
     if (groupingExprs != null)
       for (Expr expr : groupingExprs) {
-        expr.analyze(metaDB,
-                selectList.itemList.toArray(new ParseNode[tableRefs.size()]));
+        try {
+          expr.analyze(metaDB,
+                  selectList.itemList.toArray(new ParseNode[selectList.itemList
+                          .size()]));
+
+        } catch (UnableResolveException e) {
+          LOG.error("There is no selection item that group by element: " + expr
+                  .toSql() + " refers to!");
+        }
       }
 
-    // Get the table name of the aggregation field.
-    // It must be called after selection item resolved their table names.
+    // Get the table name of the aggregation fields.
+    // It must be called after selection items resolved their table names.
     if (havingExpr != null)
-      havingExpr.analyze(metaDB,
-              selectList.itemList.toArray(new ParseNode[tableRefs.size()]));
+      try {
+        havingExpr.analyze(metaDB,
+                selectList.itemList.toArray(new ParseNode[selectList.itemList.size
+                        ()]));
+
+      } catch (UnableResolveException e) {
+        LOG.error("There is no selection items that having expr: " + havingExpr
+                .toSql() + " refers to!");
+      }
+
+    if (orderByElements != null) {
+      for (OrderByElement element : orderByElements) {
+        try {
+          element.getExpr().analyze(metaDB, selectList.itemList.toArray(new
+                  ParseNode[selectList.itemList.size()]));
+        } catch (UnableResolveException e) {
+          LOG.error("There is no selection item that order by element: " + element
+                  .getExpr().toSql() + " refers to!");
+        }
+      }
+    }
 
   }
 
@@ -133,77 +167,61 @@ public class SelectStmt extends QueryStmt {
     SelectStmt selObj = (SelectStmt) obj;
 
     //TODO check if p, q, n, g are null
-    if (!(p.equals(selObj.getP()) && q.equals(selObj.getQ()) && n.equals(selObj.getN()) && g.equals(selObj.getG()))) {
-      String info = "p, q, n, g are not equal!";
-      LOG.debug(info);
-      return false;
-    }
+    //    if (!(p.equals(selObj.getP()) && q.equals(selObj.getQ()) && n.equals
+    // (selObj.getN()) && g.equals(selObj.getG()))) {
+    //      String info = "p, q, n, g are not equal!";
+    //      LOG.debug(info);
+    //      return false;
+    //    }
 
     // TODO Too verbose. Can we have better way to debug.
     if ((whereClause == null) != (selObj.whereClause == null)) {
-      String info = (whereClause == null) ? "Left where clause is null, while "
-              + "right clause is: " + selObj.whereClause : "Left where clause is: "
-              + whereClause + ", while right clause is null";
-      LOG.debug(info);
+      LOG.debug("Where clauses are not equal!");
       return false;
     } else if ((groupingExprs == null) != (selObj.groupingExprs == null)) {
-      String info = (groupingExprs == null) ? "Left group by clause is null, "
-              + "while right clause is: " + selObj.groupingExprs
-              : "Left group by clause is: " + groupingExprs
-              + ", while right clause is null";
-      LOG.debug(info);
+      LOG.debug("Group by clauses are not equal!");
       return false;
     } else if ((havingExpr == null) != (selObj.havingExpr == null)) {
-      String info = (havingExpr == null) ? "Left having clause is null, while "
-              + "right clause is: " + selObj.havingExpr : "Left having clause is: "
-              + havingExpr + ", while right clause is null";
-      LOG.debug(info);
+      LOG.debug("Having clauses are not equal!");
       return false;
-    } else if ((havingPred == null) != (selObj.havingPred == null)) {
-      String info = (havingPred == null) ? "Left having predicate is null, while "
-              + "right predicate is: " + selObj.havingPred
-              : "Left having predicate is: " + havingPred
-              + ", while right predicate is null";
-      LOG.debug(info);
+    } else if ((orderByElements == null) != (selObj.orderByElements == null)){
+      LOG.debug("Order by clauses are not equal!");
+      return false;
+    } else if ((limitElement == null) != (selObj.limitElement == null)){
+      LOG.debug("Limit clauses are not equal!");
       return false;
     } else {
       if ((whereClause != null) && !whereClause.equals(selObj.whereClause)) {
-        String info = "Left where clause is: " + whereClause
-                + ";Right where clause is: " + selObj.whereClause;
-        LOG.debug(info);
+        LOG.debug("Where clauses are not equal!");
         return false;
       }
       if ((groupingExprs != null)
               && !groupingExprs.equals(selObj.groupingExprs)) {
-        String info = "Left group by clause is: " + groupingExprs
-                + ";Right group by clause is: " + selObj.groupingExprs;
-        LOG.debug(info);
+        LOG.debug("Group by clauses are not equal!");
         return false;
       }
       if ((havingExpr != null) && !havingExpr.equals(selObj.havingExpr)) {
-        String info = "Left having clause is: " + havingExpr
-                + ";Right having clause is: " + selObj.havingExpr;
-        LOG.debug(info);
+        LOG.debug("Having clauses are not equal!");
         return false;
       }
-      if ((havingPred != null) && !havingPred.equals(selObj.havingPred)) {
-        String info = "Left having predicate is: " + havingPred
-                + ";Right having predicate is: " + selObj.havingPred;
-        LOG.debug(info);
+
+      if ((orderByElements != null) && !orderByElements.equals(selObj.orderByElements)) {
+        LOG.debug("Order by clauses are not equal!");
+        return false;
+      }
+
+      if ((limitElement != null) && !limitElement.equals(selObj.limitElement)) {
+        LOG.debug("Limit clauses are not equal!");
         return false;
       }
 
       if (!selectList.equals(selObj.selectList)) {
-        String info = "Two selection lists are not equal for SQLs: \n"
-                + "Left: " + toSql() + "Right: " + selObj.toSql();
-        LOG.debug(info);
+        LOG.debug("Selection clauses are not equal!");
         return false;
       }
 
       if (!tableRefs.equals(selObj.tableRefs)) {
-        String info = "Two table lists are not equal for SQLs: \n" + "Left: "
-                + toSql() + "Right: " + selObj.toSql();
-        LOG.debug(info);
+        LOG.debug("Tables are not equal!");
         return false;
       }
 
@@ -283,7 +301,7 @@ public class SelectStmt extends QueryStmt {
 
   @Override
   public String toSql() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     sb.append("SELECT " + selectList.toSql() + "\n");
 
@@ -315,6 +333,52 @@ public class SelectStmt extends QueryStmt {
 
     if (havingExpr != null)
       sb.append("HAVING " + havingExpr.toSql() + "\n");
+
+    if (orderByElements != null) {
+      List<String> orderElemts = new ArrayList<String>();
+      for (OrderByElement orderElemt : orderByElements) {
+        orderElemts.add(orderElemt.toSql());
+      }
+      sb.append("ORDER BY " + Joiner.on(",").join(orderElemts) + "\n");
+    }
+
+    if (limitElement != null) {
+      sb.append("LIMIT " + limitElement.toSql());
+    }
+
+    return sb.toString();
+  }
+
+  @Override
+  public String toString(){
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("SELECTION LIST: " + selectList + "\n");
+    for(TableRef tableRef : tableRefs) {
+      sb.append("TABLE REFERENCE: " + tableRef + "\n");
+    }
+    if(whereClause != null)
+      sb.append("WHERE PREDICATES: " + whereClause + "\n");
+    if(groupingExprs!=null) {
+      sb.append("GROUP BY ELEMENTS:" + "\n");
+      for(Expr expr : groupingExprs) {
+        sb.append(expr + "\n");
+        sb.append("--------------------\n");
+      }
+    }
+    if(havingExpr != null) {
+      sb.append("HAVING ELEMENTS: " + havingExpr + "\n");
+    }
+    if(orderByElements != null){
+      sb.append("ORDER BY ELEMENTS: ");
+      for(OrderByElement elemt : orderByElements) {
+        sb.append(elemt + "\n");
+        sb.append("--------------------\n");
+      }
+    }
+    if(limitElement != null) {
+      sb.append("LIMIT ELEMENT: " + limitElement + "\n");
+    }
 
     return sb.toString();
   }

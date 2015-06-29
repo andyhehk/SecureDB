@@ -14,55 +14,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package edu.hku.sdb.parse;
 
-public class FloatLiteral extends LiteralExpr {
-
-  private final float value;
-
-  public FloatLiteral(float value) {
-    this.value = value;
+public class OrderByElement {
+  private Expr expr;
+  // In Hive, it is true if not specified.
+  private final boolean isAsc;
+  /**
+   * Constructs the OrderByElement.
+   *
+   */
+  public OrderByElement(Expr expr, boolean isAsc) {
+    this.expr = expr;
+    this.isAsc = isAsc;
   }
 
-  public FloatLiteral(String value) {
-    this.value = Float.parseFloat(value);
-    ;
+  public Expr getExpr() {
+    return expr;
+  }
+
+  public void setExpr(Expr expr) {
+    this.expr = expr;
+  }
+
+  public boolean isAsc() {
+    return isAsc;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof FloatLiteral))
+    if (!(obj instanceof OrderByElement))
       return false;
 
-    return value == ((FloatLiteral) obj).value;
+    OrderByElement orderByObj = (OrderByElement) obj;
+
+    return expr.equals(orderByObj.getExpr()) && isAsc == orderByObj.isAsc;
+  }
+
+  public String toSql() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(expr.toSql());
+    sb.append(isAsc ? " ASC" : " DESC");
+
+    return sb.toString();
   }
 
   @Override
   public String toString() {
-    return String.valueOf(value);
-  }
-
-  /**
-   * @return the value
-   */
-  public float getValue() {
-    return value;
-  }
-
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.ParseNode#toSql()
-   */
-  @Override
-  public String toSql() {
-    return Float.toString(value);
-  }
-
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
-   */
-  @Override
-  public boolean involveSdbEncrytedCol() {
-    // TODO Auto-generated method stub
-    return false;
+    return expr + "\n";
   }
 }

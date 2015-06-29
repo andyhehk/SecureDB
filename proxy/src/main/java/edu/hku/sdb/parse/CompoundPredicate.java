@@ -17,18 +17,37 @@
 
 package edu.hku.sdb.parse;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class CompoundPredicate extends Predicate {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
-   * )
-   */
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    // TODO Auto-generated method stub
+  public enum CompoundOperator {
+    AND("AND"),
+    OR("OR");
 
+    private final String description;
+
+    private CompoundOperator(String description) {
+      this.description = description;
+    }
+
+    @Override
+    public String toString() {
+      return description;
+    }
+  }
+
+  private CompoundOperator op;
+
+  public CompoundPredicate(CompoundOperator op) {
+    this.op = op;
+  }
+
+  public CompoundPredicate(CompoundOperator op, Predicate left, Predicate
+          right) {
+    this.op = op;
+    setChild(0, checkNotNull(left, "Left predicate is null."));
+    setChild(1, checkNotNull(right, "Right predicate is null."));
   }
 
   /*
@@ -36,18 +55,58 @@ public class CompoundPredicate extends Predicate {
    * 
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
+  @Override
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    return getLeftPred().toSql() + " " + op + " " + getRightPred().toSql();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof CompoundPredicate))
+      return false;
+
+    CompoundPredicate compoundPredObj = (CompoundPredicate) obj;
+
+    return op == compoundPredObj.op && children.equals(compoundPredObj.children);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("Operator: " + op + "|");
+    sb.append("Left: " + getLeftPred() + "|");
+    sb.append("Right: " + getRightPred() + "|");
+
+    return sb.toString();
   }
 
   /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
-   */
+     * @see edu.hku.sdb.parse.Expr#involveSdbCol()
+     */
   @Override
   public boolean involveSdbEncrytedCol() {
-    // TODO Auto-generated method stub
-    return false;
+    return getLeftPred().involveSdbEncrytedCol() || getRightPred()
+            .involveSdbEncrytedCol();
   }
 
+  public CompoundOperator getOp() {
+    return op;
+  }
+
+  public void setLeftPred(Expr leftPred) {
+    setChild(0, leftPred);
+  }
+
+  public Expr getLeftPred() {
+    return  getChild(0);
+  }
+
+  public void setRightPred(Expr rightPred) {
+    setChild(1, rightPred);
+  }
+
+  public Expr getRightPred() {
+    return  getChild(1);
+  }
 }

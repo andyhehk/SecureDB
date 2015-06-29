@@ -54,9 +54,14 @@ public class IntLiteral extends LiteralExpr {
     return Integer.toString(value);
   }
 
+  @Override
+  public String toString() {
+    return String.valueOf(value);
+  }
+
   /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
-   */
+     * @see edu.hku.sdb.parse.Expr#involveSdbCol()
+     */
   @Override
   public boolean involveSdbEncrytedCol() {
     // TODO Auto-generated method stub

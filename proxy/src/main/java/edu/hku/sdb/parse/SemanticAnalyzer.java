@@ -24,6 +24,7 @@ import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.DataType;
 import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.parse.BinaryPredicate.BinOperator;
+import edu.hku.sdb.parse.CompoundPredicate.CompoundOperator;
 import edu.hku.sdb.parse.NormalArithmeticExpr.Operator;
 
 public class SemanticAnalyzer extends BasicSemanticAnalyzer {
@@ -141,7 +142,10 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     SelectStmt selectStmt = new SelectStmt();
     Expr whereStmt = null;
     List<Expr> groupingExprs = null;
+    Expr havingExpr = null;
     String targetTbl = null;
+    ArrayList<OrderByElement> orderByElements = null;
+    LimitElement limitElemt = null;
 
     for (int i = 0; i < tree.getChildCount(); i++) {
       ASTNode child = (ASTNode) tree.getChild(i);
@@ -158,8 +162,17 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         case HiveParser.TOK_DESTINATION:
           targetTbl = findDestination(child);
           continue;
+        case HiveParser.TOK_ORDERBY:
+          orderByElements = buildOrderByStmt(child);
+          continue;
+        case HiveParser.TOK_LIMIT:
+          limitElemt = buildLimitElemt(child);
+          continue;
+        case HiveParser.TOK_HAVING:
+          havingExpr = buildHavingExpr(child);
+          continue;
         default:
-          throw new SemanticException("Unsupported Query Type!");
+          throw new SemanticException("Unsupported TOKEN: " + child.getText());
       }
     }
 
@@ -168,6 +181,9 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     if (selectStmt != null) {
       selectStmt.setWhereClause(whereStmt);
       selectStmt.setGroupingExprs(groupingExprs);
+      selectStmt.setHavingExpr(havingExpr);
+      selectStmt.setOrderByElements(orderByElements);
+      selectStmt.setLimitElement(limitElemt);
     }
 
     insertStmt.setQueryStmt(selectStmt);
@@ -210,7 +226,8 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     return createStmt;
   }
 
-  private TableRowFormat buildTableRowFormat(ASTNode tree) throws SemanticException {
+  private TableRowFormat buildTableRowFormat(ASTNode tree) throws
+          SemanticException {
     TableRowFormat tableRowFormat = null;
 
     for (int i = 0; i < tree.getChildCount(); i++) {
@@ -218,9 +235,11 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       switch (child.getType()) {
         case HiveParser.TOK_SERDEPROPS:
           ASTNode secondLevelChild = (ASTNode) child.getChild(0);
-          if (secondLevelChild.getType() == HiveParser.TOK_TABLEROWFORMATFIELD) {
+          if (secondLevelChild.getType() == HiveParser
+                  .TOK_TABLEROWFORMATFIELD) {
             tableRowFormat = new TableRowFormat();
-            tableRowFormat.setRowFieldFormat(secondLevelChild.getChild(0).getText());
+            tableRowFormat.setRowFieldFormat(secondLevelChild.getChild(0)
+                    .getText());
             return tableRowFormat;
           }
         default:
@@ -230,7 +249,8 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     return tableRowFormat;
   }
 
-  private List<BasicFieldLiteral> buildBasicFieldLiteralList(ASTNode tree) throws SemanticException {
+  private List<BasicFieldLiteral> buildBasicFieldLiteralList(ASTNode tree)
+          throws SemanticException {
     List<BasicFieldLiteral> basicFieldLiterals = new ArrayList<>();
 
     for (int i = 0; i < tree.getChildCount(); i++) {
@@ -248,7 +268,8 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     return basicFieldLiterals;
   }
 
-  private BasicFieldLiteral buildBasicFieldLiteral(ASTNode tree) throws SemanticException {
+  private BasicFieldLiteral buildBasicFieldLiteral(ASTNode tree) throws
+          SemanticException {
     ColumnType type;
     String fieldName = tree.getChild(0).getText();
     boolean isSensitive = false;
@@ -266,7 +287,8 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       case HiveParser.TOK_INT:
         type = new ColumnType(DataType.INT);
         // mark sensitive in case of ENC
-        if (tree.getChildren().size() >= 3 && tree.getChild(2).getType() == (HiveParser.TOK_ENC)) {
+        if (tree.getChildren().size() >= 3 && tree.getChild(2).getType() ==
+                (HiveParser.TOK_ENC)) {
           isSensitive = true;
         }
         break;
@@ -327,11 +349,11 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
 
     //TODO get DbMeta according to DBName
     //set global p, q, n, g
-    DBMeta dbMeta = metaDB.getDB(DBMeta.defaultDbName);
-    selectStmt.setP(new BigInteger(dbMeta.getP()));
-    selectStmt.setQ(new BigInteger(dbMeta.getQ()));
-    selectStmt.setN(new BigInteger(dbMeta.getN()));
-    selectStmt.setG(new BigInteger(dbMeta.getG()));
+    //    DBMeta dbMeta = metaDB.getDB(DBMeta.defaultDbName);
+    //    selectStmt.setP(new BigInteger(dbMeta.getP()));
+    //    selectStmt.setQ(new BigInteger(dbMeta.getQ()));
+    //    selectStmt.setN(new BigInteger(dbMeta.getN()));
+    //    selectStmt.setG(new BigInteger(dbMeta.getG()));
 
     selectStmt.setSelectList(selectList);
 
@@ -359,7 +381,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
           tblRefs.addAll(buildJoinStmt(child,
                   ParseUtils.JOIN_OPERATOR_MAP.get(child.getType())));
           continue;
-          //add a BaseTableRef if no join in encountered
+          //add a BaseTableRef if no join is encountered
         case HiveParser.TOK_TABREF:
           tblRefs.add(buildBaseTableRef(child, JoinOperator.NULL_JOIN));
           continue;
@@ -371,6 +393,35 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     return tblRefs;
   }
 
+
+  private Expr buildPredicate(ASTNode tree) throws SemanticException {
+    Expr predicate = null;
+
+    for (int i = 0; i < tree.getChildCount(); i++) {
+      ASTNode child = (ASTNode) tree.getChild(i);
+      switch (child.getType()) {
+        case HiveLexer.LESSTHAN:
+        case HiveLexer.GREATERTHAN:
+        case HiveLexer.EQUAL:
+        case HiveLexer.NOTEQUAL:
+        case HiveLexer.LESSTHANOREQUALTO:
+        case HiveLexer.GREATERTHANOREQUALTO:
+          predicate = buildNormalBinPredicate(child,
+                  ParseUtils.BIN_OPERATOR_MAP.get(child.getType()));
+          continue;
+        case HiveLexer.KW_AND:
+        case HiveLexer.KW_OR:
+          predicate = buildCompoundPredicate(child, ParseUtils
+                  .COMPOUND_OPERATOR_MAP.get(child.getType()));
+          continue;
+        default:
+          throw new SemanticException("Unsupported where element!");
+      }
+    }
+
+    return predicate;
+  }
+
   /**
    * Construct the where statement.
    *
@@ -379,27 +430,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
    * @throws SemanticException
    */
   private Expr buildWhereStmt(ASTNode tree) throws SemanticException {
-    Expr whereStmt = null;
-
-    for (int i = 0; i < tree.getChildCount(); i++) {
-      ASTNode child = (ASTNode) tree.getChild(i);
-      switch (child.getType()) {
-        // TODO support compound predicate
-        case HiveLexer.LESSTHAN:
-        case HiveLexer.GREATERTHAN:
-        case HiveLexer.EQUAL:
-        case HiveLexer.NOTEQUAL:
-        case HiveLexer.LESSTHANOREQUALTO:
-        case HiveLexer.GREATERTHANOREQUALTO:
-          whereStmt = buildNormalBinPredicate(child,
-                  ParseUtils.BIN_OPERATOR_MAP.get(child.getType()));
-          continue;
-        default:
-          throw new SemanticException("Unsupported where element!");
-      }
-    }
-
-    return whereStmt;
+    return buildPredicate(tree);
   }
 
   private List<Expr> buildGroupByStmt(ASTNode tree) throws SemanticException {
@@ -412,12 +443,69 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
           groupingExprs.add(new FieldLiteral("", child.getChild(0).getText(),
                   DataType.UNKNOWN));
           continue;
+        case HiveLexer.DOT:
+          groupingExprs.add(buildDotExpr(child));
+          continue;
         default:
           throw new SemanticException("Unsupported group by element!");
       }
     }
 
     return groupingExprs;
+  }
+
+
+  private Expr buildHavingExpr(ASTNode tree) throws SemanticException {
+    return buildPredicate(tree);
+  }
+
+  private ArrayList<OrderByElement> buildOrderByStmt(ASTNode tree) {
+    ArrayList<OrderByElement> orderByElements = new ArrayList<OrderByElement>();
+
+    for (int i = 0; i < tree.getChildCount(); i++) {
+      ASTNode child = (ASTNode) tree.getChild(i);
+      switch (child.getType()) {
+        case HiveParser.TOK_TABSORTCOLNAMEASC:
+          orderByElements.add(buildOrderbyElemt(child, true));
+          continue;
+        case HiveParser.TOK_TABSORTCOLNAMEDESC:
+          orderByElements.add(buildOrderbyElemt(child, false));
+          continue;
+      }
+    }
+
+    return orderByElements;
+  }
+
+  private OrderByElement buildOrderbyElemt(ASTNode tree, boolean isAsc) {
+    OrderByElement orderByElement = null;
+    ASTNode child = (ASTNode) tree.getChild(0);
+
+    switch (child.getType()) {
+      case HiveParser.TOK_TABLE_OR_COL:
+        orderByElement = new OrderByElement(new FieldLiteral("", child.getChild(0)
+                .getText(),
+                DataType.UNKNOWN), isAsc);
+        break;
+    }
+
+    return orderByElement;
+  }
+
+  private LimitElement buildLimitElemt(ASTNode tree) {
+    LimitElement limitElemt = null;
+    ASTNode child = (ASTNode) tree.getChild(0);
+
+    switch (child.getType()) {
+      case HiveParser.BigintLiteral:
+      case HiveParser.SmallintLiteral:
+      case HiveParser.TinyintLiteral:
+      case HiveParser.Number:
+        limitElemt = new LimitElement(new IntLiteral(child.getText()));
+        break;
+    }
+
+    return limitElemt;
   }
 
   /**
@@ -456,20 +544,26 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
           selectItem.setExpr(buildDotExpr(child));
           continue;
         case HiveParser.TOK_TABLE_OR_COL:
-          selectItem.setExpr(new FieldLiteral(child.getChildren().get(0).toString(), null));
+          selectItem.setExpr(new FieldLiteral(child.getChild(0).getText(), null));
           continue;
         case HiveLexer.Identifier:
           selectItem.setAlias(child.getText());
           continue;
-        case HiveParser.TOK_FUNCTION:
-          AggregateExpr.AggregateType type = null;
-          if (child.getChild(0).toString().equals(AggregateExpr.AggregateType.COUNT.toString())) {
-            type = AggregateExpr.AggregateType.COUNT;
-          }
-          FieldLiteral fieldLiteral = new FieldLiteral(child.getChild(1).getChild(0).toString(), DataType.INT);
-          AggregateExpr aggregateExpr = new AggregateExpr(fieldLiteral, type);
-          selectItem.setExpr(aggregateExpr);
+          // The table names for these columns will be resolved during
+          // semantic analysis
+        case HiveParser.TOK_ALLCOLREF:
+          selectItem.setExpr(new StarLiteral());
           continue;
+        case HiveParser.TOK_FUNCTION:
+          selectItem.setExpr(buildFunctionCallExpr(child));
+          continue;
+        case HiveParser.TOK_FUNCTIONSTAR:
+          // It is a star function call.
+          selectItem.setExpr(new FunctionCallExpr(new FunctionName(child.getChild
+                  (0).getText())));
+          continue;
+        default:
+          throw new SemanticException("Unsupported selection item!");
       }
     }
 
@@ -486,7 +580,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
    */
   private Expr buildNormalArithmeticExpr(ASTNode tree, Operator op)
           throws SemanticException {
-    NormalArithmeticExpr expr = new NormalArithmeticExpr(op);
+    NormalArithmeticExpr normalArithmeticExpr = new NormalArithmeticExpr(op);
 
     for (int i = 0; i < tree.getChildCount(); i++) {
       ASTNode child = (ASTNode) tree.getChild(i);
@@ -495,25 +589,25 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         case HiveLexer.MINUS:
         case HiveLexer.STAR:
         case HiveLexer.DIV:
-          expr.addChild(buildNormalArithmeticExpr(child,
+          normalArithmeticExpr.addChild(buildNormalArithmeticExpr(child,
                   ParseUtils.OPERATOR_MAP.get(child.getType())));
           continue;
         case HiveLexer.DOT:
-          expr.addChild(buildDotExpr(child));
+          normalArithmeticExpr.addChild(buildDotExpr(child));
           continue;
         case HiveParser.TOK_TABLE_OR_COL:
-          expr.addChild(new FieldLiteral("", child.getChild(0).getText(),
-                  DataType.UNKNOWN));
+          normalArithmeticExpr.addChild(new FieldLiteral("", child.getChild(0)
+                  .getText(), DataType.UNKNOWN));
           continue;
         case HiveParser.Number:
-          expr.addChild(new IntLiteral(child.getText()));
+          normalArithmeticExpr.addChild(new IntLiteral(child.getText()));
           continue;
         default:
           throw new SemanticException("Unsupported arithmetic element!");
       }
     }
 
-    return expr;
+    return normalArithmeticExpr;
   }
 
   /**
@@ -526,6 +620,50 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     // TODO Better to do error checking
     return new FieldLiteral(tree.getChild(0).getChild(0).getText(), tree
             .getChild(1).getText(), DataType.UNKNOWN);
+  }
+
+  /**
+   * Construct a function call expression.
+   *
+   * @param tree
+   * @return
+   */
+  private FunctionCallExpr buildFunctionCallExpr(ASTNode tree) throws
+          SemanticException {
+    List<Expr> exprs = new ArrayList<Expr>();
+    FunctionParams functionParams = new FunctionParams(exprs);
+    FunctionCallExpr functionCallExpr = new FunctionCallExpr(null, functionParams);
+
+    for (int i = 0; i < tree.getChildCount(); i++) {
+      ASTNode child = (ASTNode) tree.getChild(i);
+      switch (child.getType()) {
+        case HiveLexer.Identifier:
+          functionCallExpr.setName(new FunctionName(child.getText()));
+          continue;
+        case HiveParser.TOK_TABLE_OR_COL:
+          Expr fieldLiteral = new FieldLiteral(child.getChild(0).getText(), null);
+          functionCallExpr.getFunctionParams().getExprs().add(fieldLiteral);
+          continue;
+        case HiveLexer.DOT:
+          functionCallExpr.getFunctionParams().getExprs().add(buildDotExpr(child));
+          continue;
+        case HiveParser.TOK_FUNCTIONSTAR:
+          FunctionParams childFunctionParams = FunctionParams.createStarParam();
+          FunctionCallExpr childFunctionCallExpr = new FunctionCallExpr(new
+                  FunctionName(child.getChild(0).getText()), childFunctionParams);
+          functionCallExpr.getFunctionParams().getExprs().add(childFunctionCallExpr);
+          continue;
+        case HiveParser.TOK_FUNCTION:
+          functionCallExpr.getFunctionParams().getExprs().add
+                  (buildFunctionCallExpr(child));
+          continue;
+        default:
+          throw new SemanticException("Unsupported function parameters!");
+      }
+
+    }
+
+    return functionCallExpr;
   }
 
   /**
@@ -582,6 +720,43 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
   }
 
   /**
+   * Construct a compound predicate.
+   *
+   * @param tree
+   * @param op
+   * @return
+   * @throws SemanticException
+   */
+  private Expr buildCompoundPredicate(ASTNode tree, CompoundOperator op) throws
+          SemanticException {
+    CompoundPredicate compoundPred = new CompoundPredicate(op);
+
+    for (int i = 0; i < tree.getChildCount(); i++) {
+      ASTNode child = (ASTNode) tree.getChild(i);
+      switch (child.getType()) {
+        case HiveLexer.LESSTHAN:
+        case HiveLexer.GREATERTHAN:
+        case HiveLexer.EQUAL:
+        case HiveLexer.NOTEQUAL:
+        case HiveLexer.LESSTHANOREQUALTO:
+        case HiveLexer.GREATERTHANOREQUALTO:
+          compoundPred.addChild(buildNormalBinPredicate(child,
+                  ParseUtils.BIN_OPERATOR_MAP.get(child.getType())));
+          continue;
+        case HiveLexer.KW_AND:
+        case HiveLexer.KW_OR:
+          compoundPred.addChild(buildCompoundPredicate(child, ParseUtils
+                  .COMPOUND_OPERATOR_MAP.get(child.getType())));
+          continue;
+        default:
+          throw new SemanticException("Unsupported compound predicate element!");
+      }
+    }
+
+    return compoundPred;
+  }
+
+  /**
    * Construct a join statement.
    *
    * @param tree
@@ -609,15 +784,17 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
           tblRefs.add(buildBaseTableRef(child, op));
           continue;
         case HiveParser.TOK_SUBQUERY:
-          tblRefs.add(buildInlineViewRef(child));
+          tblRefs.add(buildInlineViewRef(child, op));
           continue;
           // Hive only supports equal condition
         case HiveLexer.EQUAL:
-          onClause = buildOnClause(child);
+          onClause = buildSingleOnClause(child);
           continue;
         case HiveLexer.KW_AND:
-          throw new SemanticException(
-                  "Cannot support more than one join condition!");
+        case HiveLexer.KW_OR:
+          onClause = buildCompoundOnClause(child, ParseUtils.COMPOUND_OPERATOR_MAP
+                  .get(child.getType()));
+          continue;
         default:
           throw new SemanticException("Unsupported join element!");
       }
@@ -675,7 +852,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
    * @return
    * @throws SemanticException
    */
-  private TableRef buildInlineViewRef(ASTNode tree) throws SemanticException {
+  private TableRef buildInlineViewRef(ASTNode tree, JoinOperator op) throws SemanticException {
     InLineViewRef inlineView = new InLineViewRef();
 
     for (int i = 0; i < tree.getChildCount(); i++) {
@@ -692,6 +869,8 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       }
     }
 
+    inlineView.setJoinOp(op);
+
     return inlineView;
   }
 
@@ -703,8 +882,15 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
    * @return
    * @throws SemanticException
    */
-  private Expr buildOnClause(ASTNode tree) throws SemanticException {
+  private Expr buildSingleOnClause(ASTNode tree) throws SemanticException {
     Expr onClause = buildNormalBinPredicate(tree, BinOperator.EQ);
+
+    return onClause;
+  }
+
+  private Expr buildCompoundOnClause(ASTNode tree, CompoundOperator op) throws
+          SemanticException {
+    Expr onClause = buildCompoundPredicate(tree, op);
 
     return onClause;
   }

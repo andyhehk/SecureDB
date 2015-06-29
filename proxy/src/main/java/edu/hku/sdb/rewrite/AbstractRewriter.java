@@ -30,7 +30,7 @@ public abstract class AbstractRewriter {
     this.dbMeta = dbMeta;
   }
 
-  public abstract void rewrite(ParseNode parseTree) throws UnSupportedException;
+  public abstract void rewrite(ParseNode parseTree) throws RewriteException;
 
   /**
    * Internal rewrite function. All rewriting should be involved by this
@@ -40,7 +40,7 @@ public abstract class AbstractRewriter {
    * @return
    */
   protected void rewriteInternal(ParseNode parseTree)
-          throws UnSupportedException {
+          throws RewriteException {
 
     if (parseTree instanceof SelectStmt) {
       rewriteSelStmt((SelectStmt) parseTree);
@@ -52,10 +52,10 @@ public abstract class AbstractRewriter {
   }
 
   protected abstract void rewriteSelStmt(SelectStmt selStmt)
-          throws UnSupportedException;
+          throws RewriteException;
 
   protected abstract void rewriteCreateStmt(CreateStmt createStmt)
-          throws UnSupportedException;
+          throws RewriteException;
 
 //  protected abstract void rewriteSelList(SelectionList selList)
 //      throws UnSupportedException;

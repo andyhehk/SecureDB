@@ -16,6 +16,8 @@
  */
 package edu.hku.sdb.parse;
 
+import edu.hku.sdb.catalog.ColumnKey;
+
 import static com.google.common.base.Preconditions.*;
 
 public class NormalArithmeticExpr extends Expr {
@@ -56,10 +58,10 @@ public class NormalArithmeticExpr extends Expr {
     this.op = op;
   }
 
-  public NormalArithmeticExpr(Operator op, Expr e1, Expr e2) {
+  public NormalArithmeticExpr(Operator op, Expr left, Expr right) {
     this.op = op;
-    getChildren().add(checkNotNull(e1, "Left expression is null."));
-    getChildren().add(checkNotNull(e2, "Right expression is null."));
+    getChildren().add(checkNotNull(left, "Left expression is null."));
+    getChildren().add(checkNotNull(right, "Right expression is null."));
   }
 
   @Override
@@ -77,9 +79,9 @@ public class NormalArithmeticExpr extends Expr {
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   public String toSql() {
-    return checkNotNull(getChild(0), "Left expression is null.").toSql() + " "
+    return checkNotNull(getLeftExpr(), "Left expression is null.").toSql() + " "
             + op + " "
-            + checkNotNull(getChild(1), "Right expression is null.").toSql();
+            + checkNotNull(getRightExpr(), "Right expression is null.").toSql();
   }
 
   /**
@@ -89,6 +91,24 @@ public class NormalArithmeticExpr extends Expr {
     return op;
   }
 
+  public Expr getLeftExpr() {
+    return getChild(0);
+  }
+
+  public void setLeftExpr(Expr leftExpr) {
+    setChild(0, leftExpr);
+  }
+
+  public Expr getRightExpr() {
+    return getChild(1);
+  }
+
+  public void setRightExpr(Expr rightExpr) {
+    setChild(1, rightExpr);
+  }
+
+
+
   /*
    * (non-Javadoc)
    * 
@@ -96,10 +116,21 @@ public class NormalArithmeticExpr extends Expr {
    */
   @Override
   public boolean involveSdbEncrytedCol() {
-    return checkNotNull(getChild(0), "Left expression is null.")
+    return checkNotNull(getLeftExpr(), "Left expression is null.")
             .involveSdbEncrytedCol()
-            || checkNotNull(getChild(1), "Right expression is null.")
+            || checkNotNull(getRightExpr(), "Right expression is null.")
             .involveSdbEncrytedCol();
   }
 
+  @Override
+  public String toString() {
+
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("Operator: " + op);
+    sb.append("Left: " + getLeftExpr());
+    sb.append("Right: " + getRightExpr());
+
+    return sb.toString();
+  }
 }

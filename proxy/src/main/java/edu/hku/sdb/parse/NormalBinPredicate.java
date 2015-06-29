@@ -25,10 +25,10 @@ public class NormalBinPredicate extends BinaryPredicate {
     super(op);
   }
 
-  public NormalBinPredicate(BinOperator op, Expr e1, Expr e2) {
+  public NormalBinPredicate(BinOperator op, Expr left, Expr right) {
     super(op);
-    children.add(checkNotNull(e1, "Left expression is null."));
-    children.add(checkNotNull(e2, "Right expression is null."));
+    children.add(checkNotNull(left, "Left expression is null."));
+    children.add(checkNotNull(right, "Right expression is null."));
   }
 
   @Override
@@ -46,17 +46,9 @@ public class NormalBinPredicate extends BinaryPredicate {
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   public String toSql() {
-    return checkNotNull(getChild(0), "Left expression is null.").toSql() + " "
+    return checkNotNull(getLeftExpr(), "Left expression is null.").toSql() + " "
             + op + " "
-            + checkNotNull(getChild(1), "Right expression is null.").toSql();
-  }
-
-  @Override
-  public String toString() {
-    return "(Left child: "
-            + checkNotNull(getChild(0), "Left expression is null.") + ";Operator: "
-            + op + ";" + "Right child: "
-            + checkNotNull(getChild(1), "Right expression is null.") + ")";
+            + checkNotNull(getRightExpr(), "Right expression is null.").toSql();
   }
 
   /* (non-Javadoc)
@@ -64,8 +56,20 @@ public class NormalBinPredicate extends BinaryPredicate {
    */
   @Override
   public boolean involveSdbEncrytedCol() {
-    return checkNotNull(getChild(0), "Left expression is null.").involveSdbEncrytedCol() ||
-            checkNotNull(getChild(1), "Right expression is null.").involveSdbEncrytedCol();
+    return checkNotNull(getLeftExpr(), "Left expression is null.").involveSdbEncrytedCol() ||
+            checkNotNull(getRightExpr(), "Right expression is null.").involveSdbEncrytedCol();
+  }
+
+  @Override
+  public String toString() {
+
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("Operator: " + op + "|");
+    sb.append("Left: " + getLeftExpr() + "|");
+    sb.append("Right: " + getRightExpr() + "|");
+
+    return sb.toString();
   }
 
 }

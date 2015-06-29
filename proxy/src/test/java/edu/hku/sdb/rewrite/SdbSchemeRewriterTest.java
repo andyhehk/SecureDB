@@ -91,17 +91,17 @@
 //    cols.add(col3);
 //    cols.add(col4);
 //
-//    BigInteger p = Crypto.generateRandPrime();
-//    BigInteger q = Crypto.generateRandPrime();
-//    BigInteger n = p.multiply(q);
-//    BigInteger g = Crypto.generatePositiveRand(p ,q);
+//    BigInteger prime1 = Crypto.generateRandPrime();
+//    BigInteger prime2 = Crypto.generateRandPrime();
+//    BigInteger n = prime1.multiply(prime2);
+//    BigInteger g = Crypto.generatePositiveRand(prime1 ,prime2);
 //
 //
 //    DBMeta db1 = new DBMeta(dbName);
 //    db1.setN(n.toString());
 //    db1.setG(g.toString());
-//    db1.setP(p.toString());
-//    db1.setQ(q.toString());
+//    db1.setP(prime1.toString());
+//    db1.setQ(prime2.toString());
 //
 //    metadb = new MetaStore(dbName, pm);
 //    metadb.addCols(cols);

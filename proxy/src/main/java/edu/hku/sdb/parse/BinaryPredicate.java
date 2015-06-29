@@ -57,4 +57,21 @@ public abstract class BinaryPredicate extends Predicate {
   public BinOperator getOp() {
     return op;
   }
+
+  public Expr getLeftExpr() {
+    return getChild(0);
+  }
+
+  public Expr getRightExpr() {
+    return getChild(1);
+  }
+
+  public void setLeftExpr(Expr expr) {
+    setChild(0, expr);
+  }
+
+  public void setRightExpr(Expr expr) {
+    setChild(1, expr);
+  }
+
 }

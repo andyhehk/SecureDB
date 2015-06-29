@@ -92,11 +92,11 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
 
       ProfileUtil profileUtil = new ProfileUtil();
       uploadHandler.upload();
-      System.out.println("Upload time: " + profileUtil.getDuration());
+      LOG.info("Upload time: " + profileUtil.getDuration());
 
       ((LoadStmt) analyzedNode).setFilePath(serverFilePath);
       String loadQuery = analyzedNode.toSql();
-      System.out.println(loadQuery);
+      LOG.info(loadQuery);
       try {
         java.sql.Statement statement = serverConnection.createStatement();
         statement.executeUpdate(loadQuery);
@@ -124,7 +124,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       // get execution end time
       setExecutionTime(startTimeStamp);
 
-      System.out.println(sdbProfiler.toString());
+      LOG.info(sdbProfiler.toString());
 
       return sdbResultSet;
     }
@@ -174,7 +174,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
 
   private void rewriteNode(ParseNode analyzedNode) throws RemoteException {
 
-    System.out.println("Rewriting " + analyzedNode.toSql());
+    LOG.info("Rewriting " + analyzedNode.toSql());
     sdbSchemeRewriter = new SdbSchemeRewriter(metaDb.getAllDBs().get(0));
     try {
       sdbSchemeRewriter.rewrite(analyzedNode);
@@ -186,7 +186,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   }
 
   private ParseNode getParseNode(String query) throws RemoteException {
-    System.out.println("Parsing " + query);
+    LOG.info("Parsing " + query);
 
     long parseStartTimestamp = System.currentTimeMillis();
 

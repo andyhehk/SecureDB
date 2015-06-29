@@ -273,6 +273,31 @@ public class Crypto {
     return result;
   }
 
+  /**
+   * Return the auxiliary value for performing cartesian product.
+   *
+   * @param xa
+   * @param xs
+   * @param totient
+   * @return
+   */
+  public static BigInteger cartesianAuxiliaryP(BigInteger xa, BigInteger xs, BigInteger totient) {
+
+    return xs.modInverse(totient).multiply(xa).mod(totient);
+  }
+
+  /**
+   * Update the column key of a Column after doing cartesian product.
+   *
+   * @return
+   */
+  public static BigInteger[] cartesianUpdateColyKey(BigInteger ma, BigInteger xa, BigInteger ms, BigInteger p, BigInteger n) {
+    BigInteger targetM = ma.multiply(ms.modPow(p, n)).mod(n);
+
+    BigInteger [] colKey = {targetM, xa};
+    return colKey;
+  }
+
 
   /**
    * Update column A with target columnKey<mc,mx> and plaintext [a]

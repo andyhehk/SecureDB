@@ -24,6 +24,8 @@ public class StarLiteral extends LiteralExpr {
   private final String name = "*";
   private List<TableRef> tblRefs;
 
+  public StarLiteral(){}
+
   public StarLiteral(List<TableRef> tblRefs) {
     this.setTblRefs(tblRefs);
   }

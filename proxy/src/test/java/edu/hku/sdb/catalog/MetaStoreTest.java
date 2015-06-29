@@ -97,8 +97,8 @@ public class MetaStoreTest {
     DBMeta db2 = new DBMeta(dbName2.toUpperCase());
     BigInteger p = Crypto.generateRandPrime();
     BigInteger q = Crypto.generateRandPrime();
-    db1.setP(p.toString());
-    db1.setQ(q.toString());
+    db1.setPrime1(p.toString());
+    db1.setPrime2(q.toString());
     metaDB.addDB(db1);
     metaDB.addDB(db2);
 
@@ -125,7 +125,7 @@ public class MetaStoreTest {
 
     assertEquals(db1, metaDB.getDB(dbName1.toUpperCase()));
     assertEquals(db2, metaDB.getDB(dbName2));
-    assertEquals(p.toString(), metaDB.getDB(dbName1.toUpperCase()).getP());
+    assertEquals(p.toString(), metaDB.getDB(dbName1.toUpperCase()).getPrime1());
     assertEquals(2, metaDB.getAllDBs().size());
 
     String colName1 = "dummy_col1";

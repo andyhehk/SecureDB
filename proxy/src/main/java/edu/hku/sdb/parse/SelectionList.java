@@ -34,8 +34,36 @@ public class SelectionList implements ParseNode {
 
   protected List<SelectionItem> itemList;
 
+  protected SelectionItem rowID;
+  protected SelectionItem auxiliaryR;
+  protected SelectionItem auxiliaryS;
+
   public SelectionList() {
     itemList = new ArrayList<SelectionItem>();
+  }
+
+  public SelectionItem getRowID() {
+    return rowID;
+  }
+
+  public void setRowID(SelectionItem rowID) {
+    this.rowID = rowID;
+  }
+
+  public SelectionItem getAuxiliaryR() {
+    return auxiliaryR;
+  }
+
+  public void setAuxiliaryR(SelectionItem auxiliaryR) {
+    this.auxiliaryR = auxiliaryR;
+  }
+
+  public SelectionItem getAuxiliaryS() {
+    return auxiliaryS;
+  }
+
+  public void setAuxiliaryS(SelectionItem auxiliaryS) {
+    this.auxiliaryS = auxiliaryS;
   }
 
   @Override
@@ -96,11 +124,22 @@ public class SelectionList implements ParseNode {
 
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+
+    for(SelectionItem item : itemList) {
+      sb.append("Selection Item: " + item + "\n");
+    }
+
+    return sb.toString();
+  }
+
   /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
-   */
+     * (non-Javadoc)
+     *
+     * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
+     */
   @Override
   public boolean involveSdbEncrytedCol() {
 
@@ -111,4 +150,5 @@ public class SelectionList implements ParseNode {
 
     return false;
   }
+
 }

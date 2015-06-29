@@ -21,6 +21,9 @@ import edu.hku.sdb.catalog.MetaStore;
 
 public class UnionStmt extends QueryStmt {
 
+  public UnionStmt() {
+    super(null, null);
+  }
   /* (non-Javadoc)
    * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.catalog.DBMeta)
    */

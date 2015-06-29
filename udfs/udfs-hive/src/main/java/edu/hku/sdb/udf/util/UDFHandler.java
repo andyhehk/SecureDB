@@ -55,21 +55,11 @@ public class UDFHandler {
    *
    * @param a  ae, whose value < n
    * @param b  be, whose value < n
-   * @param s  se, whose value < n
-   * @param pa the new p generated in A's keyUpdate operation, whose value < n
-   * @param qa the new q generated in A's keyUpdate operation, whose value < n
-   * @param pb the new p generated in B's keyUpdate operation, whose value < n
-   * @param qb the new q generated in B's keyUpdate operation, whose value < n
    * @param n
    * @return
    */
-  public static BigInteger add(BigInteger a, BigInteger b, BigInteger s,
-                               BigInteger pa, BigInteger qa, BigInteger pb, BigInteger qb,
-                               BigInteger n) {
-
-    BigInteger aUpdated = keyUpdate(a, s, pa, qa, n);
-    BigInteger bUpdated = keyUpdate(b, s, pb, qb, n);
-    return (aUpdated.add(bUpdated)).mod(n);
+  public static BigInteger add(BigInteger a, BigInteger b, BigInteger n) {
+    return (a.add(b)).mod(n);
   }
 
   //TODO: test cartesianProduct UDF

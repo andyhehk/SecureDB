@@ -97,15 +97,14 @@ public class SemanticAnalyzerTest {
 
   @Test
   public void testAnalyzeJoin() {
-    String command = "SELECT a + b FROM T1 JOIN T2 ON T1.id = T2.id WHERE a > 1.0";
+    String command = "SELECT a + b FROM T1 JOIN T2 ON T1.id = T2.id WHERE a >" +
+            " 1.0";
 
     try {
       ASTNode astTree = parser.parse(command);
 
-      ParseNode resultTree;
-
       ParseNode ansTree = TestQuery.prepareAnsJoin();
-      resultTree = testObj.analyze(astTree);
+      ParseNode resultTree = testObj.analyze(astTree);
 
       assertEquals(ansTree, resultTree);
     } catch (Exception e) {
@@ -115,16 +114,14 @@ public class SemanticAnalyzerTest {
 
   @Test
   public void testAnalyzeJoinGroupby() {
-    String command = "SELECT a, count(*) FROM T1 JOIN T2 ON T1.id = T2.id WHERE" +
-            " b > 1.0 GROUP BY a";
+    String command = "SELECT a, count(*) FROM T1 JOIN T2 ON T1.id = T2.id " +
+            "WHERE b > 1.0 GROUP BY a";
 
     try {
       ASTNode astTree = parser.parse(command);
 
-      ParseNode resultTree;
-
       ParseNode ansTree = TestQuery.prepareAnsJoinGroupBy();
-      resultTree = testObj.analyze(astTree);
+      ParseNode resultTree = testObj.analyze(astTree);
 
       assertEquals(ansTree, resultTree);
     } catch (Exception e) {
@@ -141,10 +138,8 @@ public class SemanticAnalyzerTest {
     try {
       ASTNode astTree = parser.parse(command);
 
-      ParseNode resultTree;
-
       ParseNode ansTree = TestQuery.prepareAnsNested();
-      resultTree = testObj.analyze(astTree);
+      ParseNode resultTree = testObj.analyze(astTree);
 
       assertEquals(ansTree, resultTree);
     } catch (Exception e) {
@@ -154,15 +149,14 @@ public class SemanticAnalyzerTest {
 
   @Test
   public void testAnalyzeJoinMixSen() {
-    String command = "SELECT a + c FROM T1 JOIN T2 ON T1.id = T2.id WHERE c > 1.0";
+    String command = "SELECT a + c FROM T1 JOIN T2 ON T1.id = T2.id WHERE c >" +
+            " 1.0";
 
     try {
       ASTNode astTree = parser.parse(command);
 
-      ParseNode resultTree;
-
       ParseNode ansTree = TestQuery.prepareAnsJoinMixSen();
-      resultTree = testObj.analyze(astTree);
+      ParseNode resultTree = testObj.analyze(astTree);
 
       assertEquals(ansTree, resultTree);
     } catch (Exception e) {
@@ -172,20 +166,40 @@ public class SemanticAnalyzerTest {
 
   @Test
   public void testCreateStmt() {
-    String command = "CREATE TABLE employee (id INT, name VARCHAR(20), salary INT ENC, age INT)";
+    String command = "CREATE TABLE employee (id INT, name VARCHAR(20), salary" +
+            " INT ENC, age INT)";
 
     try {
       ASTNode astTree = parser.parse(command);
 
       ParseNode ansTree = TestQuery.prepareCreateStmtAnalysed();
       ParseNode resultTree = testObj.analyze(astTree);
-      System.out.println(resultTree.toSql());
+
       assertEquals(ansTree, resultTree);
 
     } catch (Exception e) {
       e.printStackTrace();
     }
-
   }
 
+  @Test
+  public void testAnalyzeComplexQuery() {
+    String command = "SELECT temp1.id, count(*) as count, sum(a) as sum FROM " +
+            "(SELECT T1.id as id, a*a as a, d FROM T1 RIGHT OUTER JOIN T2 ON T1.id = " +
+            "T2.id JOIN T3 on T1.id = T3.id1 AND T2.id = T3.id2) temp1 " +
+            "JOIN T2 ON temp1.id = T2.id WHERE d = 1.0 " +
+            "GROUP BY temp1.id HAVING count > 10 ORDER BY sum DESC LIMIT 10";
+
+    try {
+      ASTNode astTree = parser.parse(command);
+
+      ParseNode ansTree = TestQuery.prepareAnsComplex();
+      ParseNode resultTree = testObj.analyze(astTree);
+
+      assertEquals(ansTree, resultTree);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+  }
 }

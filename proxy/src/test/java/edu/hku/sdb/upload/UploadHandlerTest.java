@@ -130,8 +130,8 @@ public class UploadHandlerTest {
 
     db1.setN(n.toString());
     db1.setG(g.toString());
-    db1.setP(p.toString());
-    db1.setQ(q.toString());
+    db1.setPrime1(p.toString());
+    db1.setPrime2(q.toString());
 
     metaDB.addDB(db1);
 
@@ -221,7 +221,7 @@ public class UploadHandlerTest {
   public void testUpload() {
     String encryptedLine = (uploadHandler.processLineForTest("1|James|4"));
     String[] columnValues = encryptedLine.split(";");
-    BigInteger r = Crypto.SIESDecrypt(Crypto.getSecureBigInt(columnValues[3]), columnKeyRowId.getM(), columnKeyRowId.getX(), new BigInteger(db1.getP()).multiply(new BigInteger(db1.getQ())));
+    BigInteger r = Crypto.SIESDecrypt(Crypto.getSecureBigInt(columnValues[3]), columnKeyRowId.getM(), columnKeyRowId.getX(), new BigInteger(db1.getPrime1()).multiply(new BigInteger(db1.getPrime2())));
     BigInteger itemKey = Crypto.generateItemKeyOp2(columnKeySalary.getM(), columnKeySalary.getX(), r, g, n, totient, p, q);
     BigInteger salaryDecrypted = Crypto.decrypt(Crypto.getSecureBigInt(columnValues[2]), itemKey, n);
     assertEquals(new BigInteger("4"), salaryDecrypted);

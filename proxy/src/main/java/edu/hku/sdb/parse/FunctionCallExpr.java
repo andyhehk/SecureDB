@@ -18,49 +18,132 @@ package edu.hku.sdb.parse;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.base.Joiner;
+import edu.hku.sdb.catalog.MetaStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.org.mozilla.javascript.Function;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FunctionCallExpr extends Expr {
 
   private static final Logger LOG = LoggerFactory.getLogger(FunctionCallExpr.class);
 
-  private final String name;
-  private Expr funcExpr;
+  private FunctionName name;
+  private FunctionParams functionParams;
 
-  public FunctionCallExpr(String name) {
-    this.name = checkNotNull(name, "Function Name is null.");
+  public FunctionCallExpr() {
+
+  }
+
+  /**
+   * Constructor for star function call
+   *
+   * @param name
+   */
+  public FunctionCallExpr(FunctionName name) {
+    this.name = name;
+    functionParams = FunctionParams.createStarParam();
+  }
+
+
+  public FunctionCallExpr(FunctionName name, FunctionParams functionParams) {
+    this.name = name;
+    this.functionParams = functionParams;
   }
 
   /**
    * @return the name
    */
-  public String getName() {
+  public FunctionName getFunctionName() {
     return name;
   }
 
   /**
+   * @param name
+   */
+  public void setName(FunctionName name) {
+    this.name = name;
+  }
+
+
+  /**
    * @return the funcExpr
    */
-  public Expr getFuncExpr() {
-    return funcExpr;
+  public FunctionParams getFunctionParams() {
+    return functionParams;
   }
 
   /**
    * @param funcExpr the funcExpr to set
    */
-  public void setFuncExpr(Expr funcExpr) {
-    this.funcExpr = funcExpr;
+  public void setFunctionParams(FunctionParams functionParams) {
+    this.functionParams = functionParams;
   }
 
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    // TODO Auto-generated method stub
-
+  @Override
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+          throws SemanticException {
+    // Analyze each child
+    if(!functionParams.isStar())
+      for (Expr expr : functionParams.getExprs()) {
+        expr.analyze(metaDB, fieldSources);
+      }
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof FunctionCallExpr))
+      return false;
+
+    FunctionCallExpr funcObj = (FunctionCallExpr) obj;
+
+    checkNotNull(name, "Function on the left has no function name");
+    checkNotNull(funcObj.getFunctionName(), "Function on the right has no function" +
+            " name");
+    checkNotNull(functionParams, "Function on the left has no function parameters");
+    checkNotNull(funcObj.getFunctionParams(), "Function on the right has no " +
+            "function parameters");
+
+    if (!name.equals(funcObj.getFunctionName()))
+      return false;
+
+    if(!functionParams.equals(funcObj.getFunctionParams()))
+      return false;
+
+    return true;
+  }
+
+  @Override
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    StringBuilder sb = new StringBuilder();
+
+    sb.append(name.getName());
+    sb.append("(");
+
+    if (functionParams.isStar()) {
+      sb.append("*");
+    } else {
+      List<String> params = new ArrayList<String>();
+      for (Expr expr : functionParams.getExprs()) {
+        params.add(expr.toSql());
+      }
+
+      sb.append(Joiner.on(", ").join(params));
+    }
+    sb.append(")");
+
+    return sb.toString();
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(name + "\n");
+    sb.append(functionParams + "\n");
+    return sb.toString();
   }
 
   /* (non-Javadoc)

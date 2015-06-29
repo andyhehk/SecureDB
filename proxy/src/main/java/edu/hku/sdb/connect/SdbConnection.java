@@ -71,11 +71,11 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
       if (statement == null) {
         //init connection
         ConnectionConf connectionConf = sdbConf.getConnectionConf();
-        MetaStore metaDb = getMetaDbConnection(sdbConf.getMetadbConf());
-        java.sql.Connection serverConnection = getServerConnection(sdbConf.getServerdbConf());
-
         LOG.info("Connecting to metastore DB");
+        MetaStore metaDb = getMetaDbConnection(sdbConf.getMetadbConf());
+
         LOG.info("Connecting to server DB");
+        java.sql.Connection serverConnection = getServerConnection(sdbConf.getServerdbConf());
 
         //create sdbStatement
         LOG.info("Creating sdb statement");
@@ -128,8 +128,8 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
       BigInteger n = p.multiply(q);
       BigInteger g = Crypto.generatePositiveRand(p, q);
       dbMeta.setN(n.toString());
-      dbMeta.setP(p.toString());
-      dbMeta.setQ(q.toString());
+      dbMeta.setPrime1(p.toString());
+      dbMeta.setPrime2(q.toString());
       dbMeta.setG(g.toString());
       metaStore.addDB(dbMeta);
     }
@@ -141,7 +141,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
     String hiveDriverName = dbConf.getJdbcDriverName();
     String connectionURL = dbConf.getJdbcUrl() + "/" + dbConf.getDatabaseName();
 
-    LOG.info("Connecting server: " + connectionURL);
+    LOG.info("Connecting to server: " + connectionURL);
 
     String username = dbConf.getUsername();
     String password = dbConf.getPassword();
@@ -158,10 +158,10 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
 
       LOG.debug("Registering UDFS in server: " + connectionURL);
       // register UDFs
+      // failed in Spark 1.1.0
       stmt.execute("add jar /home/haibin/sdb-udfs-hive-0.1-SNAPSHOT.jar");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.hive.SDBIntAddUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_add AS 'edu.hku.sdb.udf.hive.SDBAddUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.hive.SDBIntAddUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_keyUp AS 'edu.hku.sdb.udf.hive.SDBKeyUpdateUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_mul AS 'edu.hku.sdb.udf.hive.SDBMultiUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_compare AS 'edu.hku.sdb.udf.hive.SDBCompareUDF'");

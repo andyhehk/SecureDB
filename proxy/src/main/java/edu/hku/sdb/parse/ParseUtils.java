@@ -22,10 +22,12 @@ import java.util.Map;
 
 import edu.hku.sdb.parse.BinaryPredicate.BinOperator;
 import edu.hku.sdb.parse.NormalArithmeticExpr.Operator;
+import edu.hku.sdb.parse.CompoundPredicate.CompoundOperator;
 
 public class ParseUtils {
 
-  public static final Map<Integer, Operator> OPERATOR_MAP = new HashMap<Integer, Operator>() {
+  public static final Map<Integer, Operator> OPERATOR_MAP = new HashMap<Integer,
+          Operator>() {
     /**
      *
      */
@@ -39,7 +41,8 @@ public class ParseUtils {
     }
   };
 
-  public static final Map<Integer, JoinOperator> JOIN_OPERATOR_MAP = new HashMap<Integer, JoinOperator>() {
+  public static final Map<Integer, JoinOperator> JOIN_OPERATOR_MAP = new
+          HashMap<Integer, JoinOperator>() {
     /**
      *
      */
@@ -54,7 +57,8 @@ public class ParseUtils {
     }
   };
 
-  public static final Map<Integer, BinOperator> BIN_OPERATOR_MAP = new HashMap<Integer, BinOperator>() {
+  public static final Map<Integer, BinOperator> BIN_OPERATOR_MAP = new
+          HashMap<Integer, BinOperator>() {
     /**
      *
      */
@@ -70,10 +74,20 @@ public class ParseUtils {
     }
   };
 
-  public static ASTNode findRootNotNull(ASTNode tree) {
-    while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
-      tree = (ASTNode) tree.getChild(0);
+  public static final Map<Integer, CompoundPredicate.CompoundOperator>
+          COMPOUND_OPERATOR_MAP = new HashMap<Integer, CompoundOperator>() {
+    private static final long serialVersionUID = 1L;
+
+    {
+      put(HiveLexer.KW_AND, CompoundOperator.AND);
+      put(HiveLexer.KW_OR, CompoundOperator.OR);
     }
-    return tree;
+  };
+
+    public static ASTNode findRootNotNull(ASTNode tree) {
+      while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
+        tree = (ASTNode) tree.getChild(0);
+      }
+      return tree;
+    }
   }
-}

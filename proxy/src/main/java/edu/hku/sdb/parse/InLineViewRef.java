@@ -53,18 +53,12 @@ public class InLineViewRef extends TableRef {
     InLineViewRef viewObj = (InLineViewRef) obj;
 
     if (!alias.equals(viewObj.alias)) {
-      String info = "Two alias are not equal for subquery: \n"
-              + "Left: " + toSql()
-              + "Right: " + viewObj.toSql();
-      LOG.debug(info);
+      LOG.debug("Alias are not equal!");
       return false;
     }
 
     if (!queryStmt.equals(viewObj.queryStmt)) {
-      String info = "Two subquery are not equal: \n"
-              + "Left: " + toSql()
-              + "Right: " + viewObj.toSql();
-      LOG.debug(info);
+      LOG.debug("Sub Queries are not equal!");
       return false;
     }
 
@@ -86,9 +80,24 @@ public class InLineViewRef extends TableRef {
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   public String toSql() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
 
     sb.append("(\n" + queryStmt.toSql() + ")" + " " + alias);
+
+    return sb.toString();
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("Alias: " + alias + "\n");
+    sb.append("Query Statement: " + queryStmt);
+    sb.append("On Clause: " + onClause + "\n");
+    if(joinOp != null)
+      sb.append("Join Operator: " + joinOp + "\n");
+    if(leftTblRef != null)
+      sb.append("LeftTbl: " + leftTblRef.tblName + "\n");
 
     return sb.toString();
   }

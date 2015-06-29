@@ -125,8 +125,8 @@ public class UploadHandler {
     //TODO: should programatically get db name
     DBMeta dbMeta = metaStore.getAllDBs().get(0);
     n = new BigInteger(dbMeta.getN());
-    p = new BigInteger(dbMeta.getP());
-    q = new BigInteger(dbMeta.getQ());
+    p = new BigInteger(dbMeta.getPrime1());
+    q = new BigInteger(dbMeta.getPrime2());
     g = new BigInteger(dbMeta.getG());
     totient = Crypto.evaluateTotient(p, q);
     nPlusOne = n.add(BigInteger.ONE);
@@ -188,8 +188,8 @@ public class UploadHandler {
 
     DBMeta dbMeta = metaStore.getAllDBs().get(0);
     n = new BigInteger(dbMeta.getN());
-    p = new BigInteger(dbMeta.getP());
-    q = new BigInteger(dbMeta.getQ());
+    p = new BigInteger(dbMeta.getPrime1());
+    q = new BigInteger(dbMeta.getPrime2());
     g = new BigInteger(dbMeta.getG());
     totient = Crypto.evaluateTotient(p, q);
     nPlusOne = n.add(BigInteger.ONE);

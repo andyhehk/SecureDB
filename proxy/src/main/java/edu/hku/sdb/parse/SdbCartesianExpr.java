@@ -17,19 +17,57 @@
 
 package edu.hku.sdb.parse;
 
+import com.google.common.base.Joiner;
+import edu.hku.sdb.catalog.ColumnKey;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class SdbCartesianExpr extends Expr {
 
   private final String op = "sdb_cartesian";
+  private String alia;
+
+  private ColumnKey columnKey;
+  private String tblName;
+
+  public String getAlia() {
+    return alia;
+  }
+
+  public void setAlia(String alia) {
+    this.alia = alia;
+  }
+
+  public String getTblName() {
+    return tblName;
+  }
+
+  public void setTblName(String tblName) {
+    this.tblName = tblName;
+  }
+
+  @Override
+  public ColumnKey getColKey() {
+    return columnKey;
+  }
+
+  public void setColKey(ColumnKey columnKey) {
+    this.columnKey = columnKey;
+  }
 
   /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.parse.ParseNode#toSql()
-   */
+     * (non-Javadoc)
+     *
+     * @see edu.hku.sdb.parse.ParseNode#toSql()
+     */
   @Override
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    List<String> items = new ArrayList<String>();
+    for (Expr child : children) {
+      items.add(child.toSql());
+    }
+    return op + "(" + Joiner.on(",").join(items) + ")";
   }
 
   /* (non-Javadoc)

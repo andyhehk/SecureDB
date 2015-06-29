@@ -16,6 +16,34 @@
  */
 package edu.hku.sdb.parse;
 
+import java.util.List;
+
 public abstract class QueryStmt extends StatementBase {
+
+  protected WithClause withClause;
+
+  protected List<OrderByElement> orderByElements;
+  protected LimitElement limitElement;
+
+  public QueryStmt(List<OrderByElement> orderByElements, LimitElement limitElement) {
+    this.orderByElements = orderByElements;
+    this.limitElement = limitElement;
+  }
+
+  public List<OrderByElement> getOrderByElements() {
+    return orderByElements;
+  }
+
+  public void setOrderByElements(List<OrderByElement> orderByElements) {
+    this.orderByElements = orderByElements;
+  }
+
+  public LimitElement getLimitElement() {
+    return limitElement;
+  }
+
+  public void setLimitElement(LimitElement limitElement) {
+    this.limitElement = limitElement;
+  }
 
 }

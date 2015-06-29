@@ -42,11 +42,11 @@ public class DBMeta {
 
   // The big primary number p to generate n
   @Column(length = 1024)
-  private String p = null;
+  private String prime1 = null;
 
   // The big primary number p to generate n
   @Column(length = 1024)
-  private String q = null;
+  private String prime2 = null;
 
   // The secrete number g
   @Column(length = 1024)
@@ -144,20 +144,20 @@ public class DBMeta {
     this.n = n;
   }
 
-  public String getQ() {
-    return q;
+  public String getPrime2() {
+    return prime2;
   }
 
-  public void setQ(String q) {
-    this.q = q;
+  public void setPrime2(String prime2) {
+    this.prime2 = prime2;
   }
 
-  public String getP() {
-    return p;
+  public String getPrime1() {
+    return prime1;
   }
 
-  public void setP(String p) {
-    this.p = p;
+  public void setPrime1(String prime1) {
+    this.prime1 = prime1;
   }
 
   /**

@@ -18,7 +18,9 @@
 package edu.hku.sdb.parse;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,10 +77,9 @@ public class FieldLiteral extends LiteralExpr {
   }
 
   /**
-   * Get the table name of this field referred if it is not specified, also the
+   * Get the table name of this field referred if it is not specified, also get the
    * column key if it is a sensitive column.
-   * <p/>
-   * TODO Shall we postpone the ambiguity detection to the underlying DB?
+   *
    */
   @Override
   public void analyze(MetaStore metaDB, ParseNode... fieldSources)
@@ -118,44 +119,54 @@ public class FieldLiteral extends LiteralExpr {
       }
     }
 
-    for (BaseTableRef tbl : baseTbls) {
-      if (tblName.equals(""))
-        count += resolve(metaDB, tbl.tblName, tbl.alias);
+    if (tblName.equals("")) {
+      Set<String> tbls = new HashSet<>();
+      for (BaseTableRef tbl : baseTbls) {
+        if (resolve(metaDB, tbl.tblName, tbl.alias) > 0) {
+          tbls.add(tbl.tblName);
+        }
 
-        // When table name is specified.
-      else if (tblName.equals(tbl.tblName))
-        count += resolve(metaDB, tbl.tblName, tbl.alias);
-
-      // This field is ambiguous.
-      if (count > 1) {
-        AmbiguousException e = new AmbiguousException(name);
-        LOG.error("One or more fields are ambiguous!", e);
-        throw e;
+        // This field is ambiguous.
+        if (tbls.size() + count > 1) {
+          AmbiguousException e = new AmbiguousException(name);
+          LOG.error("One or more fields are ambiguous!", e);
+          throw e;
+        }
       }
-    }
 
-    for (InLineViewRef view : inlineViews) {
-      if (tblName.equals(""))
-        count += resolve(
-                ((SelectStmt) view.queryStmt).getSelectList().itemList, view.alias);
+      for (InLineViewRef view : inlineViews) {
+        if (resolve(((SelectStmt) view.queryStmt).getSelectList().itemList, view
+                .alias) > 0) {
+          tbls.add(view.alias);
+        }
 
-        // When table name is specified.
-      else if (tblName.equals(view.alias))
-        count += resolve(
-                ((SelectStmt) view.queryStmt).getSelectList().itemList, view.alias);
+        // This field is ambiguous.
+        if (tbls.size() + count > 1) {
+          AmbiguousException e = new AmbiguousException(name);
+          LOG.error("One or more fields are ambiguous!", e);
+          throw e;
+        }
+      }
 
-      // This field is ambiguous.
-      if (count > 1) {
-        AmbiguousException e = new AmbiguousException(name);
-        LOG.error("One or more fields are ambiguous!", e);
-        throw e;
+      count += tbls.size();
+    } else {
+      for (BaseTableRef tbl : baseTbls) {
+        if (tblName.equals(tbl.tblName))
+          count += resolve(metaDB, tbl.tblName, tbl.alias);
+      }
+
+      for (InLineViewRef view : inlineViews) {
+        if (tblName.equals(view.alias))
+          count += resolve(
+                  ((SelectStmt) view.queryStmt).getSelectList().itemList, view
+                          .alias);
       }
     }
 
     // Cannot resolve this field.
     if (count == 0) {
       UnableResolveException e = new UnableResolveException(name);
-      LOG.error("One or more fields cannot find its referred table!", e);
+      LOG.error("One or more fields cannot find its referred table or fields!", e);
       throw e;
     }
   }
@@ -207,7 +218,7 @@ public class FieldLiteral extends LiteralExpr {
   }
 
   /**
-   * It is a field refer to a selection item.
+   * It is a field refers to a selection item.
    *
    * @param item
    * @return
@@ -226,8 +237,8 @@ public class FieldLiteral extends LiteralExpr {
           isSen = field.isSen;
           colKey = field.colKey;
 
+          isUp2date = field.isUp2date;
           // remember the refer-relationship, it is used for query rewrite
-          isUp2date = true;
           referExpr = field;
           referExpr.addReferredBy(this);
           count++;
@@ -244,8 +255,8 @@ public class FieldLiteral extends LiteralExpr {
           isSen = field.isSen;
           colKey = field.colKey;
 
+          isUp2date = field.isUp2date;
           // remember the refer-relationship, it is used for query rewrite
-          isUp2date = true;
           referExpr = field;
           referExpr.addReferredBy(this);
         }
@@ -270,36 +281,25 @@ public class FieldLiteral extends LiteralExpr {
 
     // Log messages are used for debug.
     if ((colKey == null) != (fieldobj.colKey == null)) {
-      String err = (colKey == null) ? "Left column key is null, while "
-              + "right column key is: " + fieldobj.colKey : "Left column is: "
-              + colKey + ", while right column key is null";
-      LOG.debug(err);
+      LOG.debug("Column Key is not equal!");
       return false;
     }
 
     if ((referExpr == null) != (fieldobj.referExpr == null)) {
-      String err = (referExpr == null) ? "Left referred field is null, while "
-              + "right referred field is: " + fieldobj.referExpr
-              : "Left referred field is: " + referExpr
-              + ", while right referred field is null";
-      LOG.debug(err);
+      LOG.debug("Refer expr is not equal!");
       return false;
     }
 
     if (colKey != null) {
       if (!colKey.equals(fieldobj.getColKey())) {
-        String err = "Left column key is: " + colKey + ";Right column key is: "
-                + fieldobj.colKey;
-        LOG.debug(err);
+        LOG.debug("Column Key is not equal!");
         return false;
       }
     }
 
     if (referExpr != null) {
       if (!referExpr.equals(fieldobj.referExpr)) {
-        String err = "Left referred field is: " + referExpr
-                + ";Right referred field is: " + fieldobj.referExpr;
-        LOG.debug(err);
+        LOG.debug("Refer expr is not equal!");
         return false;
       }
     }
@@ -382,17 +382,9 @@ public class FieldLiteral extends LiteralExpr {
   }
 
   /**
-   * Update the column key if it is not up to date.
-   */
-  public void updateColKey() {
-    if (!isUp2date)
-      colKey = checkNotNull(referExpr, "Referred expression is null")
-              .getColKey();
-  }
-
-  /**
    * @param colKey the colKey to set
    */
+  @Override
   public void setColKey(ColumnKey colKey) {
     this.colKey = colKey;
   }
@@ -423,9 +415,24 @@ public class FieldLiteral extends LiteralExpr {
 
   @Override
   public String toString() {
-    return "tableName: " + tblName + ";" + "field name: " + name + ";"
-            + "DataType: " + type + ";" + "isSensitive: " + Boolean.toString(isSen)
-            + ";" + "Column Key: " + colKey;
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("Table Name: " + tblName + "|");
+    sb.append("Name: " + name + "|");
+    sb.append("DataType: " + type + "|");
+    if(isSen)
+      sb.append("Sensitive: true" + "|");
+    else
+      sb.append("Sensitive: false" + "|");
+    if(isUp2date)
+      sb.append("IsUp2date: true" + "|");
+    else
+      sb.append("IsUp2date: false" + "|");
+
+    sb.append("ColumnKeys: " + colKey);
+
+    return sb.toString();
+
   }
 
   /*
@@ -438,7 +445,7 @@ public class FieldLiteral extends LiteralExpr {
     return isSen;
   }
 
-  public void notifyField() {
-    isUp2date = false;
+  public void updateColKey() {
+    colKey = referExpr.getColKey();
   }
 }

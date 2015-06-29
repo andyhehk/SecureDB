@@ -65,11 +65,13 @@ public class BaseTableRef extends TableRef {
     if (alias.equals("")) {
       if (onClause == null) {
         if (joinOp == null)
+          // We need this to handle the case that tables are comma separated in From
+          // Clause.
           sb.append(tblName + ",");
         else
           sb.append(tblName);
       } else
-        sb.append("JOIN " + tblName + " ON " + onClause.toSql());
+        sb.append(joinOp + " " + tblName + " ON " + onClause.toSql());
     } else {
       if (onClause == null) {
         if (joinOp == null)
@@ -77,9 +79,24 @@ public class BaseTableRef extends TableRef {
         else
           sb.append(tblName + " AS " + alias);
       } else
-        sb.append("JOIN " + tblName + " AS " + alias + " ON "
+        sb.append(joinOp + " " + tblName + " AS " + alias + " ON "
                 + onClause.toSql());
     }
+    return sb.toString();
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("Table name: " + tblName + "\n");
+    sb.append("Alias: " + alias + "\n");
+    sb.append("On Clause: " + onClause + "\n");
+    if(joinOp != null)
+      sb.append("Join Operator: " + joinOp + "\n");
+    if(leftTblRef != null)
+      sb.append("LeftTbl: " + leftTblRef.tblName + "\n");
+
     return sb.toString();
   }
 

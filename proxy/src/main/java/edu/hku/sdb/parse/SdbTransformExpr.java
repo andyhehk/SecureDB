@@ -23,17 +23,20 @@ import edu.hku.sdb.catalog.ColumnKey;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SdbArithmeticExpr extends Expr {
+public class SdbTransformExpr extends Expr {
 
-  public enum Operator {
-    SDB_ADD("sdb_add"),
-    SDB_MUL("sdb_mul"),
-    SDB_ADDROWID("sdb_addrowid");
+  public enum SdbOperator {
+    SDB_ADD("sdb_add", "sdb UDF for adding  two columns"),
+    SDB_MUL("sdb_mul", "sdb UDF for multiplying two columns"),
+    SDB_ADDROWID("sdb_intadd", "sdb UDF for adding two row ID"),
+    SDB_CARTESIAN("sdb_cartesian", "sdb UDF for cartesian two table");
 
     private final String description;
+    private final String name;
 
-    private Operator(String description) {
+    private SdbOperator(String description, String name) {
       this.description = description;
+      this.name = name;
     }
 
     @Override
@@ -41,31 +44,38 @@ public class SdbArithmeticExpr extends Expr {
       return description;
     }
 
+    public String getName() {
+      return name;
+    }
+
   }
 
-  private Operator op;
+  public  SdbTransformExpr() {}
+
+  public SdbTransformExpr(SdbOperator op) {
+    this.op = op;
+  }
+
+  private SdbOperator op;
 
   private ColumnKey columnKey;
 
-  public ColumnKey getColumnKey() {
-    return columnKey;
-  }
 
   @Override
   public ColumnKey getColKey() {
     return columnKey;
   }
 
-  public void setColumnKey(ColumnKey columnKey) {
+  public void setColKey(ColumnKey columnKey) {
     this.columnKey = columnKey;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof SdbArithmeticExpr))
+    if (!(obj instanceof SdbTransformExpr))
       return false;
 
-    SdbArithmeticExpr sdbAriObj = (SdbArithmeticExpr) obj;
+    SdbTransformExpr sdbAriObj = (SdbTransformExpr) obj;
     return op.equals(sdbAriObj.op) && children.equals(sdbAriObj.children);
   }
 
@@ -86,14 +96,14 @@ public class SdbArithmeticExpr extends Expr {
   /**
    * @return the op
    */
-  public Operator getOp() {
+  public SdbOperator getOp() {
     return op;
   }
 
   /**
    * @param op the op to set
    */
-  public void setOp(Operator op) {
+  public void setOp(SdbOperator op) {
     this.op = op;
   }
 
