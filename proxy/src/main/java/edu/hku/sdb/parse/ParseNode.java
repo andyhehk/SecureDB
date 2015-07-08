@@ -34,13 +34,13 @@ public interface ParseNode {
    * @param fieldSources
    * @throws SemanticException
    */
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+  void analyze(MetaStore metaDB, ParseNode... fieldSources)
           throws SemanticException;
 
   /**
    * @return SQL syntax corresponding to this node
    */
-  public String toSql();
+  String toSql();
 
-  public boolean involveSdbEncrytedCol();
+  boolean involveSdbEncrytedCol();
 }

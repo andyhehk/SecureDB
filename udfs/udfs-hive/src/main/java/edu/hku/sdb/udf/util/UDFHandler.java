@@ -17,6 +17,8 @@
 
 package edu.hku.sdb.udf.util;
 
+import com.sun.org.apache.bcel.internal.generic.BIPUSH;
+
 import java.math.BigInteger;
 
 public class UDFHandler {
@@ -69,28 +71,62 @@ public class UDFHandler {
   }
 
   /**
-   * Simple BigInteger addition.
+   * Simple BigInteger addition for row ID.
    *
-   * @param a
-   * @param b
-   * @return a + b
+   * @param rowID1
+   * @param rowID2
+   * @return rowID1 + rowID2
    */
-  public static BigInteger integerAdd(BigInteger a, BigInteger b, BigInteger n) {
-    return a.add(b).mod(n);
+  public static BigInteger integerAdd(BigInteger rowID1, BigInteger rowID2, BigInteger n) {
+    return rowID1.add(rowID2).mod(n);
   }
 
 
   /**
-   * returns -1 if a is greater than b, 1 if a is less than b.
+   * Returns true if value is less than halfN, false if value is greater than or equal to halfN.
    *
-   * @param a
-   * @param b
-   * @return either -1, 0 or 1.
+   * (1) value less than halfN means that a > b
+   * (2) value greater or equal to halfN means that a < b.
+   * @param value
+   * @param halfN
+   * @return
    */
-  public static int compare(BigInteger a, BigInteger b) {
-    if (a.equals(BigInteger.ZERO)) {
-      return 0;
+  public static boolean greatThan(BigInteger value, BigInteger halfN) {
+    int result = halfN.compareTo(value);
+
+    if(result > 0)
+      return true;
+    else {
+      return false;
     }
-    return b.compareTo(a);
   }
+
+  /**
+   * Return true is value is zero.
+   *
+   * @param value
+   * @return
+   */
+  public static boolean equal(BigInteger value) {
+    return value.equals(BigInteger.ZERO);
+  }
+
+  /**
+   * Returns true if value is greater than or equal to halfN, false if value is less than halfN.
+   *
+   * (1) value less than halfN means that a > b
+   * (2) value greater or equal to halfN means that a < b.
+   * @param value
+   * @param halfN
+   * @return
+   */
+  public static boolean lessThan(BigInteger value, BigInteger halfN) {
+    int result = halfN.compareTo(value);
+
+    if(result <= 0)
+      return true;
+    else
+      return false;
+  }
+
 }

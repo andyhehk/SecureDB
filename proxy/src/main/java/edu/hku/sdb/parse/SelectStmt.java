@@ -306,6 +306,7 @@ public class SelectStmt extends QueryStmt {
     sb.append("SELECT " + selectList.toSql() + "\n");
 
     List<String> tables = new ArrayList<String>();
+
     for (TableRef tbl : tableRefs) {
       tables.add(tbl.toSql());
     }

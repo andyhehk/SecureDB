@@ -32,8 +32,8 @@ public class IntegerPlaintext extends AbstractPlaintext {
   private boolean isSensitive;
   private BigInteger n;
   private BigInteger g;
-  private BigInteger p;
-  private BigInteger q;
+  private BigInteger prime1;
+  private BigInteger prime2;
   private BigInteger totient;
   private BigInteger rowId;
   private ColumnKey columnKey;
@@ -70,20 +70,20 @@ public class IntegerPlaintext extends AbstractPlaintext {
     this.g = g;
   }
 
-  public BigInteger getP() {
-    return p;
+  public BigInteger getPrime1() {
+    return prime1;
   }
 
-  public void setP(BigInteger p) {
-    this.p = p;
+  public void setPrime1(BigInteger prime1) {
+    this.prime1 = prime1;
   }
 
-  public BigInteger getQ() {
-    return q;
+  public BigInteger getPrime2() {
+    return prime2;
   }
 
-  public void setQ(BigInteger q) {
-    this.q = q;
+  public void setPrime2(BigInteger prime2) {
+    this.prime2 = prime2;
   }
 
   public boolean isSensitive() {
@@ -107,7 +107,7 @@ public class IntegerPlaintext extends AbstractPlaintext {
     if (!isSensitive) {
       return plainText;
     }
-    BigInteger itemKey = Crypto.generateItemKeyOp2(columnKey.getM(), columnKey.getX(), rowId, g, n, totient, p, q);
+    BigInteger itemKey = Crypto.generateItemKeyOp2(columnKey.getM(), columnKey.getX(), rowId, g, n, totient, prime1, prime2);
     BigInteger encryptedValue = Crypto.encrypt(new BigInteger(plainText), itemKey, n);
 
     return Crypto.getSecureString(encryptedValue);

@@ -67,6 +67,8 @@ public class CompoundPredicate extends Predicate {
 
     CompoundPredicate compoundPredObj = (CompoundPredicate) obj;
 
+    boolean equal = (op == compoundPredObj.op && children.equals(compoundPredObj.children));
+
     return op == compoundPredObj.op && children.equals(compoundPredObj.children);
   }
 
@@ -95,7 +97,10 @@ public class CompoundPredicate extends Predicate {
   }
 
   public void setLeftPred(Expr leftPred) {
-    setChild(0, leftPred);
+    if(children.size() < 1)
+      children.add(leftPred);
+    else
+      setChild(0, leftPred);
   }
 
   public Expr getLeftPred() {
@@ -103,7 +108,15 @@ public class CompoundPredicate extends Predicate {
   }
 
   public void setRightPred(Expr rightPred) {
-    setChild(1, rightPred);
+    if(children.size() < 1) {
+      children.add(null);
+      children.add(rightPred);
+    }
+    else if(children.size() == 1) {
+      children.add(rightPred);
+    }
+    else
+      setChild(1, rightPred);
   }
 
   public Expr getRightPred() {

@@ -21,18 +21,17 @@ import static org.junit.Assert.*;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Properties;
 
 import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 
+import edu.hku.sdb.catalog.DBMeta;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.hku.sdb.catalog.ColumnMeta;
 import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.util.TestQuery;
 import edu.hku.sdb.util.TestUtility;
@@ -60,11 +59,9 @@ public class SemanticAnalyzerTest {
     pmf = JDOHelper.getPersistenceManagerFactory(properties);
     pm = pmf.getPersistenceManager();
 
-    String dbName = TestQuery.dbName;
-    List<ColumnMeta> cols = TestQuery.createColMeta();
-
-    metadb = new MetaStore(dbName, pm);
-    metadb.addCols(cols);
+    DBMeta dbMeta = TestQuery.createDBMetaSimple();
+    metadb = new MetaStore(dbMeta.getName(), pm);
+    metadb.addDB(dbMeta);
 
     return metadb;
   }
@@ -103,7 +100,7 @@ public class SemanticAnalyzerTest {
     try {
       ASTNode astTree = parser.parse(command);
 
-      ParseNode ansTree = TestQuery.prepareAnsJoin();
+      ParseNode ansTree = TestQuery.prepareAnsJoinAnalyzed();
       ParseNode resultTree = testObj.analyze(astTree);
 
       assertEquals(ansTree, resultTree);
@@ -120,7 +117,7 @@ public class SemanticAnalyzerTest {
     try {
       ASTNode astTree = parser.parse(command);
 
-      ParseNode ansTree = TestQuery.prepareAnsJoinGroupBy();
+      ParseNode ansTree = TestQuery.prepareAnsJoinGroupByAnalyzed();
       ParseNode resultTree = testObj.analyze(astTree);
 
       assertEquals(ansTree, resultTree);
@@ -138,7 +135,7 @@ public class SemanticAnalyzerTest {
     try {
       ASTNode astTree = parser.parse(command);
 
-      ParseNode ansTree = TestQuery.prepareAnsNested();
+      ParseNode ansTree = TestQuery.prepareAnsNestedAnalyzed();
       ParseNode resultTree = testObj.analyze(astTree);
 
       assertEquals(ansTree, resultTree);
@@ -149,13 +146,12 @@ public class SemanticAnalyzerTest {
 
   @Test
   public void testAnalyzeJoinMixSen() {
-    String command = "SELECT a + c FROM T1 JOIN T2 ON T1.id = T2.id WHERE c >" +
-            " 1.0";
+    String command = "SELECT a + c FROM T1 JOIN T2 ON T1.id = T2.id WHERE c > 1.0 AND b < 10";
 
     try {
       ASTNode astTree = parser.parse(command);
 
-      ParseNode ansTree = TestQuery.prepareAnsJoinMixSen();
+      ParseNode ansTree = TestQuery.prepareAnsJoinMixSenAnalyzed();
       ParseNode resultTree = testObj.analyze(astTree);
 
       assertEquals(ansTree, resultTree);
@@ -172,7 +168,7 @@ public class SemanticAnalyzerTest {
     try {
       ASTNode astTree = parser.parse(command);
 
-      ParseNode ansTree = TestQuery.prepareCreateStmtAnalysed();
+      ParseNode ansTree = TestQuery.prepareCreateStmtAnalyzed();
       ParseNode resultTree = testObj.analyze(astTree);
 
       assertEquals(ansTree, resultTree);
@@ -193,7 +189,7 @@ public class SemanticAnalyzerTest {
     try {
       ASTNode astTree = parser.parse(command);
 
-      ParseNode ansTree = TestQuery.prepareAnsComplex();
+      ParseNode ansTree = TestQuery.prepareAnsComplexAnalyzed();
       ParseNode resultTree = testObj.analyze(astTree);
 
       assertEquals(ansTree, resultTree);

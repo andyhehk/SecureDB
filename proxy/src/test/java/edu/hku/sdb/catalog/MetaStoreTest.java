@@ -107,11 +107,8 @@ public class MetaStoreTest {
     String tblName3 = "dummy_tbl3";
 
     TableMeta tbl1 = new TableMeta(dbName1, tblName1.toUpperCase());
-    tbl1.setDbMeta(db1);
     TableMeta tbl2 = new TableMeta(dbName2.toUpperCase(), tblName2);
-    tbl1.setDbMeta(db2);
     TableMeta tbl3 = new TableMeta(dbName2, tblName3);
-    tbl1.setDbMeta(db2);
     metaDB.addTbl(tbl1);
     metaDB.addTbl(tbl2);
     metaDB.addTbl(tbl3);
@@ -133,10 +130,8 @@ public class MetaStoreTest {
 
     ColumnMeta col1 = new ColumnMeta(dbName1.toUpperCase(),
             tblName1.toUpperCase(), colName1);
-    col1.setTableMeta(tbl1);
     ColumnMeta col2 = new ColumnMeta(dbName2, tblName2.toUpperCase(),
             colName2.toUpperCase(), DataType.CHAR, true, new ColumnKey("2", "2"));
-    col1.setTableMeta(tbl2);
 
     metaDB.addCol(col1);
     metaDB.addCol(col2);

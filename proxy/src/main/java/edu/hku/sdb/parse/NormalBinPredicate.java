@@ -37,6 +37,8 @@ public class NormalBinPredicate extends BinaryPredicate {
       return false;
 
     NormalBinPredicate binPred = (NormalBinPredicate) obj;
+
+    boolean equal = (op.equals(binPred.op) && children.equals(binPred.children));
     return op.equals(binPred.op) && children.equals(binPred.children);
   }
 

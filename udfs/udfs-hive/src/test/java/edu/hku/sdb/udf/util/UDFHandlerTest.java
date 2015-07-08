@@ -110,17 +110,13 @@ public class UDFHandlerTest extends TestCase {
 
   public void testAddHandler1() {
     BigInteger result = UDFHandler.add(new BigInteger("9"), new BigInteger(
-                    "16"), new BigInteger("23"), new BigInteger("4"),
-            new BigInteger("14"), new BigInteger("9"),
-            new BigInteger("11"), new BigInteger("35"));
+                    "16"),  new BigInteger("35"));
     assertEquals(new BigInteger("29"), result);
   }
 
   public void testAddHandler2() {
     BigInteger result = UDFHandler.add(new BigInteger("10322836"),
-            new BigInteger("22493371767"), new BigInteger("2451"),
-            new BigInteger("5"), new BigInteger("391147"), new BigInteger(
-                    "4"), new BigInteger("134211"), new BigInteger(
+            new BigInteger("22493371767"), new BigInteger(
                     "526631133691760337517"));
     assertEquals(new BigInteger("520470587846211796404"), result);
   }

@@ -41,7 +41,7 @@
 
     <property>
         <name>edu.hku.sdb.conf.database.username</name>
-        <value>haibin</value>
+        <value>hiveuser</value>
     </property>
 
     <property>
@@ -61,7 +61,7 @@
 
     <property>
         <name>edu.hku.sdb.conf.jdbc.url</name>
-        <value>jdbc:hive2://galaxy046:10000</value>
+        <value>jdbc:hive2://localhost:10000</value>
     </property>
 
 </configuration>

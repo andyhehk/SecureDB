@@ -20,66 +20,259 @@ package edu.hku.sdb.util;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.FileHandler;
 
-import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.catalog.ColumnMeta;
-import edu.hku.sdb.catalog.DataType;
+import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.crypto.Crypto;
 import edu.hku.sdb.parse.*;
 import edu.hku.sdb.parse.BinaryPredicate.BinOperator;
 import edu.hku.sdb.parse.NormalArithmeticExpr.Operator;
-import org.codehaus.jackson.map.MapperConfig;
 
 public class TestQuery {
 
   public static String dbName = "dummy_db";
 
-  /**
-   * Prepare a dummy database.
-   *
-   * @return
-   */
-  public static List<ColumnMeta> createColMeta() {
 
+  public static List<ColumnMeta> createColMetaT1Simple() {
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
-    ColumnMeta col1 = new ColumnMeta(dbName, "T1", "id", DataType.INT, true,
+    ColumnMeta t1ID = new ColumnMeta(dbName, "T1", "id", DataType.INT, true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta col2 = new ColumnMeta(dbName, "T1", "a", DataType.INT, true,
+    ColumnMeta t1A = new ColumnMeta(dbName, "T1", "a", DataType.INT, true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+    ColumnMeta t1RowID = new ColumnMeta(dbName, "T1", BasicFieldLiteral
+            .ROW_ID_COLUMN_NAME, DataType.INT, true,
+            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+    ColumnMeta t1R = new ColumnMeta(dbName, "T1", BasicFieldLiteral.R_COLUMN_NAME,
+            DataType.INT, true,
+            new ColumnKey(new BigInteger("2"), new BigInteger("4")));
+    ColumnMeta t1S = new ColumnMeta(dbName, "T1", BasicFieldLiteral.S_COLUMN_NAME,
+            DataType.INT, true,
+            new ColumnKey(new BigInteger("2"), new BigInteger("4")));
 
-    ColumnMeta col3 = new ColumnMeta(dbName, "T2", "id", DataType.INT, true,
-            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta col4 = new ColumnMeta(dbName, "T2", "b", DataType.INT, true,
-            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta col5 = new ColumnMeta(dbName, "T2", "c", DataType.INT, false,
-            null);
-
-    ColumnMeta col6 = new ColumnMeta(dbName, "T3", "id1", DataType.INT, true,
-            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta col7 = new ColumnMeta(dbName, "T3", "id2", DataType.INT, false,
-            null);
-    ColumnMeta col8 = new ColumnMeta(dbName, "T3", "d", DataType.INT, true,
-            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-
-    cols.add(col1);
-    cols.add(col2);
-    cols.add(col3);
-    cols.add(col4);
-    cols.add(col5);
-    cols.add(col6);
-    cols.add(col7);
-    cols.add(col8);
+    cols.add(t1ID);
+    cols.add(t1A);
+    cols.add(t1S);
+    cols.add(t1R);
+    cols.add(t1RowID);
 
     return cols;
+  }
+
+  public static List<ColumnMeta> createColMetaT2Simple() {
+    List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
+
+    ColumnMeta t2ID = new ColumnMeta(dbName, "T2", "id", DataType.INT, true,
+            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+    ColumnMeta t2B = new ColumnMeta(dbName, "T2", "b", DataType.INT, true,
+            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+    ColumnMeta t2C = new ColumnMeta(dbName, "T2", "c", DataType.INT, false,
+            null);
+    ColumnMeta t2RowID = new ColumnMeta(dbName, "T2", BasicFieldLiteral
+            .ROW_ID_COLUMN_NAME, DataType.INT, true,
+            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+    ColumnMeta t2R = new ColumnMeta(dbName, "T2", BasicFieldLiteral.R_COLUMN_NAME,
+            DataType.INT, true,
+            new ColumnKey(new BigInteger("3"), new BigInteger("5")));
+    ColumnMeta t2S = new ColumnMeta(dbName, "T2", BasicFieldLiteral.S_COLUMN_NAME,
+            DataType.INT, true,
+            new ColumnKey(new BigInteger("3"), new BigInteger("5")));
+
+    cols.add(t2ID);
+    cols.add(t2B);
+    cols.add(t2C);
+    cols.add(t2S);
+    cols.add(t2R);
+    cols.add(t2RowID);
+
+    return cols;
+  }
+
+  public static List<ColumnMeta> createColMetaT3Simple() {
+    List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
+    ColumnMeta t3ID1 = new ColumnMeta(dbName, "T3", "id1", DataType.INT, true,
+            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+    ColumnMeta t3ID2 = new ColumnMeta(dbName, "T3", "id2", DataType.INT, false,
+            null);
+    ColumnMeta t3D = new ColumnMeta(dbName, "T3", "d", DataType.INT, true,
+            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+    ColumnMeta t3RowID = new ColumnMeta(dbName, "T3", BasicFieldLiteral
+            .ROW_ID_COLUMN_NAME, DataType.INT, true,
+            new ColumnKey(new BigInteger("1"), new BigInteger("3")));
+    ColumnMeta t3R = new ColumnMeta(dbName, "T3", BasicFieldLiteral.R_COLUMN_NAME,
+            DataType.INT, true,
+            new ColumnKey(new BigInteger("4"), new BigInteger("6")));
+    ColumnMeta t3S = new ColumnMeta(dbName, "T3", BasicFieldLiteral.S_COLUMN_NAME,
+            DataType.INT, true,
+            new ColumnKey(new BigInteger("4"), new BigInteger("6")));
+
+    cols.add(t3ID1);
+    cols.add(t3ID2);
+    cols.add(t3D);
+
+    cols.add(t3S);
+    cols.add(t3R);
+    cols.add(t3RowID);
+
+    return cols;
+  }
+
+
+  public static List<TableMeta> createTableMetasSimple() {
+    List<TableMeta> tblMetas = new ArrayList<>();
+
+    TableMeta t1 = new TableMeta(dbName, "T1");
+    TableMeta t2 = new TableMeta(dbName, "T2");
+    TableMeta t3 = new TableMeta(dbName, "T3");
+
+    t1.setCols(createColMetaT1Simple());
+    t2.setCols(createColMetaT2Simple());
+    t3.setCols(createColMetaT3Simple());
+
+    tblMetas.add(t1);
+    tblMetas.add(t2);
+    tblMetas.add(t3);
+
+    return tblMetas;
+  }
+
+  public static DBMeta createDBMetaSimple() {
+    DBMeta dbMeta = new DBMeta(dbName);
+    // No secret keys
+
+    dbMeta.setTbls(createTableMetasSimple());
+
+    return dbMeta;
+  }
+
+  public static List<ColumnMeta> createColMetaT1(BigInteger prime1, BigInteger prime2) {
+    List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
+
+    ColumnMeta t1ID = new ColumnMeta(dbName, "T1", "id", DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+    ColumnMeta t1A = new ColumnMeta(dbName, "T1", "a", DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+    ColumnMeta t1C = new ColumnMeta(dbName, "T1", "c", DataType.INT, false,
+            null);
+    ColumnMeta t1RowID = new ColumnMeta(dbName, "T1", BasicFieldLiteral
+            .ROW_ID_COLUMN_NAME, DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+    ColumnMeta t1R = new ColumnMeta(dbName, "T1", BasicFieldLiteral.R_COLUMN_NAME,
+            DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2), Crypto.generatePositiveRand(prime1, prime2)));
+    ColumnMeta t1S = new ColumnMeta(dbName, "T1", BasicFieldLiteral.S_COLUMN_NAME,
+            DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+
+    cols.add(t1ID);
+    cols.add(t1A);
+    cols.add(t1C);
+    cols.add(t1S);
+    cols.add(t1R);
+    cols.add(t1RowID);
+
+    return cols;
+  }
+
+  public static List<ColumnMeta> createColMetaT2(BigInteger prime1, BigInteger prime2) {
+    List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
+
+    ColumnMeta t2ID = new ColumnMeta(dbName, "T2", "id", DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2), Crypto.generatePositiveRand(prime1, prime2)));
+    ColumnMeta t2B = new ColumnMeta(dbName, "T2", "b", DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2), Crypto.generatePositiveRand(prime1, prime2)));
+
+    ColumnMeta t2RowID = new ColumnMeta(dbName, "T2", BasicFieldLiteral
+            .ROW_ID_COLUMN_NAME, DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+    ColumnMeta t2R = new ColumnMeta(dbName, "T2", BasicFieldLiteral.R_COLUMN_NAME,
+            DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+    ColumnMeta t2S = new ColumnMeta(dbName, "T2", BasicFieldLiteral.S_COLUMN_NAME,
+            DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+
+    cols.add(t2ID);
+    cols.add(t2B);
+    cols.add(t2S);
+    cols.add(t2R);
+    cols.add(t2RowID);
+
+    return cols;
+  }
+
+
+  public static List<ColumnMeta> createColMetaT3(BigInteger prime1, BigInteger prime2) {
+    List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
+    ColumnMeta t3ID1 = new ColumnMeta(dbName, "T3", "id1", DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+    ColumnMeta t3ID2 = new ColumnMeta(dbName, "T3", "id2", DataType.INT, false,
+            null);
+    ColumnMeta t3D = new ColumnMeta(dbName, "T3", "d", DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+    ColumnMeta t3RowID = new ColumnMeta(dbName, "T3", BasicFieldLiteral
+            .ROW_ID_COLUMN_NAME, DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+    ColumnMeta t3R = new ColumnMeta(dbName, "T3", BasicFieldLiteral.R_COLUMN_NAME,
+            DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+    ColumnMeta t3S = new ColumnMeta(dbName, "T3", BasicFieldLiteral.S_COLUMN_NAME,
+            DataType.INT, true,
+            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+
+    cols.add(t3ID1);
+    cols.add(t3ID2);
+    cols.add(t3D);
+
+    cols.add(t3S);
+    cols.add(t3R);
+    cols.add(t3RowID);
+
+    return cols;
+  }
+
+
+  public static List<TableMeta> createTableMetas(BigInteger prime1, BigInteger prime2) {
+    List<TableMeta> tblMetas = new ArrayList<>();
+
+    TableMeta t1 = new TableMeta(dbName, "T1");
+    TableMeta t2 = new TableMeta(dbName, "T2");
+    TableMeta t3 = new TableMeta(dbName, "T3");
+
+    t1.setCols(createColMetaT1(prime1, prime2));
+    t2.setCols(createColMetaT2(prime1, prime2));
+    t3.setCols(createColMetaT3(prime1, prime2));
+
+    tblMetas.add(t1);
+    tblMetas.add(t2);
+    tblMetas.add(t3);
+
+    return tblMetas;
+  }
+
+  public static DBMeta createDBMeta() {
+    DBMeta dbMeta = new DBMeta(dbName);
+
+    BigInteger prime1 = Crypto.generateRandPrime();
+    BigInteger prime2 = Crypto.generateRandPrime();
+    BigInteger n = prime1.multiply(prime2);
+    BigInteger g = Crypto.generatePositiveRand(prime1, prime2);
+
+    dbMeta.setN(n.toString());
+    dbMeta.setG(g.toString());
+    dbMeta.setPrime1(prime1.toString());
+    dbMeta.setPrime2(prime2.toString());
+
+    dbMeta.setTbls(createTableMetas(prime1, prime2));
+
+    return dbMeta;
+
   }
 
   /**
    * Prepare a complex query that is nested and contains join, group by, having,
    * order by, and limit
    */
-  public static ParseNode prepareAnsComplex() {
+  public static ParseNode prepareAnsComplexAnalyzed() {
     // Prepare the sub_query first
     BaseTableRef tblT1 = new BaseTableRef("T1", "");
     BaseTableRef tblT2 = new BaseTableRef("T2", "");
@@ -184,7 +377,8 @@ public class TestQuery {
     FunctionCallExpr countFunc = new FunctionCallExpr(new FunctionName(("count")));
     List<Expr> exprs = new ArrayList<Expr>();
     exprs.add(temp1A);
-    FunctionCallExpr sumFunc = new FunctionCallExpr(new FunctionName("sum"), new FunctionParams(exprs));
+    FunctionCallExpr sumFunc = new FunctionCallExpr(new FunctionName("sum"), new
+            FunctionParams(exprs));
 
     selectList.getItemList().add(new SelectionItem(temp1ID, ""));
     selectList.getItemList().add(new SelectionItem(countFunc, "count"));
@@ -208,14 +402,16 @@ public class TestQuery {
 
     // Prepare group by
     List<Expr> groupingExpr = new ArrayList<>();
-    FieldLiteral groupby = new FieldLiteral("temp1", "id", DataType.INT, true, new ColumnKey("1", "3"));
+    FieldLiteral groupby = new FieldLiteral("temp1", "id", DataType.INT, true, new
+            ColumnKey("1", "3"));
     groupby.setReferedExpr(temp1ID);
     temp1ID.addReferredBy(groupby);
     groupby.setUp2date(true);
     groupingExpr.add(groupby);
 
     Expr having = new NormalBinPredicate(BinOperator.GT);
-    FieldLiteral count = new FieldLiteral("", "count", DataType.UNKNOWN, false, null);
+    FieldLiteral count = new FieldLiteral("", "count", DataType.UNKNOWN, false,
+            null);
     count.setReferedExpr(countFunc);
     countFunc.addReferredBy(count);
     having.addChild(count);
@@ -250,7 +446,7 @@ public class TestQuery {
    *
    * @return
    */
-  public static ParseNode prepareAnsJoin() {
+  public static ParseNode prepareAnsJoinAnalyzed() {
     SelectStmt selStmt = new SelectStmt();
 
     SelectionList selectList = new SelectionList();
@@ -298,12 +494,12 @@ public class TestQuery {
 
   /**
    * Prepare a selection statement with a single join operator with both
-   * sensitive
-   * columns and insensitive columns.
+   * sensitive columns and insensitive columns.
    *
    * @return
    */
-  public static ParseNode prepareAnsJoinMixSen() {
+  public static ParseNode prepareAnsJoinMixSenAnalyzed() {
+    //SELECT a + c FROM T1 JOIN T2 ON T1.id = T2.id WHERE c > 1.0 AND b < 10
     SelectStmt selStmt = new SelectStmt();
 
     SelectionList selectList = new SelectionList();
@@ -320,8 +516,18 @@ public class TestQuery {
     arithExpr.addChild(c);
     selectList.getItemList().add(new SelectionItem(arithExpr, ""));
 
-    Expr whereClause = new NormalBinPredicate(BinOperator.GT, c,
+    CompoundPredicate whereClause = new CompoundPredicate(CompoundPredicate
+            .CompoundOperator.AND);
+    Expr predicate1 = new NormalBinPredicate(BinOperator.GT, c,
             new FloatLiteral("1.0"));
+
+    FieldLiteral b = new FieldLiteral("T2", "b", DataType.INT, true,
+            new ColumnKey("1", "3"));
+    b.setUp2date(true);
+    Expr predicate2 = new NormalBinPredicate(BinOperator.LT, b,
+            new IntLiteral("10"));
+    whereClause.setLeftPred(predicate1);
+    whereClause.setRightPred(predicate2);
 
     BaseTableRef tbl1 = new BaseTableRef("T1", "");
     BaseTableRef tbl2 = new BaseTableRef("T2", "");
@@ -350,11 +556,23 @@ public class TestQuery {
   }
 
   /**
+   * Prepare rewritten query for @see edu.hku.sdb.util.TestQuery
+   * .prepareAnsJoinMixSenAnalyzed() .
+   *
+   * @return
+   */
+  public static String prepareAnsJoinMixSenRewritten() {
+    SelectStmt selStmt = new SelectStmt();
+
+    return selStmt.toSql();
+  }
+
+  /**
    * Prepare a selection statement with a single join and a group-by.
    *
    * @return
    */
-  public static ParseNode prepareAnsJoinGroupBy() {
+  public static ParseNode prepareAnsJoinGroupByAnalyzed() {
     SelectStmt selStmt = new SelectStmt();
 
     SelectionList selectList = new SelectionList();
@@ -414,7 +632,7 @@ public class TestQuery {
    *
    * @return
    */
-  public static ParseNode prepareAnsNested() {
+  public static ParseNode prepareAnsNestedAnalyzed() {
 
     // Prepare the sub_query first
     BaseTableRef tblT1 = new BaseTableRef("T1", "");
@@ -493,7 +711,7 @@ public class TestQuery {
   }
 
 
-  static public CreateStmt prepareCreateStmtAnalysed() {
+  static public CreateStmt prepareCreateStmtAnalyzed() {
     CreateStmt createStmt = new CreateStmt();
 
     //set table name
@@ -528,7 +746,7 @@ public class TestQuery {
     return createStmt;
   }
 
-  static public CreateStmt prepareCreateStmtRewritten() {
+  static public String prepareCreateStmtRewritten() {
     CreateStmt createStmt = new CreateStmt();
 
     //set table name
@@ -581,6 +799,6 @@ public class TestQuery {
 
     createStmt.setTableRowFormat(tableRowFormat);
 
-    return createStmt;
+    return createStmt.toSql();
   }
 }

@@ -37,8 +37,8 @@ public class CreateStmtTest {
 
   @Test
   public void testCreateStmt() throws Exception {
-    CreateStmt createStmt1 = TestQuery.prepareCreateStmtAnalysed();
-    CreateStmt createStmt2 = TestQuery.prepareCreateStmtAnalysed();
+    CreateStmt createStmt1 = TestQuery.prepareCreateStmtAnalyzed();
+    CreateStmt createStmt2 = TestQuery.prepareCreateStmtAnalyzed();
     assertEquals(createStmt1, createStmt2);
     //CREATE TABLE t2 (id INT, name VARCHAR(20), salary VARCHAR(2048), row_id VARCHAR(2048), r VARCHAR(2048), s VARCHAR(2048)) ROW FORMAT DELIMITED FIELDS TERMINATED BY ';';
     System.out.println(createStmt1.toSql());

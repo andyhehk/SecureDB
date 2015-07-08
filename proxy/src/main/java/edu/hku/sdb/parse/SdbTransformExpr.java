@@ -28,8 +28,13 @@ public class SdbTransformExpr extends Expr {
   public enum SdbOperator {
     SDB_ADD("sdb_add", "sdb UDF for adding  two columns"),
     SDB_MUL("sdb_mul", "sdb UDF for multiplying two columns"),
-    SDB_ADDROWID("sdb_intadd", "sdb UDF for adding two row ID"),
-    SDB_CARTESIAN("sdb_cartesian", "sdb UDF for cartesian two table");
+    SDB_ADDROWID("sdb_intadd", "sdb UDF for adding two row IDs"),
+    SDB_LT("sdb_lt", "sdb UDF for <"),
+    SDB_GT("sdb_gt", "sdb UDF for >"),
+    SDB_LE("sdb_le", "sdb UDF for <="),
+    SDB_GE("sdb_lt", "sdb UDF for >="),
+    SDB_EQ("sdb_lt", "sdb UDF for ="),
+    SDB_NE("sdb_lt", "sdb UDF for !=");
 
     private final String description;
     private final String name;

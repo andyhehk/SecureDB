@@ -96,21 +96,21 @@ public class SdbDriver {
     System.exit(0);
   }
 
-  private static void parseAndValidateInput(String[] argsList) {
+  private static void parseAndValidateInput(String[] args) {
 
-    if (argsList.length == 0) {
+    if (args.length == 0) {
       printUsage(System.out);
       return;
     }
 
-    if (argsList[0].toLowerCase().equals(HELP)) {
+    if (args[0].toLowerCase().equals(HELP)) {
       printUsage(System.out);
       return;
     }
 
-    if (argsList[0].toLowerCase().equals(START)) {
-      if (argsList.length > 2 && argsList[1].toLowerCase().equals(CONFIG_OPTION)) {
-        initConfig(argsList[2]);
+    if (args[0].toLowerCase().equals(START)) {
+      if (args.length > 2 && args[1].toLowerCase().equals(CONFIG_OPTION)) {
+        initConfig(args[2]);
       } else {
         initConfig();
       }
@@ -118,7 +118,7 @@ public class SdbDriver {
       return;
     }
 
-    if (argsList[0].toLowerCase().equals(STOP)) {
+    if (args[0].toLowerCase().equals(STOP)) {
       stopDriver();
       return;
     }

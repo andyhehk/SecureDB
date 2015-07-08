@@ -127,8 +127,12 @@ public class MetaStore {
    * @return
    */
   public DBMeta getDB(String dbName) {
-    return getByKey(DBMeta.DBPK.class.getName() + "::" + dbName.toLowerCase(),
+    DBMeta dbMeta = getByKey(DBMeta.DBPK.class.getName() + "::" + dbName
+                    .toLowerCase(),
             DBMeta.class);
+
+    return dbMeta;
+
   }
 
   /**
@@ -142,6 +146,27 @@ public class MetaStore {
     return getByKey(
             TableMeta.TablePK.class.getName() + "::" + dbName.toLowerCase() + "::"
                     + tblName.toLowerCase(), TableMeta.class);
+  }
+
+  /**
+   * Get all the table meta for a specific database.
+   * @param dbName
+   * @return
+   */
+  public List<TableMeta> getTbls(String dbName) {
+    Query q = pm.newQuery(TableMeta.class);
+    q.setFilter("DBNAME == " + "'" + dbName + "'");
+
+
+    List<TableMeta> tblMetas =  (List<TableMeta>) q.execute();
+
+    for(TableMeta tblMeta : tblMetas) {
+      q = pm.newQuery(ColumnMeta.class);
+      q.setFilter("DBNAME == " + "'" + dbName + "'" + " && " + "TBLNAME == " + "'" + tblMeta.getName() + "'");
+      tblMeta.setCols((List<ColumnMeta>) q.execute());
+    }
+
+    return tblMetas;
   }
 
   /**

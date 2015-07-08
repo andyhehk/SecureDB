@@ -24,6 +24,7 @@ import edu.hku.sdb.exec.PlanNode;
 import edu.hku.sdb.optimize.Optimizer;
 import edu.hku.sdb.optimize.RuleBaseOptimizer;
 import edu.hku.sdb.parse.*;
+import edu.hku.sdb.rewrite.RewriteException;
 import edu.hku.sdb.rewrite.SdbSchemeRewriter;
 import edu.hku.sdb.rewrite.UnSupportedException;
 import edu.hku.sdb.upload.UploadHandler;
@@ -53,12 +54,12 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   private SdbResultSet sdbResultSet;
   private SDBProfiler sdbProfiler;
 
-  private MetaStore metaDb;
+  private MetaStore metaDB;
   private Connection serverConnection;
 
-  public SdbStatement(MetaStore metaDb, Connection serverConnection) throws RemoteException {
+  public SdbStatement(MetaStore metaDB, Connection serverConnection) throws RemoteException {
     super();
-    setMetaDb(metaDb);
+    setMetaDB(metaDB);
     setServerConnection(serverConnection);
   }
 
@@ -78,13 +79,13 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     if (analyzedNode instanceof LoadStmt) {
       // another programme encrypts & uploads the data
       TableName tableName = ((LoadStmt) analyzedNode).getTableName();
-      UploadHandler uploadHandler = new UploadHandler(metaDb, tableName);
+      UploadHandler uploadHandler = new UploadHandler(metaDB, tableName);
       String sourceFilePath = ((LoadStmt) analyzedNode).getFilePath();
       uploadHandler.setSourceFile(sourceFilePath);
 
       //TODO should read from config file instead of hard code
-      String serverFilePath = "/user/haibin/" + tableName.getName() + new Random().nextInt(60000) + ".txt";
-      String hdfsURL = "hdfs://galaxy046:54310";
+      String serverFilePath = "/user/andy/" + tableName.getName() + new Random().nextInt(60000) + ".txt";
+      String hdfsURL = "hdfs://localhost:9000";
       uploadHandler.setHDFS_URL(hdfsURL);
       uploadHandler.setHDFS_FILE_PATH(hdfsURL + serverFilePath);
 
@@ -150,7 +151,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     optimizer = new RuleBaseOptimizer();
     PlanNode planNode = null;
     try {
-      planNode = optimizer.optimize(analyzedNode, serverConnection, metaDb);
+      planNode = optimizer.optimize(analyzedNode, serverConnection, metaDB);
     } catch (UnSupportedException e) {
       e.printStackTrace();
       throw new RemoteException(e.getMessage());
@@ -175,13 +176,15 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   private void rewriteNode(ParseNode analyzedNode) throws RemoteException {
 
     LOG.info("Rewriting " + analyzedNode.toSql());
-    sdbSchemeRewriter = new SdbSchemeRewriter(metaDb.getAllDBs().get(0));
+    sdbSchemeRewriter = new SdbSchemeRewriter(metaDB.getAllDBs().get(0));
     try {
       sdbSchemeRewriter.rewrite(analyzedNode);
 
     } catch (UnSupportedException e) {
       e.printStackTrace();
       throw new RemoteException(e.getMessage());
+    } catch (RewriteException e) {
+      e.printStackTrace();
     }
   }
 
@@ -191,7 +194,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     long parseStartTimestamp = System.currentTimeMillis();
 
     parser = new ParseDriver();
-    semanticAnalyzer = new SemanticAnalyzer(metaDb);
+    semanticAnalyzer = new SemanticAnalyzer(metaDB);
     ASTNode parsedNode = null;
     ParseNode analyzedNode = null;
     try {
@@ -219,12 +222,12 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     return (Profiler) sdbResultSet;
   }
 
-  public MetaStore getMetaDb() {
-    return metaDb;
+  public MetaStore getMetaDB() {
+    return metaDB;
   }
 
-  public void setMetaDb(MetaStore metaDb) {
-    this.metaDb = metaDb;
+  public void setMetaDB(MetaStore metaDB) {
+    this.metaDB = metaDB;
   }
 
   public Connection getServerConnection() {

@@ -38,7 +38,7 @@ public class BigIntLiteral extends LiteralExpr {
 
   @Override
   public String toSql() {
-    return value.toString();
+    return value.toString(64);
   }
 
   @Override

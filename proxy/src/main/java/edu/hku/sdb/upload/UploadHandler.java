@@ -32,9 +32,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 /**
- * Created by Eric Haibin Lin on 12/2/15.
- * Encrypt and upload a plaintext file to HDFS
- * <p/>
  * Major tasks:
  * 1. Read plaintext line by line
  * 2. For every line, generate row-id, encrypt sensitive integer columns with row-id.
@@ -50,8 +47,8 @@ public class UploadHandler {
   private MetaStore metaStore;
   private TableName tableName;
 
-  private BigInteger p;
-  private BigInteger q;
+  private BigInteger prime1;
+  private BigInteger prime2;
   private BigInteger n;
   private BigInteger g;
   private BigInteger nPlusOne;
@@ -125,10 +122,10 @@ public class UploadHandler {
     //TODO: should programatically get db name
     DBMeta dbMeta = metaStore.getAllDBs().get(0);
     n = new BigInteger(dbMeta.getN());
-    p = new BigInteger(dbMeta.getPrime1());
-    q = new BigInteger(dbMeta.getPrime2());
+    prime1 = new BigInteger(dbMeta.getPrime1());
+    prime2 = new BigInteger(dbMeta.getPrime2());
     g = new BigInteger(dbMeta.getG());
-    totient = Crypto.evaluateTotient(p, q);
+    totient = Crypto.evaluateTotient(prime1, prime2);
     nPlusOne = n.add(BigInteger.ONE);
     nSquared = n.multiply(n);
 
@@ -159,7 +156,7 @@ public class UploadHandler {
   private BufferedWriter getBufferedWriter() {
     BufferedWriter bufferedWriter = null;
     Configuration configuration = new Configuration();
-    System.setProperty("HADOOP_USER_NAME", "haibin");
+    System.setProperty("HADOOP_USER_NAME", "andy");
     //configuration.
     if (localMode) {
       configuration.set("mapred.job.tracker", "local");
@@ -188,10 +185,10 @@ public class UploadHandler {
 
     DBMeta dbMeta = metaStore.getAllDBs().get(0);
     n = new BigInteger(dbMeta.getN());
-    p = new BigInteger(dbMeta.getPrime1());
-    q = new BigInteger(dbMeta.getPrime2());
+    prime1 = new BigInteger(dbMeta.getPrime1());
+    prime2 = new BigInteger(dbMeta.getPrime2());
     g = new BigInteger(dbMeta.getG());
-    totient = Crypto.evaluateTotient(p, q);
+    totient = Crypto.evaluateTotient(prime1, prime2);
     nPlusOne = n.add(BigInteger.ONE);
     nSquared = n.multiply(n);
     allCols = metaStore.getTbl(DBMeta.defaultDbName, tableName.getName()).getCols();
@@ -205,7 +202,7 @@ public class UploadHandler {
     String[] columnValues = line.split(rowFormat);
 
     //80 bit long rowId is sufficient
-    BigInteger rowId = Crypto.generatePositiveRandShort(p, q);
+    BigInteger rowId = Crypto.generatePositiveRandShort(prime1, prime2);
 
     for (int columnIndex = 0; columnIndex < columnValues.length; columnIndex++) {
       ColumnMeta columnMeta = allCols.get(columnIndex);
@@ -234,7 +231,7 @@ public class UploadHandler {
     //Adding r column
     int rColumnIndex = columnValues.length + 2;
     //80 bit long r value is sufficient
-    BigInteger randomInt = Crypto.generatePositiveRandShort(p, q);
+    BigInteger randomInt = Crypto.generatePositiveRandShort(prime1, prime2);
     IntegerPlaintext rPlaintext = getIntegerPlaintext(randomInt.toString(), rowId, allCols.get(rColumnIndex));
     newLine = appendColumnString(newLine, rColumnIndex, rPlaintext);
 
@@ -253,8 +250,8 @@ public class UploadHandler {
     IntegerPlaintext integerPlaintext = new IntegerPlaintext();
     integerPlaintext.setPlainText(columnValue);
     integerPlaintext.setSensitive(columnMeta.isSensitive());
-    integerPlaintext.setP(p);
-    integerPlaintext.setQ(q);
+    integerPlaintext.setPrime1(prime1);
+    integerPlaintext.setPrime2(prime2);
     integerPlaintext.setG(g);
     integerPlaintext.setN(n);
     integerPlaintext.setTotient(totient);
