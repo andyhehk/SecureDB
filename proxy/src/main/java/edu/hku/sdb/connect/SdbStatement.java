@@ -17,10 +17,11 @@
 
 package edu.hku.sdb.connect;
 
+import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.MetaStore;
-import edu.hku.sdb.exec.ExecutionState;
-import edu.hku.sdb.exec.Executor;
-import edu.hku.sdb.exec.PlanNode;
+import edu.hku.sdb.conf.DbConf;
+import edu.hku.sdb.exec.*;
 import edu.hku.sdb.optimize.Optimizer;
 import edu.hku.sdb.optimize.RuleBaseOptimizer;
 import edu.hku.sdb.parse.*;
@@ -37,6 +38,8 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class SdbStatement extends UnicastRemoteObject implements Statement,
@@ -56,9 +59,11 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
 
   private MetaStore metaDB;
   private Connection serverConnection;
+  private DBMeta dbMeta;
 
-  public SdbStatement(MetaStore metaDB, Connection serverConnection) throws RemoteException {
+  public SdbStatement(MetaStore metaDB, Connection serverConnection, DBMeta dbMeta) throws RemoteException {
     super();
+    this.dbMeta = dbMeta;
     setMetaDB(metaDB);
     setServerConnection(serverConnection);
   }
@@ -89,13 +94,13 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       uploadHandler.setHDFS_URL(hdfsURL);
       uploadHandler.setHDFS_FILE_PATH(hdfsURL + serverFilePath);
 
-      LOG.info("Loading data from " + sourceFilePath + " to server " + hdfsURL);
+      LOG.info("Loading data from "  + sourceFilePath + " to server " + hdfsURL);
 
       ProfileUtil profileUtil = new ProfileUtil();
       uploadHandler.upload();
       LOG.info("Upload time: " + profileUtil.getDuration());
 
-      ((LoadStmt) analyzedNode).setFilePath(serverFilePath);
+      ((LoadStmt) analyzedNode).setFilePath(hdfsURL + serverFilePath);
       String loadQuery = analyzedNode.toSql();
       LOG.info(loadQuery);
       try {
@@ -111,13 +116,20 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       long rewriteStartTimestamp = System.currentTimeMillis();
       // Rewrite
       rewriteNode(analyzedNode);
-
-      // Optimize
-      PlanNode planNode = getPlanNode(analyzedNode);
-
       long rewriteEndTimestamp = System.currentTimeMillis();
       sdbProfiler.setClientRewriteTime(rewriteEndTimestamp - rewriteStartTimestamp);
 
+      PlanNode planNode;
+
+      // No need to optimize a create stmt
+      if(analyzedNode instanceof CreateStmt) {
+        planNode = getCreateStmtPkanNode((CreateStmt) analyzedNode, serverConnection, metaDB);
+      }
+      else {
+        // Optimize
+        planNode = getPlanNode(analyzedNode);
+
+      }
 
       // Execute
       sdbResultSet = getSdbResultSet(planNode);
@@ -147,21 +159,21 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   }
 
   private PlanNode getPlanNode(ParseNode analyzedNode) throws RemoteException {
-    System.out.println("Optimizing " + analyzedNode.toSql());
+    LOG.info("Optimizing query");
     optimizer = new RuleBaseOptimizer();
     PlanNode planNode = null;
     try {
-      planNode = optimizer.optimize(analyzedNode, serverConnection, metaDB);
+      planNode = optimizer.optimize(analyzedNode, serverConnection, dbMeta);
     } catch (UnSupportedException e) {
       e.printStackTrace();
       throw new RemoteException(e.getMessage());
     }
-    System.out.println("Plan Node generated.\n");
+    LOG.info("Finish optimizing query");
     return planNode;
   }
 
   private SdbResultSet getSdbResultSet(PlanNode planNode) throws RemoteException {
-    System.out.println("Executing ...");
+    LOG.info("Executing query");
     long executeStartTimestamp = System.currentTimeMillis();
     executor = new Executor();
     SdbResultSet resultSet = new SdbResultSet();
@@ -169,17 +181,17 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     executor.execute(planNode, eState, resultSet);
     long executeEndTimestamp = System.currentTimeMillis();
     sdbProfiler.setExecuteTime(executeEndTimestamp - executeStartTimestamp);
-    System.out.println("Execution Done.");
+    LOG.info("Finishing query");
     return resultSet;
   }
 
   private void rewriteNode(ParseNode analyzedNode) throws RemoteException {
 
-    LOG.info("Rewriting " + analyzedNode.toSql());
-    sdbSchemeRewriter = new SdbSchemeRewriter(metaDB.getAllDBs().get(0));
+    LOG.info("Rewriting query: " + analyzedNode.toSql());
+    sdbSchemeRewriter = new SdbSchemeRewriter(dbMeta);
     try {
       sdbSchemeRewriter.rewrite(analyzedNode);
-
+      LOG.info("The finial ewritten query: " + analyzedNode.toSql());
     } catch (UnSupportedException e) {
       e.printStackTrace();
       throw new RemoteException(e.getMessage());
@@ -236,5 +248,44 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
 
   public void setServerConnection(Connection serverConnection) {
     this.serverConnection = serverConnection;
+  }
+
+  protected PlanNode getCreateStmtPkanNode(CreateStmt createStmt, Connection connection, MetaStore metaStore) {
+
+    String query = createStmt.toSql().toLowerCase();
+    RowDesc localCreateRowDesc = new RowDesc();
+    List<BasicColumnDesc> columnDescList = new ArrayList<BasicColumnDesc>();
+    TableName tableName = null;
+
+    for (BasicFieldLiteral fieldLiteral : createStmt.getFieldList()) {
+      BasicColumnDesc basicColumnDesc = null;
+      Class clazz = null;
+      tableName = fieldLiteral.getTableName();
+      String columnName = fieldLiteral.getName();
+      String alias = "";
+      boolean isSen = fieldLiteral.isSen();
+      if (isSen) {
+        clazz = Integer.class;
+        ColumnKey columnKey = fieldLiteral.getColumnKey();
+        basicColumnDesc = new ColumnDesc(columnName, alias, clazz, true, columnKey);
+      } else {
+        switch (fieldLiteral.getType().getDataType()) {
+          case INT:
+            clazz = Integer.class;
+            break;
+          default:
+            clazz = String.class;
+        }
+        basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
+      }
+      columnDescList.add(basicColumnDesc);
+
+    }
+    localCreateRowDesc.setSignature(columnDescList);
+
+    RemoteUpdate remoteUpdate = new RemoteUpdate(query, connection);
+    LocalCreate localCreate = new LocalCreate(metaStore, tableName, localCreateRowDesc);
+    CreateTbl createTbl = new CreateTbl(remoteUpdate, localCreate);
+    return createTbl;
   }
 }

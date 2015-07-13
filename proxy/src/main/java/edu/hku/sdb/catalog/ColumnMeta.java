@@ -61,7 +61,6 @@ public class ColumnMeta {
 
     public ColumnPK(String value) {
       StringTokenizer token = new StringTokenizer(value, "::");
-      token.nextToken(); // className
       this.dbName = token.nextToken(); // db name
       this.tblName = token.nextToken(); // table name
       this.colName = token.nextToken(); // column name
@@ -91,8 +90,7 @@ public class ColumnMeta {
     @Override
     public String toString() {
       // Give output expected by String constructor
-      return this.getClass().getName() + "::" + this.dbName + "::"
-              + this.tblName + "::" + this.colName;
+      return this.dbName + "::" + this.tblName + "::" + this.colName;
     }
 
   }

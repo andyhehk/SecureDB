@@ -53,6 +53,7 @@ public class QueryModel {
     List<String> resultRow = new ArrayList<>();
     try {
       if (resultSet.next()) {
+        // The first column is row_id, just skip it.
         for (int i = 0; i < columnCount; i++) {
           resultRow.add(resultSet.getString(i + 1));
         }

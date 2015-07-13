@@ -17,21 +17,31 @@
 
 package edu.hku.sdb.driver;
 
+import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.conf.ConnectionConf;
+import edu.hku.sdb.conf.DbConf;
 import edu.hku.sdb.conf.SdbConf;
 import edu.hku.sdb.connect.Connection;
 import edu.hku.sdb.connect.ConnectionService;
 import edu.hku.sdb.connect.SdbConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.jdo.JDOHelper;
+import javax.jdo.PersistenceManager;
+import javax.jdo.PersistenceManagerFactory;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Properties;
 
 public class ConnectionPool extends UnicastRemoteObject implements
         ConnectionService, Serializable {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ConnectionPool.class);
 
   /**
    * Default serialversion ID
@@ -43,6 +53,7 @@ public class ConnectionPool extends UnicastRemoteObject implements
   private Integer availableConnectionNumber;
   private SdbConf sdbConf;
   private SdbConnection sdbConnection;
+  private MetaStore metaStore;
 
   /**
    * @throws RemoteException
@@ -56,12 +67,15 @@ public class ConnectionPool extends UnicastRemoteObject implements
     setSDBConf(sdbConf);
     setAvailableConnectionNumber(sdbConf.getConnectionConf()
             .getMaxConnectionNumber());
+
+    LOG.info("Connecting to metastore DB");
+    metaStore = new MetaStore(getPersistManager(sdbConf.getMetadbConf()));
   }
 
   private void createConnection() {
     try {
       ConnectionConf connectionConf = sdbConf.getConnectionConf();
-      sdbConnection = new SdbConnection(sdbConf);
+      sdbConnection = new SdbConnection(sdbConf, metaStore);
       serviceUrl = connectionConf.getSdbAddress() + ":"
               + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
       Naming.rebind(serviceUrl, sdbConnection);
@@ -126,4 +140,31 @@ public class ConnectionPool extends UnicastRemoteObject implements
   public void setSDBConf(SdbConf sdbConf) {
     this.sdbConf = sdbConf;
   }
+
+  private PersistenceManager getPersistManager(DbConf dbConf) {
+    //TODO: get params from dbConf
+    String driver = dbConf.getJdbcDriverName();
+
+    LOG.info("Connecting to Metastore with driver: " + driver);
+
+    Properties properties = new Properties();
+    properties.setProperty("javax.jdo.option.ConnectionURL",
+            "jdbc:derby:metastore_db;create=true");
+
+    properties.setProperty("javax.jdo.option.ConnectionDriverName",
+            driver);
+
+    properties.setProperty("javax.jdo.option.ConnectionUserName", "");
+    properties.setProperty("javax.jdo.option.ConnectionPassword", "");
+    properties.setProperty("datanucleus.schema.autoCreateSchema", "true");
+    properties.setProperty("datanucleus.schema.autoCreateTables", "true");
+    properties.setProperty("datanucleus.schema.validateTables", "false");
+    properties.setProperty("datanucleus.schema.validateConstraints", "false");
+
+    PersistenceManagerFactory pmf = JDOHelper.getPersistenceManagerFactory(properties);
+    PersistenceManager pm = pmf.getPersistenceManager();
+
+    return  pm;
+  }
+
 }

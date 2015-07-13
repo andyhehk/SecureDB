@@ -19,9 +19,6 @@ package edu.hku.sdb.parse;
 
 import edu.hku.sdb.catalog.MetaStore;
 
-/**
- * Created by Eric Haibin Lin on 28/3/15.
- */
 public class LoadStmt implements ParseNode {
 
   String filePath;

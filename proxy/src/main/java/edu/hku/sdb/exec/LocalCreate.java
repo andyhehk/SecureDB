@@ -24,9 +24,6 @@ import edu.hku.sdb.plan.LocalCreateDesc;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Eric Haibin Lin on 28/3/15.
- */
 public class LocalCreate extends PlanNode<LocalCreateDesc> {
 
 
@@ -44,7 +41,6 @@ public class LocalCreate extends PlanNode<LocalCreateDesc> {
 
     TableMeta tableMeta = new TableMeta(dbMeta.getName(), nodeDesc.getTableName().getName());
     tableMeta.setDbMeta(dbMeta);
-    metaStore.addTbl(tableMeta);
 
     List<ColumnMeta> columnMetaList = new ArrayList<>();
 
@@ -75,8 +71,6 @@ public class LocalCreate extends PlanNode<LocalCreateDesc> {
     dbMeta.add(tableMeta);
 
     //Update metaStore
-    metaStore.addCols(columnMetaList);
-    metaStore.addTbl(tableMeta);
     metaStore.addDB(dbMeta);
   }
 

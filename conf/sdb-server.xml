@@ -41,12 +41,12 @@
 
     <property>
         <name>edu.hku.sdb.conf.database.username</name>
-        <value>hiveuser</value>
+        <value>andy</value>
     </property>
 
     <property>
         <name>edu.hku.sdb.conf.database.password</name>
-        <value>hive</value>
+        <value></value>
     </property>
 
     <property>

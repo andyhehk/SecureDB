@@ -22,7 +22,7 @@
     <parent>
         <groupId>edu.hku.sdb</groupId>
         <artifactId>sdb-udfs</artifactId>
-        <version>0.1-SNAPSHOT</version>
+		    <version>0.1.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

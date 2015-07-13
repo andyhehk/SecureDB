@@ -21,25 +21,25 @@ import java.math.BigInteger;
 
 public class LocalDecryptDesc extends PlanNodeDesc {
 
-  BigInteger p;
-  BigInteger q;
+  BigInteger prime1;
+  BigInteger prime2;
   BigInteger n;
   BigInteger g;
 
-  public BigInteger getP() {
-    return p;
+  public BigInteger getPrime1() {
+    return prime1;
   }
 
-  public void setP(BigInteger p) {
-    this.p = p;
+  public void setPrime1(BigInteger prime1) {
+    this.prime1 = prime1;
   }
 
-  public BigInteger getQ() {
-    return q;
+  public BigInteger getPrime2() {
+    return prime2;
   }
 
-  public void setQ(BigInteger q) {
-    this.q = q;
+  public void setPrime2(BigInteger prime2) {
+    this.prime2 = prime2;
   }
 
   public BigInteger getN() {

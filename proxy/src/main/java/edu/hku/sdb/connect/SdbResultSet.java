@@ -137,8 +137,7 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
    * @throws RemoteException
    */
   public String getString(int columnIndex) throws RemoteException {
-    //column index starts from 1 in JDBC
-    Object columnData = tuple.get(index)[columnIndex - 1];
+    Object columnData = tuple.get(index)[columnIndex];
     if (columnData instanceof Integer) {
       return String.valueOf(columnData);
     }
@@ -148,13 +147,12 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
   /**
    * Get the integer at column index
    *
-   * @param columnIndex the index of column, starting from 1
+   * @param columnIndex the index of column, data starting from 1
    * @return integer at specified column
    * @throws RemoteException
    */
   public Integer getInteger(int columnIndex) throws RemoteException {
-    //column index starts from 1 in JDBC
-    Object columnData = tuple.get(index)[columnIndex - 1];
+    Object columnData = tuple.get(index)[columnIndex];
     if (columnData instanceof BigInteger) {
       Integer result = null;
       try {
@@ -176,13 +174,12 @@ public class SdbResultSet extends UnicastRemoteObject implements ResultSet,
   /**
    * Get the Long at column index
    *
-   * @param columnIndex the index of column, starting from 1
+   * @param columnIndex the index of column, data starting from 1
    * @return integer at specified column
    * @throws RemoteException
    */
   public Long getLong(int columnIndex) throws RemoteException {
-    //column index starts from 1 in JDBC
-    Object columnData = tuple.get(index)[columnIndex - 1];
+    Object columnData = tuple.get(index)[columnIndex];
     if (columnData instanceof BigInteger) {
       Long result = null;
       try {

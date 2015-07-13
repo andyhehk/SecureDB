@@ -51,11 +51,35 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
 
   private SdbConf sdbConf;
   private Statement statement;
+  private MetaStore metaStore;
+  private DBMeta dbMeta;
+  private java.sql.Connection serverConnection;
 
-  public SdbConnection(SdbConf sdbConf) throws RemoteException {
+  public SdbConnection(SdbConf sdbConf, MetaStore metaStore) throws RemoteException {
     super();
     setSdbConf(sdbConf);
 
+    this.metaStore = metaStore;
+
+    String serverDBName = sdbConf.getServerdbConf().getDatabaseName();
+    dbMeta = metaStore.getDB(serverDBName);
+    //create database if empty at the first place
+    if (dbMeta == null) {
+      String dbName = serverDBName;
+      dbMeta = new DBMeta(dbName);
+      BigInteger prime1 = Crypto.generateRandPrime();
+      BigInteger prime2 = Crypto.generateRandPrime();
+      BigInteger n = prime1.multiply(prime2);
+      BigInteger g = Crypto.generatePositiveRand(prime1, prime2);
+      dbMeta.setN(n.toString());
+      dbMeta.setPrime1(prime1.toString());
+      dbMeta.setPrime2(prime2.toString());
+      dbMeta.setG(g.toString());
+      metaStore.addDB(dbMeta);
+    }
+
+    LOG.info("Connecting to server DB");
+    serverConnection = getServerConnection(sdbConf.getServerdbConf());
   }
 
   public SdbConf getSdbConf() {
@@ -71,15 +95,10 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
       if (statement == null) {
         //init connection
         ConnectionConf connectionConf = sdbConf.getConnectionConf();
-        LOG.info("Connecting to metastore DB");
-        MetaStore metaDb = getMetaDbConnection(sdbConf.getMetadbConf());
-
-        LOG.info("Connecting to server DB");
-        java.sql.Connection serverConnection = getServerConnection(sdbConf.getServerdbConf());
 
         //create sdbStatement
         LOG.info("Creating sdb statement");
-        SdbStatement sdbStatement = new SdbStatement(metaDb, serverConnection);
+        SdbStatement sdbStatement = new SdbStatement(metaStore, serverConnection, dbMeta);
         serviceUrl = connectionConf.getSdbAddress() + ":"
                 + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
         Naming.rebind(serviceUrl, sdbStatement);
@@ -95,46 +114,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
     //TODO to be implemented
   }
 
-  private MetaStore getMetaDbConnection(DbConf dbConf) {
-    //TODO: get params from dbConf
-    String driver = dbConf.getJdbcDriverName();
 
-    LOG.info("Connecting to Metastore with driver: " + driver);
-
-    Properties properties = new Properties();
-    properties.setProperty("javax.jdo.option.ConnectionURL",
-            "jdbc:derby:metastore_db;create=true");
-
-    properties.setProperty("javax.jdo.option.ConnectionDriverName",
-            driver);
-
-    properties.setProperty("javax.jdo.option.ConnectionUserName", "");
-    properties.setProperty("javax.jdo.option.ConnectionPassword", "");
-    properties.setProperty("datanucleus.schema.autoCreateSchema", "true");
-    properties.setProperty("datanucleus.schema.autoCreateTables", "true");
-    properties.setProperty("datanucleus.schema.validateTables", "false");
-    properties.setProperty("datanucleus.schema.validateConstraints", "false");
-
-    PersistenceManagerFactory pmf = JDOHelper.getPersistenceManagerFactory(properties);
-    PersistenceManager pm = pmf.getPersistenceManager();
-    MetaStore metaStore = new MetaStore(pm);
-
-    //create default database if empty
-    if (metaStore.getAllDBs().size() == 0) {
-      String dbName = "default";
-      DBMeta dbMeta = new DBMeta(dbName);
-      BigInteger p = Crypto.generateRandPrime();
-      BigInteger q = Crypto.generateRandPrime();
-      BigInteger n = p.multiply(q);
-      BigInteger g = Crypto.generatePositiveRand(p, q);
-      dbMeta.setN(n.toString());
-      dbMeta.setPrime1(p.toString());
-      dbMeta.setPrime2(q.toString());
-      dbMeta.setG(g.toString());
-      metaStore.addDB(dbMeta);
-    }
-    return metaStore;
-  }
 
 
   private java.sql.Connection getServerConnection(DbConf dbConf) {
@@ -156,10 +136,10 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
       con = DriverManager.getConnection(connectionURL, username, password);
       java.sql.Statement stmt = con.createStatement();
 
-      LOG.debug("Registering UDFS in server: " + connectionURL);
+      // LOG.debug("Registering UDFS in server: " + connectionURL);
       // register UDFs
       // failed in Spark 1.1.0
-      stmt.execute("add jar /home/haibin/sdb-udfs-hive-0.1-SNAPSHOT.jar");
+//      stmt.execute("add jar /home/haibin/sdb-udfs-hive-0.1-SNAPSHOT.jar");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.hive.SdbIntAddUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_add AS 'edu.hku.sdb.udf.hive.SdbAddUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_mul AS 'edu.hku.sdb.udf.hive.SdbMultiUDF'");
@@ -178,7 +158,4 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
     return con;
   }
 
-  private String constFuncName(Class claz) {
-    return "'" + claz.getCanonicalName() + "'";
-  }
 }

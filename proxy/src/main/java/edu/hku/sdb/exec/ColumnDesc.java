@@ -21,9 +21,6 @@ import edu.hku.sdb.catalog.ColumnKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by Eric Haibin Lin on 13/3/15.
- */
 public class ColumnDesc extends BasicColumnDesc {
 
   private static final Logger LOG = LoggerFactory.getLogger(ColumnDesc.class);

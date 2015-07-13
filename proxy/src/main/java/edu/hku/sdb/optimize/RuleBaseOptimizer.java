@@ -18,6 +18,7 @@
 package edu.hku.sdb.optimize;
 
 import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.exec.*;
 import edu.hku.sdb.parse.*;
@@ -25,6 +26,7 @@ import edu.hku.sdb.rewrite.UnSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,55 +48,17 @@ public class RuleBaseOptimizer extends Optimizer {
    * 
    * @see edu.hku.sdb.optimize.Optimizer#optimize(edu.hku.sdb.parse.ParseNode)
    */
-  public PlanNode optimize(ParseNode parseTree, Connection connection, MetaStore metaStore) throws UnSupportedException {
-    return optimizeInternal(parseTree, connection, metaStore);
+  public PlanNode optimize(ParseNode parseTree, Connection connection, DBMeta
+          dbMeta) throws UnSupportedException {
+    return optimizeInternal(parseTree, connection, dbMeta);
   }
 
   @Override
-  protected PlanNode optimizeCreateStmt(CreateStmt createStmt, Connection connection, MetaStore metaStore) throws UnSupportedException {
-
-    String query = createStmt.toSql().toLowerCase();
-    RowDesc localCreateRowDesc = new RowDesc();
-    List<BasicColumnDesc> columnDescList = new ArrayList<BasicColumnDesc>();
-    TableName tableName = null;
-
-    for (BasicFieldLiteral fieldLiteral : createStmt.getFieldList()) {
-      BasicColumnDesc basicColumnDesc = null;
-      Class clazz = null;
-      tableName = fieldLiteral.getTableName();
-      String columnName = fieldLiteral.getName();
-      String alias = "";
-      boolean isSen = fieldLiteral.isSen();
-      if (isSen) {
-        clazz = Integer.class;
-        ColumnKey columnKey = fieldLiteral.getColumnKey();
-        basicColumnDesc = new ColumnDesc(columnName, alias, clazz, true, columnKey);
-      } else {
-        switch (fieldLiteral.getType().getDataType()) {
-          case INT:
-            clazz = Integer.class;
-            break;
-          default:
-            clazz = String.class;
-        }
-        basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
-      }
-      columnDescList.add(basicColumnDesc);
-
-    }
-    localCreateRowDesc.setSignature(columnDescList);
-
-    RemoteUpdate remoteUpdate = new RemoteUpdate(query, connection);
-    LocalCreate localCreate = new LocalCreate(metaStore, tableName, localCreateRowDesc);
-    CreateTbl createTbl = new CreateTbl(remoteUpdate, localCreate);
-    return createTbl;
-  }
-
-  @Override
-  protected PlanNode optimizeSelStmt(SelectStmt selStmt, Connection connection, MetaStore metaStore) throws UnSupportedException {
+  protected PlanNode optimizeSelStmt(SelectStmt selStmt, Connection connection,
+                                     DBMeta dbMeta) throws UnSupportedException {
 
     if (selStmt.getSelectList().involveSdbEncrytedCol()) {
-      return getEncryptedPlanNode(selStmt, connection);
+      return getEncryptedPlanNode(selStmt, connection, dbMeta);
     } else {
       return getNonEncPlanNode(selStmt, connection);
     }
@@ -137,9 +101,11 @@ public class RuleBaseOptimizer extends Optimizer {
       }
 
       // create column desc for remoteSQL
-      BasicColumnDesc basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
+      BasicColumnDesc basicColumnDesc = new BasicColumnDesc(columnName, alias,
+              clazz);
       basicColumnDescList.add(basicColumnDesc);
     }
+
 
     // create remoteSQL Node
     remoteRowDesc.setSignature(basicColumnDescList);
@@ -147,7 +113,8 @@ public class RuleBaseOptimizer extends Optimizer {
     return remoteQuery;
   }
 
-  private PlanNode getEncryptedPlanNode(SelectStmt selStmt, Connection connection) {
+  private PlanNode getEncryptedPlanNode(SelectStmt selStmt, Connection connection,
+                                        DBMeta dbMeta) {
     String query = selStmt.toSql().toLowerCase();
     RowDesc remoteRowDesc = new RowDesc();
     RowDesc localDecryptRowDesc = new RowDesc();
@@ -155,7 +122,21 @@ public class RuleBaseOptimizer extends Optimizer {
     List<BasicColumnDesc> basicColumnDescList = new ArrayList<BasicColumnDesc>();
     List<BasicColumnDesc> columnDescList = new ArrayList<BasicColumnDesc>();
 
+    SelectionItem rowID = selStmt.getSelectList().getRowID();
+    // Row ID
+    if (rowID == null) {
+      LOG.error("No rowID return by the server query");
+    } else {
+      basicColumnDescList.add(new BasicColumnDesc(BasicFieldLiteral
+              .ROW_ID_COLUMN_NAME, BasicFieldLiteral.ROW_ID_COLUMN_NAME, Integer
+              .class));
+      columnDescList.add(new ColumnDesc(BasicFieldLiteral.ROW_ID_COLUMN_NAME,
+              BasicFieldLiteral.ROW_ID_COLUMN_NAME, Integer.class, true, rowID
+              .getExpr().getColKey()));
+    }
+
     for (SelectionItem selectionItem : selStmt.getSelectList().getItemList()) {
+      LOG.debug("Creating decryption info for column: " + selectionItem.toString());
       // default columnName is ""
       String columnName = "";
       // default column clazz is Integer
@@ -187,14 +168,16 @@ public class RuleBaseOptimizer extends Optimizer {
       }
 
       // create column desc for remoteSQL
-      BasicColumnDesc basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
+      BasicColumnDesc basicColumnDesc = new BasicColumnDesc(columnName, alias,
+              clazz);
       basicColumnDescList.add(basicColumnDesc);
 
       // get column keys for sensitive columns for localDecrypt
       ColumnKey columnKey = expr.getColKey();
       boolean isSensitive = expr.involveSdbEncrytedCol();
       // add column descriptor for localDecrypt
-      ColumnDesc columnDesc = new ColumnDesc(columnName, alias, clazz, isSensitive, columnKey);
+      ColumnDesc columnDesc = new ColumnDesc(columnName, alias, clazz,
+              isSensitive, columnKey);
       columnDescList.add(columnDesc);
     }
 
@@ -206,7 +189,9 @@ public class RuleBaseOptimizer extends Optimizer {
     localDecryptRowDesc.setSignature(columnDescList);
     LocalDecrypt localDecrypt = new LocalDecrypt(localDecryptRowDesc);
     localDecrypt.setChild(remoteQuery);
-    localDecrypt.setCredential(selStmt.getP(), selStmt.getQ(), selStmt.getN(), selStmt.getG());
+    localDecrypt.setCredential(new BigInteger(dbMeta.getPrime1()), new BigInteger
+            (dbMeta.getPrime2()), new BigInteger(dbMeta.getN()), new BigInteger
+            (dbMeta.getG()));
     return localDecrypt;
   }
 

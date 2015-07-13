@@ -22,7 +22,7 @@
     <parent>
         <groupId>edu.hku.sdb</groupId>
         <artifactId>sdb</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.1.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -32,7 +32,6 @@
 
     <artifactId>sdb-udfs</artifactId>
     <packaging>pom</packaging>
-    <version>0.1-SNAPSHOT</version>
     <name>SecureDB UDFS</name>
 
     <modules>

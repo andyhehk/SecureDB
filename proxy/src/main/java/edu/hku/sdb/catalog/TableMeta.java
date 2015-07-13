@@ -54,7 +54,6 @@ public class TableMeta {
 
     public TablePK(String value) {
       StringTokenizer token = new StringTokenizer(value, "::");
-      token.nextToken(); // className
       this.dbName = token.nextToken(); // db name
       this.tblName = token.nextToken(); // table name
     }
@@ -80,8 +79,7 @@ public class TableMeta {
     @Override
     public String toString() {
       // Give output expected by String constructor
-      return this.getClass().getName() + "::" + this.dbName + "::"
-              + this.tblName;
+      return  this.dbName + "::" + this.tblName;
     }
 
   }

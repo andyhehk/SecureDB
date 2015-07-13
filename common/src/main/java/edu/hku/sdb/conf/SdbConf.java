@@ -21,6 +21,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import org.apache.log4j.PropertyConfigurator;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -92,6 +94,7 @@ public class SdbConf {
     initServerDbConf(sdbConfPath + "/" + SERVER_CONF_FILE);
     initMetaDbConf(sdbConfPath + "/" + METASTORE_CONF_FILE);
     initConnectionConf(sdbConfPath + "/" + CONNECTION_CONF_FILE);
+    PropertyConfigurator.configure(sdbConfPath + "/" + "log4j.properties");
   }
 
   private void initServerDbConf(String filename) {

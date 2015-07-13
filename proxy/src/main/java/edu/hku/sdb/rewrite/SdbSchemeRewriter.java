@@ -65,7 +65,9 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
   @Override
   public void rewrite(ParseNode parseTree) throws RewriteException {
+    LOG.info("Begin the rewrite process");
     rewriteInternal(parseTree);
+    LOG.info("End the rewrite process");
   }
 
 
@@ -189,6 +191,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
     if (selList.involveSdbEncrytedCol()) {
 
+      LOG.debug("Rewriting selection list " + selList.toSql());
       for (SelectionItem selItem : selList.getItemList()) {
         Expr expr = selItem.getExpr();
         if (expr instanceof NormalArithmeticExpr) {
@@ -240,6 +243,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   protected void rewriteTableRefs(List<TableRef> tblRefs,
                                   SelectionList selList, Expr whereClause)
           throws RewriteException {
+    LOG.debug("Rewriting table list");
+
     // First of all, initialize the auxiliary columns RowID, R, S of the selection
     // list, since we possibly need them for the later computation.
     // In the optimization phase, we will delete all those useless auxiliary columns.
@@ -415,6 +420,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
                                  SelectionItem rightS, BigInteger targetM,
                                  BigInteger targetX) throws
           RewriteException {
+    LOG.debug("Rewriting join predicate for " + predicate.toSql());
+
     if (predicate instanceof CompoundPredicate) {
       rewriteJoinPred(((CompoundPredicate) predicate).getLeftPred(), leftS,
               rightS, targetM, targetX);
@@ -431,6 +438,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
                                                rightS, BigInteger targetM,
                                        BigInteger targetX) throws
           RewriteException {
+    LOG.debug("Rewriting join predicate for " + normalBinPred.toSql());
     if (!normalBinPred.involveSdbEncrytedCol())
       return;
 
@@ -492,6 +500,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
   protected Expr buildCartesianExpr(Expr expr, SelectionItem leftS, SelectionItem
           rightS, Set<String> visitedTbl) throws UnSupportedException {
+    LOG.debug("Building cartesian expression for " + expr.toSql());
     if (expr instanceof FieldLiteral) {
       if (expr.involveSdbEncrytedCol()) {
         FieldLiteral column = (FieldLiteral) expr;
@@ -589,6 +598,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
   protected void rewriteInLineViewRef(InLineViewRef inlineView)
           throws RewriteException {
+    LOG.debug("Rewriting inline view " + inlineView.toSql());
     if (!inlineView.involveSdbEncrytedCol())
       return;
 
@@ -605,6 +615,10 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    */
   protected Expr rewriteWhereClause(Expr whereClause)
           throws UnSupportedException {
+    if(whereClause == null)
+      return null;
+
+    LOG.debug("Rewriting where clause " + whereClause.toSql());
     if (whereClause instanceof CompoundPredicate) {
       rewriteCompoundPredicate((CompoundPredicate) whereClause);
       return whereClause;
@@ -661,6 +675,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     // No SDB encrypted column
     if (!compoundPred.involveSdbEncrytedCol())
       return;
+
+    LOG.debug("Rewriting compounding predicate " + compoundPred.toSql());
 
     Expr leftPred = compoundPred.getLeftPred();
     Expr rightPred = compoundPred.getRightPred();
@@ -802,6 +818,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    */
   protected Expr rewriteNorArithExpr(NormalArithmeticExpr arithExpr, Expr S)
           throws UnSupportedException {
+    LOG.debug("Rewriting normal arithmetic expression " + arithExpr.toSql());
 
     Expr leftExpr = arithExpr.getLeftExpr();
     Expr rightExpr = arithExpr.getRightExpr();
@@ -884,6 +901,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   protected Expr rewriteAddEE(Expr leftExpr, Expr rightExpr, Expr S) throws UnSupportedException {
     assert (leftExpr.involveSdbEncrytedCol() && rightExpr.involveSdbEncrytedCol());
 
+    LOG.debug("Rewriting EE mode addition");
+
     SdbTransformExpr sdbTransformExpr = new SdbTransformExpr(SdbOperator.SDB_ADD);
 
     BigInteger targetM = Crypto.generatePositiveRand(prime1, prime2);
@@ -924,6 +943,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    */
   protected Expr rewriteAddEP(Expr leftExpr, Expr rightExpr, Expr S) throws UnSupportedException {
     // only one involves encrypted column
+    LOG.debug("Rewriting EP mode addition");
+
     assert (leftExpr.involveSdbEncrytedCol() ^ rightExpr.involveSdbEncrytedCol());
     SdbTransformExpr sdbTransformExpr = new SdbTransformExpr(SdbOperator.SDB_ADD);
 
@@ -972,6 +993,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     Expr E;
     Expr C;
 
+    LOG.debug("Rewriting EC mode addition");
+
     if (leftExpr instanceof IntLiteral) {
       E = rightExpr;
       C = leftExpr;
@@ -996,6 +1019,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    * @return
    */
   protected Expr rewriteSubtractEE(Expr leftExpr, Expr rightExpr, Expr S) throws UnSupportedException {
+    LOG.debug("Rewriting EE mode subtraction");
+
     assert (leftExpr.involveSdbEncrytedCol() && rightExpr.involveSdbEncrytedCol());
     BigInteger inverseM = rightExpr.getColKey().getM().multiply(n.subtract
             (BigInteger.ONE)).mod(n);
@@ -1014,6 +1039,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    * @return
    */
   protected Expr rewriteSubtractEP(Expr leftExpr, Expr rightExpr, Expr S) {
+    LOG.debug("Rewriting EP mode addition");
     // only one involves encrypted column
     assert (leftExpr.involveSdbEncrytedCol() ^ rightExpr.involveSdbEncrytedCol());
     SdbTransformExpr sdbTransformExpr = new SdbTransformExpr(SdbOperator.SDB_ADD);
@@ -1062,6 +1088,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    */
   protected Expr rewriteSubtractEC(Expr leftExpr, Expr rightExpr, Expr S) throws
           UnSupportedException {
+    LOG.debug("Rewriting EC mode addition");
     Expr SC;
     if (leftExpr instanceof IntLiteral) {
       SC = rewriteMultiplyEC(S, leftExpr);
@@ -1082,6 +1109,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    * @return
    */
   protected Expr rewriteMultiplyEE(Expr leftExpr, Expr rightExpr) {
+    LOG.debug("Rewriting EE mode multiplication");
     assert (leftExpr.involveSdbEncrytedCol() && rightExpr.involveSdbEncrytedCol());
 
     SdbTransformExpr sdbTransformExpr = new SdbTransformExpr(SdbOperator.SDB_MUL);
@@ -1111,6 +1139,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    * @return
    */
   protected Expr rewriteMultiplyEP(Expr leftExpr, Expr rightExpr, Expr S) {
+    LOG.debug("Rewriting EP mode multiplication");
     // only one involves encrypted column
     assert (leftExpr.involveSdbEncrytedCol() ^ rightExpr.involveSdbEncrytedCol());
 
@@ -1135,6 +1164,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
   protected Expr rewriteMultiplyEC(Expr leftExpr, Expr rightExpr) throws
           UnSupportedException {
+    LOG.debug("Rewriting EC mode multiplication");
     Expr E;
     Expr C;
 
@@ -1174,6 +1204,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    */
   private Expr keyUpdatePlainCol(Expr P, Expr S, BigInteger targetM,
                                  BigInteger targetX) {
+    LOG.debug("Building key update expression for plain column" + P.toSql());
     BigInteger pM = BigInteger.ONE;
     BigInteger pX = BigInteger.ZERO;
 
@@ -1197,6 +1228,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    */
   private Expr keyUpdateInversedPlainCol(Expr P, Expr S, BigInteger targetM,
                                          BigInteger targetX) {
+    LOG.debug("Building key update inverse expression for plain column" + P.toSql());
+
     BigInteger pM = n.subtract(BigInteger.ONE);
     BigInteger pX = BigInteger.ZERO;
 
@@ -1223,6 +1256,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    */
   private Expr buildSdbKeyUpdateExpr(Expr column, Expr S, Expr p, Expr q, Expr n,
                                      BigInteger targetM, BigInteger targetX) {
+    LOG.debug("Building key update expression for sensitive column" + column.toSql());
+
     SdbKeyUpdateExpr keyUpdateExpr = new SdbKeyUpdateExpr();
 
     keyUpdateExpr.addChild(column);
@@ -1247,6 +1282,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    */
   protected Expr rewriteNorBinPredicate(NormalBinPredicate normalBinPred, Expr R,
                                         Expr S) throws UnSupportedException {
+    LOG.debug("Rewriting normal binary predicate " + normalBinPred.toSql());
+
     // No SDB encrypted column.
     if (!normalBinPred.involveSdbEncrytedCol())
       return normalBinPred;
@@ -1344,6 +1381,9 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   }
 
   private ColumnKey getTableColumnKey(String tblName, String colName) {
+    LOG.debug("Getting column key for column " + tblName + "." + colName);
+
+
     ColumnKey colKey = null;
 
     String key = tblName + colName;
@@ -1368,6 +1408,11 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         }
       }
     }
+
+    if(colKey == null) {
+      LOG.error("No column " + colName +" in table " + tblName + " found");
+    }
+
     return colKey;
   }
 

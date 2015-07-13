@@ -151,10 +151,10 @@ public class Crypto {
   }
 
   public static BigInteger generateItemKeyOp2(BigInteger m, BigInteger x,
-                                              BigInteger r, BigInteger g,
+                                              BigInteger rowID, BigInteger g,
                                               BigInteger n, BigInteger
-                                                      totient, BigInteger p,
-                                              BigInteger q) {
+                                                      totient, BigInteger prime1,
+                                              BigInteger prime2) {
 
     String key = g.toString() + "::" + x.toString() + "::" + n.toString();
     BigInteger gx;
@@ -164,8 +164,8 @@ public class Crypto {
     } else {
       gx = modPowMap.get(key);
     }
-    BigInteger power = r.mod(totient);
-    BigInteger grx = Crypto.modPow(gx, power, p, q);
+    BigInteger power = rowID.mod(totient);
+    BigInteger grx = Crypto.modPow(gx, power, prime1, prime2);
 
     return (m.multiply(grx)).mod(n);
   }

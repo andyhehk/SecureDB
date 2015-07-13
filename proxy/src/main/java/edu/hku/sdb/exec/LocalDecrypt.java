@@ -18,7 +18,6 @@
 package edu.hku.sdb.exec;
 
 import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.connect.ResultSetMetaData;
 import edu.hku.sdb.connect.SDBResultSetMetaData;
 import edu.hku.sdb.crypto.Crypto;
 import edu.hku.sdb.parse.BasicFieldLiteral;
@@ -56,7 +55,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
     }
     List<BasicColumnDesc> basicColumnDescList = nodeDesc.getRowDesc().getSignature();
     //Remove row_id before init resultSetMetaData for localDecrypt
-    sdbMetaData.setColumnList(basicColumnDescList.subList(0, basicColumnDescList.size() - 1));
+    sdbMetaData.setColumnList(basicColumnDescList.subList(1, basicColumnDescList.size()));
     return sdbMetaData;
   }
 
@@ -69,21 +68,23 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
   public void init() {
     child.init();
 
+    BigInteger prime1 = nodeDesc.getPrime1();
+    BigInteger prime2 = nodeDesc.getPrime2();
+    BigInteger n = nodeDesc.getN();
+    BigInteger g = nodeDesc.getG();
+    BigInteger totient = Crypto.evaluateTotient(prime1, prime2);
+
     // decrypt and buffer result
     basicTupleSlotList = new ArrayList<>();
     BasicTupleSlot tupleSlot = child.nextTuple();
     while (tupleSlot != null) {
       List<Object> row = tupleSlot.nextTuple();
       Object rowId = null;
-      BigInteger p = nodeDesc.getP();
-      BigInteger q = nodeDesc.getQ();
-      BigInteger n = nodeDesc.getN();
-      BigInteger g = nodeDesc.getG();
-      BigInteger totient = Crypto.evaluateTotient(p, q);
 
       List<BasicColumnDesc> columnDescList = nodeDesc.getRowDesc().getSignature();
 
-      for (int index = columnDescList.size() - 1; index >= 0; index--) {
+      // RowID is always at index 0
+      for (int index = 0; index < columnDescList.size(); index++) {
         BasicColumnDesc columnDesc = columnDescList.get(index);
         if (columnDesc.getName().equals(BasicFieldLiteral.ROW_ID_COLUMN_NAME)) {
           ColumnKey columnKey = ((ColumnDesc) columnDesc).getColumnKey();
@@ -94,7 +95,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
         // Decrypt with columnKey if sensitive
         else if (((ColumnDesc) columnDesc).isSensitive()) {
           ColumnKey columnKey = ((ColumnDesc) columnDesc).getColumnKey();
-          BigInteger itemKey = Crypto.generateItemKeyOp2(columnKey.getM(), columnKey.getX(), (BigInteger) rowId, g, n, totient, p, q);
+          BigInteger itemKey = Crypto.generateItemKeyOp2(columnKey.getM(), columnKey.getX(), (BigInteger) rowId, g, n, totient, prime1, prime2);
           BigInteger cipherText = Crypto.getSecureBigInt((String) row.get(index));
           BigInteger plainText = Crypto.decrypt(cipherText, itemKey, n);
           row.set(index, plainText);
@@ -159,8 +160,8 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
   }
 
   public void setCredential(BigInteger p, BigInteger q, BigInteger n, BigInteger g) {
-    nodeDesc.setP(p);
-    nodeDesc.setQ(q);
+    nodeDesc.setPrime1(p);
+    nodeDesc.setPrime2(q);
     nodeDesc.setN(n);
     nodeDesc.setG(g);
   }

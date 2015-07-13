@@ -127,12 +127,9 @@ public class MetaStore {
    * @return
    */
   public DBMeta getDB(String dbName) {
-    DBMeta dbMeta = getByKey(DBMeta.DBPK.class.getName() + "::" + dbName
-                    .toLowerCase(),
-            DBMeta.class);
+    DBMeta dbMeta = getByKey(dbName.toLowerCase(), DBMeta.class);
 
-    return dbMeta;
-
+    return  dbMeta;
   }
 
   /**
@@ -143,31 +140,10 @@ public class MetaStore {
    * @return
    */
   public TableMeta getTbl(String dbName, String tblName) {
-    return getByKey(
-            TableMeta.TablePK.class.getName() + "::" + dbName.toLowerCase() + "::"
+    return getByKey(dbName.toLowerCase() + "::"
                     + tblName.toLowerCase(), TableMeta.class);
   }
 
-  /**
-   * Get all the table meta for a specific database.
-   * @param dbName
-   * @return
-   */
-  public List<TableMeta> getTbls(String dbName) {
-    Query q = pm.newQuery(TableMeta.class);
-    q.setFilter("DBNAME == " + "'" + dbName + "'");
-
-
-    List<TableMeta> tblMetas =  (List<TableMeta>) q.execute();
-
-    for(TableMeta tblMeta : tblMetas) {
-      q = pm.newQuery(ColumnMeta.class);
-      q.setFilter("DBNAME == " + "'" + dbName + "'" + " && " + "TBLNAME == " + "'" + tblMeta.getName() + "'");
-      tblMeta.setCols((List<ColumnMeta>) q.execute());
-    }
-
-    return tblMetas;
-  }
 
   /**
    * Get column meta.
@@ -178,9 +154,7 @@ public class MetaStore {
    * @return
    */
   public ColumnMeta getCol(String dbName, String tblName, String colName) {
-    return getByKey(
-            ColumnMeta.ColumnPK.class.getName() + "::" + dbName.toLowerCase()
-                    + "::" + tblName.toLowerCase() + "::" + colName.toLowerCase(),
+    return getByKey(dbName.toLowerCase() + "::" + tblName.toLowerCase() + "::" + colName.toLowerCase(),
             ColumnMeta.class);
   }
 
@@ -192,9 +166,7 @@ public class MetaStore {
    * @return
    */
   public ColumnMeta getCol(String tblName, String colName) {
-    return getByKey(
-            ColumnMeta.ColumnPK.class.getName() + "::" + defaultDB.toLowerCase()
-                    + "::" + tblName.toLowerCase() + "::" + colName.toLowerCase(),
+    return getByKey(defaultDB.toLowerCase() + "::" + tblName.toLowerCase() + "::" + colName.toLowerCase(),
             ColumnMeta.class);
   }
 
@@ -207,12 +179,13 @@ public class MetaStore {
    */
   @SuppressWarnings("unchecked")
   public <T> T getByKey(String keyString, Class<T> clazz) {
-    T result = null;
-    Key k = KeyFactory.stringToKey(keyString);
+    T result;
+//    Key k = KeyFactory.createKey(clazz.getSimpleName(), keyString);
     try {
-      result = (T) pm.getObjectById(k);
+      result = (T) pm.getObjectById(clazz, keyString);
     } catch (JDOObjectNotFoundException nfe) {
-      LOG.warn("No " + clazz.getCanonicalName() + " found with key: " + k);
+      LOG.warn("No " + clazz.getCanonicalName() + " found with key: " + keyString);
+      return null;
     }
     return result;
   }
