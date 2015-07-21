@@ -101,17 +101,40 @@ public class SdbSchemeRewriterTest {
     }
   }
 
+//  @Test
+//  public void testRewriteJoin() {
+//    String command = "SELECT a + c FROM T1 JOIN T2 ON T1.id = T2.id WHERE c > 1.0 AND b < 10";
+//    try {
+//      // Parse
+//      ASTNode astTree = parser.parse(command);
+//      // Analyze
+//      ParseNode candidate = analyzer.analyze(astTree);
+//      // Rewrite
+//      testObj.rewrite(candidate);
+//      System.out.println(candidate.toSql());
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//    }
+//  }
+
   @Test
-  public void testRewriteJoin() {
-    String command = "SELECT a + c FROM T1 JOIN T2 ON T1.id = T2.id WHERE c > 1.0 AND b < 10";
+  public void testRewriteGroupBy() {
+    String command1 = "SELECT c, sum(a) as sum FROM T1 GROUP BY c";
+    String command2 = "SELECT a, count(*) as count FROM T1 GROUP BY a";
     try {
       // Parse
-      ASTNode astTree = parser.parse(command);
+      ASTNode astTree1 = parser.parse(command1);
+      // Parse
+      ASTNode astTree2 = parser.parse(command2);
       // Analyze
-      ParseNode candidate = analyzer.analyze(astTree);
+      ParseNode candidate1 = analyzer.analyze(astTree1);
+      // Analyze
+      ParseNode candidate2 = analyzer.analyze(astTree2);
       // Rewrite
-      testObj.rewrite(candidate);
-      System.out.println(candidate.toSql());
+      testObj.rewrite(candidate1);
+      testObj.rewrite(candidate2);
+      System.out.println(candidate1.toSql());
+      System.out.println(candidate2.toSql());
     } catch (Exception e) {
       e.printStackTrace();
     }

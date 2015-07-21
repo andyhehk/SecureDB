@@ -123,17 +123,6 @@ public class RuleBaseOptimizer extends Optimizer {
     List<BasicColumnDesc> columnDescList = new ArrayList<BasicColumnDesc>();
 
     SelectionItem rowID = selStmt.getSelectList().getRowID();
-    // Row ID
-    if (rowID == null) {
-      LOG.error("No rowID return by the server query");
-    } else {
-      basicColumnDescList.add(new BasicColumnDesc(BasicFieldLiteral
-              .ROW_ID_COLUMN_NAME, BasicFieldLiteral.ROW_ID_COLUMN_NAME, Integer
-              .class));
-      columnDescList.add(new ColumnDesc(BasicFieldLiteral.ROW_ID_COLUMN_NAME,
-              BasicFieldLiteral.ROW_ID_COLUMN_NAME, Integer.class, true, rowID
-              .getExpr().getColKey()));
-    }
 
     for (SelectionItem selectionItem : selStmt.getSelectList().getItemList()) {
       LOG.debug("Creating decryption info for column: " + selectionItem.toString());
@@ -179,6 +168,18 @@ public class RuleBaseOptimizer extends Optimizer {
       ColumnDesc columnDesc = new ColumnDesc(columnName, alias, clazz,
               isSensitive, columnKey);
       columnDescList.add(columnDesc);
+    }
+
+    // Row ID
+    if (rowID == null) {
+      LOG.error("No rowID return by the server query");
+    } else {
+      basicColumnDescList.add(new BasicColumnDesc(BasicFieldLiteral
+              .ROW_ID_COLUMN_NAME, BasicFieldLiteral.ROW_ID_COLUMN_NAME, Integer
+              .class));
+      columnDescList.add(new ColumnDesc(BasicFieldLiteral.ROW_ID_COLUMN_NAME,
+              BasicFieldLiteral.ROW_ID_COLUMN_NAME, Integer.class, true, rowID
+              .getExpr().getColKey()));
     }
 
     // create remoteSQL Node

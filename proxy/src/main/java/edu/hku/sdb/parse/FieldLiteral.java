@@ -18,9 +18,7 @@
 package edu.hku.sdb.parse;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +34,7 @@ public class FieldLiteral extends LiteralExpr {
 
   private static final Logger LOG = LoggerFactory.getLogger(FieldLiteral.class);
 
-  // Make sure the tbl is not null.
+  // Make sure the tbl/tbl alias is not null.
   private String tblName = "";
   private final String name;
   private DataType type;
@@ -48,6 +46,9 @@ public class FieldLiteral extends LiteralExpr {
   // It is used for query rewriting.
   private Expr referExpr;
 
+  // It is used for finding the actual base table this field refers to.
+  private String baseTblName = "";
+
   public FieldLiteral(String name, DataType type) {
     this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
     // this.name.trim();
@@ -58,7 +59,7 @@ public class FieldLiteral extends LiteralExpr {
 
   public FieldLiteral(String tbl, String name, DataType type) {
     this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
-    this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
+    this.baseTblName = this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
     // this.name.trim();
     // this.tbl.trim();
     //this.type = checkNotNull(type, "Field type is null.");
@@ -69,17 +70,24 @@ public class FieldLiteral extends LiteralExpr {
   public FieldLiteral(String tbl, String name, DataType type, boolean isSen,
                       ColumnKey colKey) {
     this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
-    this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
+    this.baseTblName = this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
     //this.type = checkNotNull(type, "Field type is null.");
     this.type = type;
     this.isSen = isSen;
     this.colKey = colKey;
   }
 
+  public FieldLiteral(FieldLiteral fieldLiteral) {
+    this.name = fieldLiteral.name;
+    this.baseTblName =this.tblName = fieldLiteral.tblName;
+    this.type = fieldLiteral.type;
+    this.colKey = new ColumnKey(fieldLiteral.getColKey());
+    this.isSen = fieldLiteral.isSen;
+  }
+
   /**
    * Get the table name of this field referred if it is not specified, also get the
    * column key if it is a sensitive column.
-   *
    */
   @Override
   public void analyze(MetaStore metaDB, ParseNode... fieldSources)
@@ -120,39 +128,64 @@ public class FieldLiteral extends LiteralExpr {
     }
 
     if (tblName.equals("")) {
-      Set<String> tbls = new HashSet<>();
       for (BaseTableRef tbl : baseTbls) {
-        if (resolve(metaDB, tbl.tblName, tbl.alias) > 0) {
-          tbls.add(tbl.tblName);
-        }
+        count += resolve(metaDB, tbl.tblName, tbl.alias);
 
-        // This field is ambiguous.
-        if (tbls.size() + count > 1) {
+        if (count > 1) {
           AmbiguousException e = new AmbiguousException(name);
           LOG.error("One or more fields are ambiguous!", e);
           throw e;
         }
+
+        //        if (resolve(metaDB, tbl.tblName, tbl.alias) > 0) {
+        //          tbls.add(tbl.tblName);
+        //        }
+        //
+        //        // This field is ambiguous.
+        //        if (tbls.size() + count > 1) {
+        //          AmbiguousException e = new AmbiguousException(name);
+        //          LOG.error("One or more fields are ambiguous!", e);
+        //          throw e;
+        //        }
       }
 
       for (InLineViewRef view : inlineViews) {
-        if (resolve(((SelectStmt) view.queryStmt).getSelectList().itemList, view
-                .alias) > 0) {
-          tbls.add(view.alias);
-        }
+        count += resolve(((SelectStmt) view.queryStmt).getSelectList().itemList,
+                view.alias);
 
-        // This field is ambiguous.
-        if (tbls.size() + count > 1) {
+        if (count > 1) {
           AmbiguousException e = new AmbiguousException(name);
           LOG.error("One or more fields are ambiguous!", e);
           throw e;
         }
+
+        //
+        //        if (resolve(((SelectStmt) view.queryStmt).getSelectList()
+        // .itemList, view
+        //                .alias) > 0) {
+        //          tbls.add(view.alias);
+        //        }
+        //
+        //        // This field is ambiguous.
+        //        if (tbls.size() + count > 1) {
+        //          AmbiguousException e = new AmbiguousException(name);
+        //          LOG.error("One or more fields are ambiguous!", e);
+        //          throw e;
+        //        }
       }
 
-      count += tbls.size();
     } else {
       for (BaseTableRef tbl : baseTbls) {
-        if (tblName.equals(tbl.tblName))
-          count += resolve(metaDB, tbl.tblName, tbl.alias);
+        // No alias for this table
+        if (tbl.alias.equals("")) {
+          if (tblName.equals(tbl.tblName))
+            count += resolve(metaDB, tbl.tblName, tbl.alias);
+        }
+        // If there is alias, the field should refer to the alias.
+        else {
+          if (tblName.equals(tbl.alias))
+            count += resolve(metaDB, tbl.tblName, tbl.alias);
+        }
       }
 
       for (InLineViewRef view : inlineViews) {
@@ -184,9 +217,13 @@ public class FieldLiteral extends LiteralExpr {
     ColumnMeta colMeta = metaDB.getCol(tblName, name);
 
     if (colMeta != null) {
-      this.tblName = tblName;
-      if (!alias.equals(""))
+      this.tblName = this.baseTblName = tblName;
+      // if these is alias, the output table name should be the alias.
+      // We also record the true table name this field refers to.
+      if (!alias.equals("")) {
         this.tblName = alias;
+        this.baseTblName = tblName;
+      }
       type = colMeta.getType();
       isSen = colMeta.isSensitive();
       colKey = colMeta.getColkey();
@@ -212,7 +249,7 @@ public class FieldLiteral extends LiteralExpr {
 
     // This field is referring to a selection item of the inline view.
     if (count > 0)
-      tblName = viewAlias;
+      tblName = baseTblName = viewAlias;
 
     return count;
   }
@@ -233,6 +270,7 @@ public class FieldLiteral extends LiteralExpr {
         FieldLiteral field = (FieldLiteral) item.getExpr();
         if (name.equals(field.name)) {
           tblName = field.tblName;
+          baseTblName = field.baseTblName;
           type = field.type;
           isSen = field.isSen;
           colKey = field.colKey;
@@ -251,6 +289,7 @@ public class FieldLiteral extends LiteralExpr {
         FieldLiteral field = (FieldLiteral) item.getExpr();
         if (name.equals(field.name)) {
           tblName = field.tblName;
+          baseTblName = field.baseTblName;
           type = field.type;
           isSen = field.isSen;
           colKey = field.colKey;
@@ -304,7 +343,7 @@ public class FieldLiteral extends LiteralExpr {
       }
     }
 
-    return tblName.equals(fieldobj.getTbl()) && name.equals(fieldobj.getName())
+    return tblName.equals(fieldobj.getTblName()) && name.equals(fieldobj.getName())
             && type.equals(fieldobj.getType()) && isSen == fieldobj.isSen()
             && isUp2date == fieldobj.isUp2date();
   }
@@ -312,7 +351,7 @@ public class FieldLiteral extends LiteralExpr {
   /**
    * @return the tbl
    */
-  public String getTbl() {
+  public String getTblName() {
     return tblName;
   }
 
@@ -403,6 +442,15 @@ public class FieldLiteral extends LiteralExpr {
     this.referExpr = referedExpr;
   }
 
+
+  public String getBaseTblName() {
+    return baseTblName;
+  }
+
+  public void setBaseTblName(String baseTblName) {
+    this.baseTblName = baseTblName;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -420,11 +468,11 @@ public class FieldLiteral extends LiteralExpr {
     sb.append("Table Name: " + tblName + "|");
     sb.append("Name: " + name + "|");
     sb.append("DataType: " + type + "|");
-    if(isSen)
+    if (isSen)
       sb.append("Sensitive: true" + "|");
     else
       sb.append("Sensitive: false" + "|");
-    if(isUp2date)
+    if (isUp2date)
       sb.append("IsUp2date: true" + "|");
     else
       sb.append("IsUp2date: false" + "|");

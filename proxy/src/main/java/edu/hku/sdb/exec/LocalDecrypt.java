@@ -55,7 +55,8 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
     }
     List<BasicColumnDesc> basicColumnDescList = nodeDesc.getRowDesc().getSignature();
     //Remove row_id before init resultSetMetaData for localDecrypt
-    sdbMetaData.setColumnList(basicColumnDescList.subList(1, basicColumnDescList.size()));
+    sdbMetaData.setColumnList(basicColumnDescList.subList(0, basicColumnDescList
+            .size() - 1));
     return sdbMetaData;
   }
 
@@ -84,20 +85,28 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
       List<BasicColumnDesc> columnDescList = nodeDesc.getRowDesc().getSignature();
 
       // RowID is always at index 0
-      for (int index = 0; index < columnDescList.size(); index++) {
+      for (int index = columnDescList.size() - 1; index >= 0; index--) {
         BasicColumnDesc columnDesc = columnDescList.get(index);
         if (columnDesc.getName().equals(BasicFieldLiteral.ROW_ID_COLUMN_NAME)) {
           ColumnKey columnKey = ((ColumnDesc) columnDesc).getColumnKey();
-          BigInteger rowIdEncrypted = Crypto.getSecureBigInt((String) row.get(index));
-          rowId = Crypto.SIESDecrypt(rowIdEncrypted, columnKey.getM(), columnKey.getX(), n);
+          BigInteger rowIdEncrypted = Crypto.getSecureBigInt((String) row.get
+                  (index));
+          rowId = Crypto.SIESDecrypt(rowIdEncrypted, columnKey.getM(), columnKey
+                  .getX(), n);
         }
 
         // Decrypt with columnKey if sensitive
         else if (((ColumnDesc) columnDesc).isSensitive()) {
           ColumnKey columnKey = ((ColumnDesc) columnDesc).getColumnKey();
-          BigInteger itemKey = Crypto.generateItemKeyOp2(columnKey.getM(), columnKey.getX(), (BigInteger) rowId, g, n, totient, prime1, prime2);
+          BigInteger itemKey = Crypto.generateItemKeyOp2(columnKey.getM(),
+                  columnKey.getX(), (BigInteger) rowId, g, n, totient, prime1,
+                  prime2);
           BigInteger cipherText = Crypto.getSecureBigInt((String) row.get(index));
           BigInteger plainText = Crypto.decrypt(cipherText, itemKey, n);
+          if (plainText.compareTo(n.subtract(BigInteger.ONE).divide(new BigInteger
+                  ("2"))) >= 0) {
+            plainText = plainText.subtract(n);
+          }
           row.set(index, plainText);
         }
       }
@@ -141,8 +150,10 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
     if (!(object instanceof LocalDecrypt)) {
       LOG.debug("Not an instance of LocalDecrypt!");
       return false;
-    } else if ((((LocalDecrypt) object).getChild() == null) != (this.getChild() == null)) {
-      LOG.debug("child instance of LocalDecrypt is not equal (one of them is null)!");
+    } else if ((((LocalDecrypt) object).getChild() == null) != (this.getChild() ==
+            null)) {
+      LOG.debug("child instance of LocalDecrypt is not equal (one of them is null)" +
+              "!");
       return false;
     } else if (!((LocalDecrypt) object).getChild().equals(this.getChild())) {
       LOG.debug("child instance of LocalDecrypt is not equal!");

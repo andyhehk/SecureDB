@@ -15,34 +15,10 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.parse;
+package edu.hku.sdb.utility;
 
-import java.math.BigInteger;
+public class ParserConstant {
 
-public class BigIntLiteral extends LiteralExpr {
-
-  BigInteger value;
-
-  public  BigIntLiteral(BigInteger value) {
-    this.value = value;
-  }
-
-  public BigInteger getValue() {
-    return value;
-  }
-
-  public void setValue(BigInteger value) {
-    this.value = value;
-  }
-
-
-  @Override
-  public String toSql() {
-    return "'" + value.toString(Character.MAX_RADIX) + "'";
-  }
-
-  @Override
-  public boolean involveSdbEncrytedCol() {
-    return false;
-  }
+  public static String FUNCTION_COUNT = "count";
+  public static String FUNCTION_SUM = "sum";
 }

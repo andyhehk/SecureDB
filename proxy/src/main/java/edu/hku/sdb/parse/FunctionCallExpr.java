@@ -19,6 +19,7 @@ package edu.hku.sdb.parse;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Joiner;
+import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.MetaStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,8 @@ public class FunctionCallExpr extends Expr {
 
   private FunctionName name;
   private FunctionParams functionParams;
+
+  private ColumnKey colKey;
 
   public FunctionCallExpr() {
 
@@ -151,8 +154,24 @@ public class FunctionCallExpr extends Expr {
    */
   @Override
   public boolean involveSdbEncrytedCol() {
-    // TODO Auto-generated method stub
+    //TODO: we dont support secure operator with *
+    if(functionParams.isStar())
+      return false;
+
+    for( Expr expr : functionParams.getExprs()) {
+      if(expr.involveSdbEncrytedCol())
+        return true;
+    }
+
     return false;
+  }
+
+  public ColumnKey getColKey() {
+    return colKey;
+  }
+
+  public void setColKey(ColumnKey colKey) {
+    this.colKey = colKey;
   }
 
 }

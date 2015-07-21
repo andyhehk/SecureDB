@@ -35,6 +35,11 @@ public class ColumnKey {
     this.x = x;
   }
 
+  public ColumnKey(ColumnKey colKey) {
+    this.m = colKey.m;
+    this.x = colKey.x;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof ColumnKey))

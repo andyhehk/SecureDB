@@ -19,7 +19,9 @@ package edu.hku.sdb.parse;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +41,7 @@ public class SelectStmt extends QueryStmt {
   private Expr havingExpr; // original having clause
 
   // havingClause with aliases and agg output resolved
-//  protected Expr havingPred;
+  //  protected Expr havingPred;
 
   private BigInteger p;
   private BigInteger q;
@@ -93,7 +95,46 @@ public class SelectStmt extends QueryStmt {
   @Override
   public void analyze(MetaStore metaDB, ParseNode... fieldSources)
           throws SemanticException {
+
+    Set<String> tblNames = new HashSet<>();
+
+    // Check if there are table names specified more than once.
+    for (TableRef tblRef : tableRefs) {
+      if (tblRef.tblName == null) {
+        if (tblNames.contains(tblRef.alias)) {
+          SemanticException e = new SemanticException("Table " + tblRef.alias
+                  + " specified more than once!");
+          LOG.error("Table name specified more than once!", e);
+          throw e;
+        } else {
+          tblNames.add(tblRef.alias);
+        }
+      } else {
+        if(tblRef.alias.equals("")) {
+          if (tblNames.contains(tblRef.tblName)) {
+            SemanticException e = new SemanticException("Table " + tblRef.tblName
+                    + " specified more than once!");
+            LOG.error("Table name specified more than once!", e);
+            throw e;
+          } else {
+            tblNames.add(tblRef.tblName);
+          }
+        }
+        else {
+          if (tblNames.contains(tblRef.alias)) {
+            SemanticException e = new SemanticException("Table " + tblRef.alias
+                    + " specified more than once!");
+            LOG.error("Table name specified more than once!", e);
+            throw e;
+          } else {
+            tblNames.add(tblRef.alias);
+          }
+        }
+      }
+    }
+
     // Resolve the nested queries and join clauses first if any.
+
     for (TableRef tblRef : tableRefs) {
       tblRef.analyze(metaDB, tableRefs.toArray(new ParseNode[tableRefs.size()]));
     }
@@ -184,10 +225,10 @@ public class SelectStmt extends QueryStmt {
     } else if ((havingExpr == null) != (selObj.havingExpr == null)) {
       LOG.debug("Having clauses are not equal!");
       return false;
-    } else if ((orderByElements == null) != (selObj.orderByElements == null)){
+    } else if ((orderByElements == null) != (selObj.orderByElements == null)) {
       LOG.debug("Order by clauses are not equal!");
       return false;
-    } else if ((limitElement == null) != (selObj.limitElement == null)){
+    } else if ((limitElement == null) != (selObj.limitElement == null)) {
       LOG.debug("Limit clauses are not equal!");
       return false;
     } else {
@@ -205,7 +246,8 @@ public class SelectStmt extends QueryStmt {
         return false;
       }
 
-      if ((orderByElements != null) && !orderByElements.equals(selObj.orderByElements)) {
+      if ((orderByElements != null) && !orderByElements.equals(selObj
+              .orderByElements)) {
         LOG.debug("Order by clauses are not equal!");
         return false;
       }
@@ -351,33 +393,33 @@ public class SelectStmt extends QueryStmt {
   }
 
   @Override
-  public String toString(){
+  public String toString() {
     StringBuilder sb = new StringBuilder();
 
     sb.append("SELECTION LIST: " + selectList + "\n");
-    for(TableRef tableRef : tableRefs) {
+    for (TableRef tableRef : tableRefs) {
       sb.append("TABLE REFERENCE: " + tableRef + "\n");
     }
-    if(whereClause != null)
+    if (whereClause != null)
       sb.append("WHERE PREDICATES: " + whereClause + "\n");
-    if(groupingExprs!=null) {
+    if (groupingExprs != null) {
       sb.append("GROUP BY ELEMENTS:" + "\n");
-      for(Expr expr : groupingExprs) {
+      for (Expr expr : groupingExprs) {
         sb.append(expr + "\n");
         sb.append("--------------------\n");
       }
     }
-    if(havingExpr != null) {
+    if (havingExpr != null) {
       sb.append("HAVING ELEMENTS: " + havingExpr + "\n");
     }
-    if(orderByElements != null){
+    if (orderByElements != null) {
       sb.append("ORDER BY ELEMENTS: ");
-      for(OrderByElement elemt : orderByElements) {
+      for (OrderByElement elemt : orderByElements) {
         sb.append(elemt + "\n");
         sb.append("--------------------\n");
       }
     }
-    if(limitElement != null) {
+    if (limitElement != null) {
       sb.append("LIMIT ELEMENT: " + limitElement + "\n");
     }
 

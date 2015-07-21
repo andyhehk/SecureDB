@@ -17,8 +17,6 @@
 
 package edu.hku.sdb.udf.util;
 
-import com.sun.org.apache.bcel.internal.generic.BIPUSH;
-
 import java.math.BigInteger;
 
 public class UDFHandler {
@@ -83,22 +81,22 @@ public class UDFHandler {
 
 
   /**
-   * Returns true if value is less than halfN, false if value is greater than or equal to halfN.
-   *
-   * (1) value less than halfN means that a > b
-   * (2) value greater or equal to halfN means that a < b.
+   * (1) value less than halfN means that a > b, return true
+   * (2) value greater or equal to halfN means that a < b, return false
    * @param value
    * @param halfN
    * @return
    */
   public static boolean greatThan(BigInteger value, BigInteger halfN) {
-    int result = halfN.compareTo(value);
-
-    if(result > 0)
-      return true;
-    else {
+    if(value.equals(BigInteger.ZERO))
       return false;
-    }
+
+    int result = value.compareTo(halfN);
+
+    if(result < 0)
+      return true;
+    else
+      return false;
   }
 
   /**
@@ -112,21 +110,19 @@ public class UDFHandler {
   }
 
   /**
-   * Returns true if value is greater than or equal to halfN, false if value is less than halfN.
-   *
-   * (1) value less than halfN means that a > b
-   * (2) value greater or equal to halfN means that a < b.
+   * (1) value less than halfN means that a > b, return false
+   * (2) value greater or equal to halfN means that a < b, return true
    * @param value
    * @param halfN
    * @return
    */
   public static boolean lessThan(BigInteger value, BigInteger halfN) {
-    int result = halfN.compareTo(value);
+    int result = value.compareTo(halfN);
 
-    if(result <= 0)
-      return true;
-    else
+    if(result < 0)
       return false;
+    else
+      return true;
   }
 
 }

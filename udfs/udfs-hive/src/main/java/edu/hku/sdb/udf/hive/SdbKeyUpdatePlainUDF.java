@@ -18,28 +18,26 @@
 package edu.hku.sdb.udf.hive;
 
 import edu.hku.sdb.udf.util.TypeCast;
-import junit.framework.TestCase;
+import edu.hku.sdb.udf.util.UDFHandler;
+import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 
 import java.math.BigInteger;
 
-public class SdbIntAddUDFTest extends TestCase {
+public class SdbKeyUpdatePlainUDF extends UDF {
 
-  private SdbIntAddUDF udf;
+  // a is a column with Integer/Long type
+  public Text evaluate(LongWritable a, Text s, Text p, Text q, Text n) {
+    if (a == null || s == null || p == null || q == null || n == null) {
+      return null;
+    }
 
-  protected void setUp() throws Exception {
-    super.setUp();
-    udf = new SdbIntAddUDF();
-  }
+    BigInteger result = UDFHandler.keyUpdate(BigInteger.valueOf(a.get()),
+            TypeCast.textToBigInt(s), TypeCast.textToBigInt(p),
+            TypeCast.textToBigInt(q), TypeCast.textToBigInt(n));
 
-  protected void tearDown() throws Exception {
-    super.tearDown();
-  }
-
-  public void testEvaluate1() {
-    assertEquals(TypeCast.bigIntToText(new BigInteger("25")),
-            udf.evaluate(TypeCast.bigIntToText(new BigInteger("9")),
-                    TypeCast.bigIntToText(new BigInteger("16")),
-                    TypeCast.bigIntToText(new BigInteger("35"))));
+    return TypeCast.bigIntToText(result);
   }
 
 }

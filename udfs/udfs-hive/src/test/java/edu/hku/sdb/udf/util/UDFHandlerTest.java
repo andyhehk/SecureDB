@@ -95,31 +95,6 @@ public class UDFHandlerTest extends TestCase {
     assertEquals(new BigInteger("496849390869414279802"), result);
   }
 
-//  public void testKeyUpdateHandlerLarge() {
-//    BigInteger p = Crypto.generateRandPrime();
-//    BigInteger q = Crypto.generateRandPrime();
-//    BigInteger n = q.multiply(p);
-//
-//    BigInteger new_p = Crypto.generatePositiveRand(p, q);
-//    BigInteger new_q = Crypto.generatePositiveRand(p, q);
-//    BigInteger ae = Crypto.generatePositiveRand(p, q);
-//    BigInteger se = Crypto.generatePositiveRand(p, q);
-//
-//    assertEquals(((new_q.mod(n)).multiply(ae.mod(n)).multiply(se.modPow(new_p, n))).mod(n), UDFHandler.keyUpdate(ae, se, new_p, new_q, n));
-//  }
-
-  public void testAddHandler1() {
-    BigInteger result = UDFHandler.add(new BigInteger("9"), new BigInteger(
-                    "16"),  new BigInteger("35"));
-    assertEquals(new BigInteger("29"), result);
-  }
-
-  public void testAddHandler2() {
-    BigInteger result = UDFHandler.add(new BigInteger("10322836"),
-            new BigInteger("22493371767"), new BigInteger(
-                    "526631133691760337517"));
-    assertEquals(new BigInteger("520470587846211796404"), result);
-  }
 
 
 }

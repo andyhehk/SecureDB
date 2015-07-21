@@ -116,16 +116,16 @@ public class SelectionList implements ParseNode {
 
     List<String> items = new ArrayList<String>();
 
+    for (SelectionItem item : itemList) {
+      items.add(item.toSql());
+    }
+
     if(rowID != null)
       items.add(rowID.toSql());
     if(auxiliaryR != null)
       items.add(auxiliaryR.toSql());
     if(auxiliaryS != null)
       items.add(auxiliaryS.toSql());
-
-    for (SelectionItem item : itemList) {
-      items.add(item.toSql());
-    }
 
     return Joiner.on(", ").join(items);
 

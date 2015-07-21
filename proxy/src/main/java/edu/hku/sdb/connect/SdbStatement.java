@@ -191,7 +191,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     sdbSchemeRewriter = new SdbSchemeRewriter(dbMeta);
     try {
       sdbSchemeRewriter.rewrite(analyzedNode);
-      LOG.info("The finial ewritten query: " + analyzedNode.toSql());
+      LOG.info("The finial rewritten query: " + analyzedNode.toSql());
     } catch (UnSupportedException e) {
       e.printStackTrace();
       throw new RemoteException(e.getMessage());

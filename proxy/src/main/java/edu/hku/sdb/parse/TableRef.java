@@ -90,7 +90,7 @@ public abstract class TableRef implements ParseNode {
   /**
    * @return the tableName
    */
-  public String getTableName() {
+  public String getTblName() {
     return tblName;
   }
 

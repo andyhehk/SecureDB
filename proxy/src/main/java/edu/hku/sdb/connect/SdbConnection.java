@@ -139,11 +139,14 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
       // LOG.debug("Registering UDFS in server: " + connectionURL);
       // register UDFs
       // failed in Spark 1.1.0
-//      stmt.execute("add jar /home/haibin/sdb-udfs-hive-0.1-SNAPSHOT.jar");
+      stmt.execute("add jar /home/andy/git/SecureDB/udfs/udfs-hive/target/sdb-udfs-hive-0.1.1-SNAPSHOT.jar");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.hive.SdbIntAddUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_add AS 'edu.hku.sdb.udf.hive.SdbAddUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_mul AS 'edu.hku.sdb.udf.hive.SdbMultiUDF'");
+      stmt.execute("CREATE TEMPORARY FUNCTION sdb_sum AS 'edu.hku.sdb.udf.hive.SdbSumUDF'");
+      stmt.execute("CREATE TEMPORARY FUNCTION sdb_first AS 'edu.hku.sdb.udf.hive.SdbFirstUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_keyUp AS 'edu.hku.sdb.udf.hive.SdbKeyUpdateUDF'");
+      stmt.execute("CREATE TEMPORARY FUNCTION sdb_keyUpPlain AS 'edu.hku.sdb.udf.hive.SdbKeyUpdatePlainUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_cartesian AS 'edu.hku.sdb.udf.hive.SdbCartProdUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_lt AS 'edu.hku.sdb.udf.hive.SdbLtUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_gt AS 'edu.hku.sdb.udf.hive.SdbGtUDF'");

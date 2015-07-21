@@ -31,7 +31,6 @@ public class TestQuery {
 
   public static String dbName = "dummy_db";
 
-
   public static List<ColumnMeta> createColMetaT1Simple() {
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
@@ -144,7 +143,7 @@ public class TestQuery {
     return dbMeta;
   }
 
-  public static List<ColumnMeta> createColMetaT1(BigInteger prime1, BigInteger prime2) {
+  public static List<ColumnMeta> createColMetaT1(BigInteger prime1, BigInteger prime2, BigInteger colKeyM) {
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
     ColumnMeta t1ID = new ColumnMeta(dbName, "T1", "id", DataType.INT, true,
@@ -155,7 +154,7 @@ public class TestQuery {
             null);
     ColumnMeta t1RowID = new ColumnMeta(dbName, "T1", BasicFieldLiteral
             .ROW_ID_COLUMN_NAME, DataType.INT, true,
-            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+            new ColumnKey( colKeyM,  Crypto.generatePositiveRand(prime1, prime2)));
     ColumnMeta t1R = new ColumnMeta(dbName, "T1", BasicFieldLiteral.R_COLUMN_NAME,
             DataType.INT, true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2), Crypto.generatePositiveRand(prime1, prime2)));
@@ -173,7 +172,7 @@ public class TestQuery {
     return cols;
   }
 
-  public static List<ColumnMeta> createColMetaT2(BigInteger prime1, BigInteger prime2) {
+  public static List<ColumnMeta> createColMetaT2(BigInteger prime1, BigInteger prime2, BigInteger colKeyM) {
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
     ColumnMeta t2ID = new ColumnMeta(dbName, "T2", "id", DataType.INT, true,
@@ -183,7 +182,7 @@ public class TestQuery {
 
     ColumnMeta t2RowID = new ColumnMeta(dbName, "T2", BasicFieldLiteral
             .ROW_ID_COLUMN_NAME, DataType.INT, true,
-            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+            new ColumnKey( colKeyM,  Crypto.generatePositiveRand(prime1, prime2)));
     ColumnMeta t2R = new ColumnMeta(dbName, "T2", BasicFieldLiteral.R_COLUMN_NAME,
             DataType.INT, true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
@@ -201,7 +200,7 @@ public class TestQuery {
   }
 
 
-  public static List<ColumnMeta> createColMetaT3(BigInteger prime1, BigInteger prime2) {
+  public static List<ColumnMeta> createColMetaT3(BigInteger prime1, BigInteger prime2, BigInteger colKeyM) {
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
     ColumnMeta t3ID1 = new ColumnMeta(dbName, "T3", "id1", DataType.INT, true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
@@ -211,7 +210,7 @@ public class TestQuery {
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
     ColumnMeta t3RowID = new ColumnMeta(dbName, "T3", BasicFieldLiteral
             .ROW_ID_COLUMN_NAME, DataType.INT, true,
-            new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
+            new ColumnKey( colKeyM,  Crypto.generatePositiveRand(prime1, prime2)));
     ColumnMeta t3R = new ColumnMeta(dbName, "T3", BasicFieldLiteral.R_COLUMN_NAME,
             DataType.INT, true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
@@ -231,16 +230,16 @@ public class TestQuery {
   }
 
 
-  public static List<TableMeta> createTableMetas(BigInteger prime1, BigInteger prime2) {
+  public static List<TableMeta> createTableMetas(BigInteger prime1, BigInteger prime2, BigInteger colKeyM) {
     List<TableMeta> tblMetas = new ArrayList<>();
 
     TableMeta t1 = new TableMeta(dbName, "T1");
     TableMeta t2 = new TableMeta(dbName, "T2");
     TableMeta t3 = new TableMeta(dbName, "T3");
 
-    t1.setCols(createColMetaT1(prime1, prime2));
-    t2.setCols(createColMetaT2(prime1, prime2));
-    t3.setCols(createColMetaT3(prime1, prime2));
+    t1.setCols(createColMetaT1(prime1, prime2, colKeyM));
+    t2.setCols(createColMetaT2(prime1, prime2, colKeyM));
+    t3.setCols(createColMetaT3(prime1, prime2, colKeyM));
 
     tblMetas.add(t1);
     tblMetas.add(t2);
@@ -262,7 +261,10 @@ public class TestQuery {
     dbMeta.setPrime1(prime1.toString());
     dbMeta.setPrime2(prime2.toString());
 
-    dbMeta.setTbls(createTableMetas(prime1, prime2));
+
+    BigInteger colKeyM =  Crypto.generatePositiveRand(prime1, prime2);
+
+    dbMeta.setTbls(createTableMetas(prime1, prime2, colKeyM));
 
     return dbMeta;
 

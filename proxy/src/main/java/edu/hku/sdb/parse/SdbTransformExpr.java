@@ -29,6 +29,8 @@ public class SdbTransformExpr extends Expr {
     SDB_ADD("sdb_add", "sdb UDF for adding  two columns"),
     SDB_MUL("sdb_mul", "sdb UDF for multiplying two columns"),
     SDB_ADDROWID("sdb_intadd", "sdb UDF for adding two row IDs"),
+    SDB_SUM("sdb_sum", "sdb UDF for sum aggregation"),
+    SDB_FIRST("sdb_first", "sdb UDF for getting the first saw value"),
     SDB_LT("sdb_lt", "sdb UDF for <"),
     SDB_GT("sdb_gt", "sdb UDF for >"),
     SDB_LE("sdb_le", "sdb UDF for <="),

@@ -141,6 +141,43 @@ public class CryptoTest extends TestCase {
     assertEquals(plaintext, Crypto.decrypt(ae, ak, n));
   }
 
+  public void testSIESEncryptDecrypt() {
+    BigInteger p = Crypto.generateRandPrime();
+    BigInteger q = Crypto.generateRandPrime();
+    BigInteger n = p.multiply(q);
+
+    BigInteger ma = Crypto.generatePositiveRand(p, q);
+    BigInteger xa = Crypto.generatePositiveRand(p, q);
+
+    BigInteger plaintext = Crypto.generatePositiveRandShort(p, q);
+    BigInteger ae = Crypto.SIESEncrypt(plaintext, ma, xa, n);
+    assertEquals(plaintext, Crypto.SIESDecrypt(ae, ma, xa, n));
+  }
+
+  public void testSIESAddtiveHomomorphic() {
+    BigInteger p = Crypto.generateRandPrime();
+    BigInteger q = Crypto.generateRandPrime();
+    BigInteger n = p.multiply(q);
+
+    BigInteger ma = Crypto.generatePositiveRand(p, q);
+    BigInteger xa = Crypto.generatePositiveRand(p, q);
+    BigInteger xb = Crypto.generatePositiveRand(p, q);
+    BigInteger totient = Crypto.evaluateTotient(p, q);
+
+    BigInteger plaintext1 = Crypto.generatePositiveRandShort(p, q);
+    BigInteger plaintext2 = Crypto.generatePositiveRandShort(p, q);
+
+    BigInteger ae1 = Crypto.SIESEncrypt(plaintext1, ma, xa, n);
+    BigInteger ae2 = Crypto.SIESEncrypt(plaintext2, ma, xb, n);
+
+    System.out.println(plaintext1.add(plaintext2));
+    System.out.println(Crypto.SIESDecrypt(ae1.add(ae2).mod
+            (n), ma, xa.add(xb).mod(totient), n));
+
+    assertEquals(plaintext1.add(plaintext2), Crypto.SIESDecrypt(ae1.add(ae2).mod
+            (n), ma, xa.add(xb), n));
+  }
+
   public void testKeyUpdateClient() {
     //A prime number p
     BigInteger p = new BigInteger("5");
