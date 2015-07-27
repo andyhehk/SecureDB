@@ -23,7 +23,7 @@ import edu.hku.sdb.catalog.ColumnKey;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SdbTransformExpr extends Expr {
+public class SdbArithmeticExpr extends Expr {
 
   public enum SdbOperator {
     SDB_ADD("sdb_add", "sdb UDF for adding  two columns"),
@@ -57,9 +57,9 @@ public class SdbTransformExpr extends Expr {
 
   }
 
-  public  SdbTransformExpr() {}
+  public SdbArithmeticExpr() {}
 
-  public SdbTransformExpr(SdbOperator op) {
+  public SdbArithmeticExpr(SdbOperator op) {
     this.op = op;
   }
 
@@ -79,10 +79,10 @@ public class SdbTransformExpr extends Expr {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof SdbTransformExpr))
+    if (!(obj instanceof SdbArithmeticExpr))
       return false;
 
-    SdbTransformExpr sdbAriObj = (SdbTransformExpr) obj;
+    SdbArithmeticExpr sdbAriObj = (SdbArithmeticExpr) obj;
     return op.equals(sdbAriObj.op) && children.equals(sdbAriObj.children);
   }
 

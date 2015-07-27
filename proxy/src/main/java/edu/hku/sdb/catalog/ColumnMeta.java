@@ -17,6 +17,9 @@
 
 package edu.hku.sdb.catalog;
 
+import com.google.common.base.Preconditions;
+import edu.hku.sdb.utility.TypeNameCast;
+
 import java.util.StringTokenizer;
 
 import javax.jdo.annotations.Column;
@@ -37,7 +40,20 @@ public class ColumnMeta {
   private String colName;
 
   @Persistent
-  private DataType type;
+  private String typeName;
+
+//  // only use for char and varchar
+//  @Persistent
+//  private int len;
+//
+//  // only use for decimal
+//  @Persistent
+//  private int precision;
+//
+//  // only use for decimal
+//  @Persistent
+//  private int scale;
+
   @Persistent
   private boolean isSensitive = false;
   @Column(length = 2048)
@@ -103,12 +119,12 @@ public class ColumnMeta {
   }
 
   public ColumnMeta(String dbName, String tblName, String colName,
-                    DataType type, boolean isSen, ColumnKey colKey) {
+                    String typeName, boolean isSen, ColumnKey colKey) {
     // names should be case insensitive
     this.setDbName(dbName.toLowerCase());
     this.setTblName(tblName.toLowerCase());
     this.setColName(colName.toLowerCase());
-    this.type = type;
+    this.typeName = typeName;
     this.isSensitive = isSen;
     this.setColkey(colKey);
   }
@@ -166,16 +182,17 @@ public class ColumnMeta {
   /**
    * @return the type
    */
-  public DataType getType() {
-    return type;
+  public Type getType() {
+    return TypeNameCast.castString2Type(typeName);
   }
 
   /**
-   * @param type the type to set
+   * @param typeName the typeName to set
    */
-  public void setType(DataType type) {
-    this.type = type;
+  public void setType(String typeName) {
+    this.typeName = typeName;
   }
+
 
   /**
    * @return the isSensitive

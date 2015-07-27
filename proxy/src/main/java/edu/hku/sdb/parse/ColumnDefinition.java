@@ -19,21 +19,20 @@ package edu.hku.sdb.parse;
 
 import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by Eric Haibin Lin on 25/3/15.
- */
-public class BasicFieldLiteral implements ParseNode {
+public class ColumnDefinition implements ParseNode {
 
-  private static final Logger LOG = LoggerFactory.getLogger(BasicFieldLiteral.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ColumnDefinition.class);
   public static final String ROW_ID_COLUMN_NAME = "row_id";
   public static final String S_COLUMN_NAME = "s";
   public static final String R_COLUMN_NAME = "r";
 
   private TableName tableName;
-  private ColumnType type;
+  private Type originType;
+  private Type rewritenType;
   private boolean isSen = false;
   private String name;
   private ColumnKey colKey;
@@ -62,12 +61,21 @@ public class BasicFieldLiteral implements ParseNode {
     this.name = name;
   }
 
-  public ColumnType getType() {
-    return type;
+
+  public Type getRewritenType() {
+    return rewritenType;
   }
 
-  public void setType(ColumnType type) {
-    this.type = type;
+  public void setRewritenType(Type rewritenType) {
+    this.rewritenType = rewritenType;
+  }
+
+  public Type getOriginType() {
+    return originType;
+  }
+
+  public void setOriginType(Type originType) {
+    this.originType = originType;
   }
 
   public boolean isSen() {
@@ -78,20 +86,21 @@ public class BasicFieldLiteral implements ParseNode {
     this.isSen = isSen;
   }
 
-  public BasicFieldLiteral(String name, ColumnType type) {
+  public ColumnDefinition(String name, Type type) {
     this.name = name;
-    this.type = type;
+    this.rewritenType = this.originType = type;
   }
 
-  public BasicFieldLiteral(String name, ColumnType type, TableName tableName) {
+  public ColumnDefinition(String name, Type type, TableName tableName) {
     this.name = name;
-    this.type = type;
+    this.rewritenType = this.originType = type;
     this.tableName = tableName;
   }
 
-  public BasicFieldLiteral(String name, ColumnType type, TableName tableName, boolean isSen, ColumnKey columnKey) {
+  public ColumnDefinition(String name, Type type, TableName tableName, boolean isSen,
+                          ColumnKey columnKey) {
     this.name = name;
-    this.type = type;
+    this.rewritenType = this.originType = type;
     this.isSen = isSen;
     this.tableName = tableName;
     this.colKey = columnKey;
@@ -108,7 +117,7 @@ public class BasicFieldLiteral implements ParseNode {
 
   @Override
   public String toSql() {
-    return name + " " + type.toSql();
+    return name + " " + originType.toSql();
   }
 
   @Override
@@ -119,30 +128,30 @@ public class BasicFieldLiteral implements ParseNode {
   @Override
   public boolean equals(Object obj) {
     // Log messages are used for debug.
-    if (!(obj instanceof BasicFieldLiteral)) {
-      LOG.debug("object is not an instance of BasicFieldLiteral");
+    if (!(obj instanceof ColumnDefinition)) {
+      LOG.debug("object is not an instance of ColumnDefinition");
       return false;
     }
 
-    BasicFieldLiteral fieldobj = (BasicFieldLiteral) obj;
+    ColumnDefinition fieldobj = (ColumnDefinition) obj;
 
-    if (!type.equals(fieldobj.getType())) {
-      LOG.debug("type of right BasicFieldLiteral " + fieldobj.getType() + " is not equal!");
+    if (!originType.equals(fieldobj.getOriginType())) {
+      LOG.debug("type of right ColumnDefinition " + fieldobj.getOriginType() + " is not equal!");
       return false;
     }
 
     if (isSen != fieldobj.isSen()) {
-      LOG.debug("isSen of right BasicFieldLiteral " + fieldobj.isSen() + " is not equal to " + isSen + "!");
+      LOG.debug("isSen of right ColumnDefinition " + fieldobj.isSen() + " is not equal to " + isSen + "!");
       return false;
     }
 
     if (!name.equals(fieldobj.getName())) {
-      LOG.debug("name of right BasicFieldLiteral " + fieldobj.getName() + " is not equal to " + name + "!");
+      LOG.debug("name of right ColumnDefinition " + fieldobj.getName() + " is not equal to " + name + "!");
       return false;
     }
 
     if (!tableName.equals(fieldobj.getTableName())) {
-      LOG.debug("tableName of right BasicFieldLiteral " + fieldobj.getTableName() + " is not equal to " + tableName + "!");
+      LOG.debug("tableName of right ColumnDefinition " + fieldobj.getTableName() + " is not equal to " + tableName + "!");
       return false;
     }
 

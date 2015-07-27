@@ -17,37 +17,45 @@
 
 package edu.hku.sdb.exec;
 
-import edu.hku.sdb.catalog.ColumnKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ColumnDesc extends BasicColumnDesc {
+public class ColumnDesc {
 
   private static final Logger LOG = LoggerFactory.getLogger(ColumnDesc.class);
 
-  private boolean isSensitive;
-  private ColumnKey columnKey;
+  protected String name;
+  protected String alias;
+  protected Class clazz;
 
-  public void setColumnKey(ColumnKey columnKey) {
-    this.columnKey = columnKey;
+  public String getName() {
+    return name;
   }
 
-  public boolean isSensitive() {
-    return isSensitive;
+  public void setName(String name) {
+    this.name = name;
   }
 
-  public void setSensitive(boolean isSensitive) {
-    this.isSensitive = isSensitive;
+  public String getAlias() {
+    return alias;
   }
 
-  public ColumnKey getColumnKey() {
-    return columnKey;
+  public void setAlias(String alias) {
+    this.alias = alias;
   }
 
-  public ColumnDesc(String name, String alias, Class clazz, boolean isSensitive, ColumnKey columnKey) {
-    super(name, alias, clazz);
-    setSensitive(isSensitive);
-    setColumnKey(columnKey);
+  public Class getClazz() {
+    return clazz;
+  }
+
+  public void setClazz(Class clazz) {
+    this.clazz = clazz;
+  }
+
+  public ColumnDesc(String name, String alias, Class clazz) {
+    this.name = name;
+    this.alias = alias;
+    this.clazz = clazz;
   }
 
   @Override
@@ -56,19 +64,19 @@ public class ColumnDesc extends BasicColumnDesc {
       LOG.debug(object.getClass() + " object is not an instance of " + this.getClass());
       return false;
     }
-    if (isSensitive != ((ColumnDesc) object).isSensitive()) {
-      LOG.debug("isSensitive is not equal!");
+
+    if (!name.equals(((ColumnDesc) object).getName())) {
+      LOG.debug("name is not equal!");
       return false;
     }
-    if (!columnKey.equals(((ColumnDesc) object).getColumnKey())) {
-      LOG.debug("columnKey is not equal!");
+    if (!clazz.equals(((ColumnDesc) object).getClazz())) {
+      LOG.debug("clazz is not equal!");
       return false;
     }
-    if (!super.equals((BasicColumnDesc) object)) {
-      LOG.debug("super class instance is not equal!");
+    if (!alias.equals(((ColumnDesc) object).getAlias())) {
+      LOG.debug("alias is not equal!");
       return false;
     }
     return true;
   }
-
 }

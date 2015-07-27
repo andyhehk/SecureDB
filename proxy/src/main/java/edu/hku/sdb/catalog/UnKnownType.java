@@ -17,9 +17,9 @@
 
 package edu.hku.sdb.catalog;
 
-public enum DataType {
-  INT,
-  CHAR,
-  VARCHAR,
-  UNKNOWN
+public class UnKnownType extends Type {
+
+  public String toSql() {
+    return "UNKNOWN";
+  }
 }

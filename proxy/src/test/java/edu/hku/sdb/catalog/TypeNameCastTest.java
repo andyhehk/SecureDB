@@ -17,9 +17,24 @@
 
 package edu.hku.sdb.catalog;
 
-public enum DataType {
-  INT,
-  CHAR,
-  VARCHAR,
-  UNKNOWN
+import edu.hku.sdb.utility.TypeNameCast;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
+public class TypeNameCastTest {
+
+
+  @Test
+  public void testCastString2Type() {
+    String primitiveINT = "INT";
+    String primitiveCHAR = "CHAR(10)";
+    String primitiveVARCHAR = "VARCHAR(10)";
+    String primitiveDECIMAL = "DECIMAL(9,0)";
+
+    assertEquals(Type.INT, TypeNameCast.castString2Type(primitiveINT));
+    assertEquals(ScalarType.createCharType(10), TypeNameCast.castString2Type(primitiveCHAR));
+    assertEquals(ScalarType.createVarcharType(10), TypeNameCast.castString2Type(primitiveVARCHAR));
+    assertEquals(ScalarType.createDecimalType(9, 0), TypeNameCast.castString2Type(primitiveDECIMAL));
+  }
 }
