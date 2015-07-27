@@ -81,9 +81,9 @@ public abstract class RemoteSQL extends PlanNode<RemoteSQLDesc> {
     } catch (RemoteException e) {
       e.printStackTrace();
     }
-    List<BasicColumnDesc> basicColumnDescList = nodeDesc.getRowDesc().getSignature();
+    List<ColumnDesc> columnDescList = nodeDesc.getRowDesc().getSignature();
     //Remove row_id before init resultSetMetaData for localDecrypt
-    sdbMetaData.setColumnList(basicColumnDescList);
+    sdbMetaData.setColumnList(columnDescList);
     return sdbMetaData;
   }
 }

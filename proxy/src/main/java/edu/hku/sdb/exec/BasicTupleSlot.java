@@ -21,6 +21,11 @@ import java.util.List;
 
 public abstract class BasicTupleSlot {
 
+
+  public abstract void addRow(List<Object> row);
+
+  public abstract void setRows(List<List<Object>> rows);
+
   /**
    * Get the next tuple for the current cursor.
    *

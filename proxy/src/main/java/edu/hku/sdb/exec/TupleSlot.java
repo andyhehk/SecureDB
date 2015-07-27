@@ -22,10 +22,15 @@ import java.util.List;
 
 public class TupleSlot extends BasicTupleSlot {
 
-  private List<Object> row;
+  private List<List<Object>> rows = new ArrayList<>();
+  private int rowIndex = -1;
 
-  public void setRow(List<Object> row) {
-    this.row = row;
+  public void addRow(List<Object> row) {
+    rows.add(row);
+  }
+
+  public void setRows(List<List<Object>> rows) {
+    this.rows = rows;
   }
 
   /*
@@ -35,6 +40,15 @@ public class TupleSlot extends BasicTupleSlot {
    */
   @Override
   public List<Object> nextTuple() {
-    return row;
+    rowIndex++;
+    if (rowIndex < rows.size()) {
+      return rows.get(rowIndex);
+    }
+    else {
+      if(rows.size() > 0)
+        rows.clear();
+      rowIndex = -1;
+      return null;
+    }
   }
 }

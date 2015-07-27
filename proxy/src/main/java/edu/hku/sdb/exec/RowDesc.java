@@ -27,13 +27,13 @@ public class RowDesc {
   private static final Logger LOG = LoggerFactory
           .getLogger(RowDesc.class);
 
-  private List<BasicColumnDesc> signature;
+  private List<ColumnDesc> signature;
 
-  public List<BasicColumnDesc> getSignature() {
+  public List<ColumnDesc> getSignature() {
     return signature;
   }
 
-  public void setSignature(List<BasicColumnDesc> signature) {
+  public void setSignature(List<ColumnDesc> signature) {
     this.signature = signature;
   }
 

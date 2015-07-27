@@ -19,6 +19,7 @@ package edu.hku.sdb.parse;
 
 import static org.junit.Assert.*;
 
+import edu.hku.sdb.catalog.Type;
 import org.junit.Test;
 
 import edu.hku.sdb.catalog.ColumnKey;
@@ -30,8 +31,8 @@ public class BaseTableRefTest {
   @Test
   public void testEqual() {
     BaseTableRef tbl1 = new BaseTableRef("T1", "a");
-    FieldLiteral left = new FieldLiteral("T1", "id", DataType.INT, true, new ColumnKey("1", "2"));
-    FieldLiteral right = new FieldLiteral("T2", "id", DataType.INT, true, new ColumnKey("2", "3"));
+    FieldLiteral left = new FieldLiteral("T1", "id", Type.INT, true, new ColumnKey("1", "2"));
+    FieldLiteral right = new FieldLiteral("T2", "id",Type.INT, true, new ColumnKey("2", "3"));
     Expr onClause = new NormalBinPredicate(BinOperator.EQ, left, right);
 
     BaseTableRef tbl2 = new BaseTableRef("T2", "b");

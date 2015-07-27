@@ -19,6 +19,7 @@ package edu.hku.sdb.parse;
 
 import com.google.common.base.Joiner;
 import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,18 @@ public class SdbCartesianExpr extends Expr {
 
   private ColumnKey columnKey;
   private String tblName;
+
+  private Type type;
+
+  @Override
+  public Type getType() {
+    return type;
+  }
+
+  @Override
+  public void setType(Type type) {
+    this.type = type;
+  }
 
   public String getAlia() {
     return alia;

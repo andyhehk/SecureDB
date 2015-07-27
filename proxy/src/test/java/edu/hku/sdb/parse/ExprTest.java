@@ -19,6 +19,8 @@ package edu.hku.sdb.parse;
 
 import static org.junit.Assert.*;
 
+import edu.hku.sdb.catalog.ScalarType;
+import edu.hku.sdb.catalog.Type;
 import org.junit.Test;
 
 import edu.hku.sdb.catalog.ColumnKey;
@@ -76,35 +78,35 @@ public class ExprTest {
 
   @Test
   public void testFieldLiteralEqual() {
-    FieldLiteral field1 = new FieldLiteral("test", "test", DataType.INT, true,
+    FieldLiteral field1 = new FieldLiteral("test", "test", Type.INT, true,
             new ColumnKey("1", "2"));
-    FieldLiteral field2 = new FieldLiteral("test", "test", DataType.INT, true,
+    FieldLiteral field2 = new FieldLiteral("test", "test", Type.INT, true,
             new ColumnKey("1", "2"));
 
     assertEquals(field1, field2);
 
-    FieldLiteral field3 = new FieldLiteral("nottest", "test", DataType.INT,
+    FieldLiteral field3 = new FieldLiteral("nottest", "test", Type.INT,
             true, new ColumnKey("1", "2"));
     assertNotEquals(field1, field3);
 
-    FieldLiteral field4 = new FieldLiteral("test", "nottest", DataType.INT,
+    FieldLiteral field4 = new FieldLiteral("test", "nottest", Type.INT,
             true, new ColumnKey("1", "2"));
     assertNotEquals(field1, field4);
 
-    FieldLiteral field5 = new FieldLiteral("test", "test", DataType.CHAR, true,
+    FieldLiteral field5 = new FieldLiteral("test", "test", Type.DEFAULT_CHAR, true,
             new ColumnKey("1", "2"));
     assertNotEquals(field1, field5);
 
-    FieldLiteral field6 = new FieldLiteral("test", "test", DataType.INT, false,
+    FieldLiteral field6 = new FieldLiteral("test", "test", Type.INT, false,
             new ColumnKey("1", "2"));
     assertNotEquals(field1, field6);
 
-    FieldLiteral field7 = new FieldLiteral("test", "test", DataType.INT, true,
+    FieldLiteral field7 = new FieldLiteral("test", "test", Type.INT, true,
             new ColumnKey("1", "3"));
     assertNotEquals(field1, field7);
 
-    FieldLiteral field8 = new FieldLiteral("test", "test", DataType.INT);
-    FieldLiteral field9 = new FieldLiteral("test", "test", DataType.INT);
+    FieldLiteral field8 = new FieldLiteral("test", "test", Type.INT);
+    FieldLiteral field9 = new FieldLiteral("test", "test", Type.INT);
     assertEquals(field8, field9);
     assertNotEquals(field1, field8);
 

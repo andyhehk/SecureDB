@@ -20,12 +20,15 @@ package edu.hku.sdb.exec;
 import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.parse.TableName;
 import edu.hku.sdb.plan.LocalCreateDesc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class LocalCreate extends PlanNode<LocalCreateDesc> {
 
+  private static final Logger LOG = LoggerFactory.getLogger(LocalCreate.class);
 
   public LocalCreate(MetaStore metaStore, TableName tableName, RowDesc localCreateRowDesc) {
     nodeDesc = new LocalCreateDesc();
@@ -44,29 +47,45 @@ public class LocalCreate extends PlanNode<LocalCreateDesc> {
 
     List<ColumnMeta> columnMetaList = new ArrayList<>();
 
-    for (BasicColumnDesc columnDesc : nodeDesc.getRowDesc().getSignature()) {
+    for (ColumnDesc columnDesc : nodeDesc.getRowDesc().getSignature()) {
       ColumnMeta columnMeta = null;
+      // TODO: need to set the daName according to the connection
       String dbName = DBMeta.defaultDbName;
       String tableName = nodeDesc.getTableName().getName();
       String colName = columnDesc.getName();
 
-      if (columnDesc instanceof ColumnDesc) {
+      Type type = columnDesc.getType();
+      if (columnDesc.isSensitive) {
         //sensitive column's plaintext is int type, by default
-        DataType type = DataType.INT;
-        boolean isSen = true;
-        ColumnKey columnKey = ((ColumnDesc) columnDesc).getColumnKey();
-        columnMeta = new ColumnMeta(dbName, tableName, colName, type, isSen, columnKey);
-      } else if (columnDesc instanceof BasicColumnDesc) {
-        columnMeta = new ColumnMeta(dbName, tableName, colName);
-        if (columnDesc.getClazz() == String.class) {
-          columnMeta.setType(DataType.VARCHAR);
-        } else {
-          columnMeta.setType(DataType.INT);
+        // It is a scalar type
+        if(type instanceof  ScalarType) {
+          ScalarType scalaType = (ScalarType) type;
+          if(scalaType.getType() == PrimitiveType.INT) {
+
+          }
+          else if(scalaType.getType() == PrimitiveType.DECIMAL) {
+
+          }
+          else {
+            LOG.error(type.toString() + " is not supported for SDB encryption scheme!");
+            return;
+          }
         }
+        else {
+          LOG.error(type.toString() + " is not supported for SDB encryption scheme!");
+          return;
+        }
+        boolean isSen = true;
+        ColumnKey columnKey = columnDesc.getColKey();
+        columnMeta = new ColumnMeta(dbName, tableName, colName, type.toString(), isSen, columnKey);
+      }
+      else {
+        columnMeta = new ColumnMeta(dbName, tableName, colName, type.toString(), false, null);
       }
       columnMeta.setTableMeta(tableMeta);
       columnMetaList.add(columnMeta);
     }
+
     tableMeta.setCols(columnMetaList);
     dbMeta.add(tableMeta);
 
@@ -75,7 +94,7 @@ public class LocalCreate extends PlanNode<LocalCreateDesc> {
   }
 
   @Override
-  public BasicTupleSlot nextTuple() {
+  public List<Object> nextTuple() {
     return null;
   }
 

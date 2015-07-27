@@ -21,11 +21,21 @@ import java.util.List;
 
 public class HashTableSlot extends BasicTupleSlot {
 
+  @Override
+  public void addRow(List<Object> row) {
+
+  }
+
+  @Override
+  public void setRows(List<List<Object>> rows) {
+
+  }
+
   /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.BasicTupleSlot#nextTuple()
-   */
+     * (non-Javadoc)
+     *
+     * @see edu.hku.sdb.exec.BasicTupleSlot#nextTuple()
+     */
   @Override
   public List<Object> nextTuple() {
     // TODO Auto-generated method stub

@@ -30,13 +30,8 @@ import edu.hku.sdb.parse.ASTNode;
  * Unit test for simple App.
  */
 public class TestUtility {
-  private ASTNode tree;
 
-  public TestUtility(ASTNode tree) {
-    this.tree = tree;
-  }
-
-  public String visualize() {
+  public static String visualize(ASTNode tree) {
     DOTTreeGenerator gen = new DOTTreeGenerator();
     StringTemplate st = gen.toDOT(tree);
     return st.toString();

@@ -23,6 +23,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.hku.sdb.catalog.Type;
 import org.junit.Test;
 
 import edu.hku.sdb.catalog.ColumnKey;
@@ -42,15 +43,15 @@ public class SelectStmtTest {
   private SelectStmt createSelStmtWithoutGroup() {
     SelectionList selectList = new SelectionList();
     selectList.getItemList().add(
-            new SelectionItem(new FieldLiteral("T1", "a", DataType.INT), ""));
+            new SelectionItem(new FieldLiteral("T1", "a", Type.INT), ""));
 
     List<TableRef> tblRefs = new ArrayList<TableRef>();
 
     BaseTableRef tbl1 = new BaseTableRef("T1", "T11");
     tbl1.setJoinOp(JoinOperator.INNER_JOIN);
-    FieldLiteral left = new FieldLiteral("T1", "id", DataType.INT, true,
+    FieldLiteral left = new FieldLiteral("T1", "id", Type.INT, true,
             new ColumnKey("1", "2"));
-    FieldLiteral right = new FieldLiteral("T2", "id", DataType.INT, true,
+    FieldLiteral right = new FieldLiteral("T2", "id", Type.INT, true,
             new ColumnKey("2", "3"));
     Expr onClause = new NormalBinPredicate(BinOperator.EQ, left, right);
 
@@ -63,7 +64,7 @@ public class SelectStmtTest {
     tblRefs.add(tbl2);
 
     Expr whereClause = new NormalBinPredicate(BinOperator.EQ, new FieldLiteral(
-            "T1", "b", DataType.INT), new FieldLiteral("T2", "c", DataType.INT));
+            "T1", "b", Type.INT), new FieldLiteral("T2", "c", Type.INT));
 
     SelectStmt stmt = new SelectStmt();
     stmt.setSelectList(selectList);

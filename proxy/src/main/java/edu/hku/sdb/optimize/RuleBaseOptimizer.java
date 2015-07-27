@@ -19,7 +19,7 @@ package edu.hku.sdb.optimize;
 
 import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.DBMeta;
-import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.Type;
 import edu.hku.sdb.exec.*;
 import edu.hku.sdb.parse.*;
 import edu.hku.sdb.rewrite.UnSupportedException;
@@ -31,6 +31,12 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * TODO
+ * The current optimizer assume that the whole query can be executed by the server.
+ * It is not the case in reality. We need to consider split client/server execution
+ * in the future.
+ */
 public class RuleBaseOptimizer extends Optimizer {
 
   private static final Logger LOG = LoggerFactory
@@ -56,138 +62,72 @@ public class RuleBaseOptimizer extends Optimizer {
   @Override
   protected PlanNode optimizeSelStmt(SelectStmt selStmt, Connection connection,
                                      DBMeta dbMeta) throws UnSupportedException {
-
-    if (selStmt.getSelectList().involveSdbEncrytedCol()) {
-      return getEncryptedPlanNode(selStmt, connection, dbMeta);
-    } else {
-      return getNonEncPlanNode(selStmt, connection);
-    }
+    return  generatePlan(selStmt, connection, dbMeta);
   }
 
-  private PlanNode getNonEncPlanNode(SelectStmt selStmt, Connection connection) {
-    String query = selStmt.toSql().toLowerCase();
-    RowDesc remoteRowDesc = new RowDesc();
-
-    List<BasicColumnDesc> basicColumnDescList = new ArrayList<BasicColumnDesc>();
-
-    for (SelectionItem selectionItem : selStmt.getSelectList().getItemList()) {
-      // default columnName is ""
-      String columnName = "";
-      // default column clazz is Integer
-      Class clazz = Integer.class;
-      String alias = selectionItem.getAlias();
-      Expr expr = selectionItem.getExpr();
-      // obtain columnName in case of FieldLiteral
-      if (expr instanceof FieldLiteral) {
-        columnName = ((FieldLiteral) expr).getName();
-        // obtain clazz information
-        switch (((FieldLiteral) expr).getType()) {
-          case CHAR:
-          case VARCHAR:
-            clazz = String.class;
-            break;
-          case INT:
-          default:
-            clazz = Integer.class;
-        }
-      } else if (expr instanceof SdbTransformExpr) {
-        columnName = alias;
-      } else if (expr instanceof AggregateExpr) {
-        columnName = expr.toSql();
-      }
-
-      if (alias.equals("")) {
-        alias = columnName;
-      }
-
-      // create column desc for remoteSQL
-      BasicColumnDesc basicColumnDesc = new BasicColumnDesc(columnName, alias,
-              clazz);
-      basicColumnDescList.add(basicColumnDesc);
-    }
-
-
-    // create remoteSQL Node
-    remoteRowDesc.setSignature(basicColumnDescList);
-    RemoteQuery remoteQuery = new RemoteQuery(query, connection, remoteRowDesc);
-    return remoteQuery;
-  }
-
-  private PlanNode getEncryptedPlanNode(SelectStmt selStmt, Connection connection,
-                                        DBMeta dbMeta) {
-    String query = selStmt.toSql().toLowerCase();
+  private PlanNode generatePlan(SelectStmt selStmt, Connection connection,  DBMeta dbMeta) {
+    String query = selStmt.toSql();
     RowDesc remoteRowDesc = new RowDesc();
     RowDesc localDecryptRowDesc = new RowDesc();
 
-    List<BasicColumnDesc> basicColumnDescList = new ArrayList<BasicColumnDesc>();
-    List<BasicColumnDesc> columnDescList = new ArrayList<BasicColumnDesc>();
+    List<ColumnDesc> remoteColDescList = new ArrayList<ColumnDesc>();
+    List<ColumnDesc> localColDescList = new ArrayList<ColumnDesc>();
 
     SelectionItem rowID = selStmt.getSelectList().getRowID();
 
     for (SelectionItem selectionItem : selStmt.getSelectList().getItemList()) {
       LOG.debug("Creating decryption info for column: " + selectionItem.toString());
       // default columnName is ""
-      String columnName = "";
-      // default column clazz is Integer
-      Class clazz = Integer.class;
+      String colName = "";
       String alias = selectionItem.getAlias();
       Expr expr = selectionItem.getExpr();
+      Type type = expr.getType();
       // obtain columnName in case of FieldLiteral
       if (expr instanceof FieldLiteral) {
-        columnName = ((FieldLiteral) expr).getName();
-        // obtain clazz information
-        switch (((FieldLiteral) expr).getType()) {
-          case CHAR:
-          case VARCHAR:
-            clazz = String.class;
-            break;
-          case INT:
-          default:
-            clazz = Integer.class;
-        }
-      } else if (expr instanceof SdbTransformExpr) {
-        columnName = alias;
+        colName = ((FieldLiteral) expr).getName();
+      } else if (expr instanceof SdbArithmeticExpr) {
+        colName = alias;
       } else if (expr instanceof NormalArithmeticExpr) {
-        columnName = expr.toSql();
+        colName = expr.toSql();
       }
 
       //TODO fix alias
       if (alias.equals("")) {
-        alias = columnName;
+        alias = colName;
       }
 
-      // create column desc for remoteSQL
-      BasicColumnDesc basicColumnDesc = new BasicColumnDesc(columnName, alias,
-              clazz);
-      basicColumnDescList.add(basicColumnDesc);
-
-      // get column keys for sensitive columns for localDecrypt
-      ColumnKey columnKey = expr.getColKey();
+      // get column keys for sensitive columns
+      ColumnKey colKey = expr.getColKey();
       boolean isSensitive = expr.involveSdbEncrytedCol();
-      // add column descriptor for localDecrypt
-      ColumnDesc columnDesc = new ColumnDesc(columnName, alias, clazz,
-              isSensitive, columnKey);
-      columnDescList.add(columnDesc);
+
+      // create column desc for remoteSQL
+      ColumnDesc remoteColDesc = new ColumnDesc(colName, alias, type, isSensitive,
+              colKey);
+      remoteColDescList.add(remoteColDesc);
+
+      // create column desc for local decryption
+      ColumnDesc localColDesc = new ColumnDesc(colName, alias, type, isSensitive,
+              colKey);
+      localColDescList.add(localColDesc);
     }
 
-    // Row ID
-    if (rowID == null) {
+    // insert Row ID if involved encrypted column.
+    if (selStmt.involveSdbEncrytedCol()){
+      if(rowID == null) {
       LOG.error("No rowID return by the server query");
-    } else {
-      basicColumnDescList.add(new BasicColumnDesc(BasicFieldLiteral
-              .ROW_ID_COLUMN_NAME, BasicFieldLiteral.ROW_ID_COLUMN_NAME, Integer
-              .class));
-      columnDescList.add(new ColumnDesc(BasicFieldLiteral.ROW_ID_COLUMN_NAME,
-              BasicFieldLiteral.ROW_ID_COLUMN_NAME, Integer.class, true, rowID
-              .getExpr().getColKey()));
+      return null;
+      } else {
+        remoteColDescList.add(new ColumnDesc(ColumnDefinition.ROW_ID_COLUMN_NAME,
+                ColumnDefinition.ROW_ID_COLUMN_NAME, Type.INT, true, rowID.getExpr().getColKey()));
+      }
     }
 
     // create remoteSQL Node
-    remoteRowDesc.setSignature(basicColumnDescList);
+    remoteRowDesc.setSignature(remoteColDescList);
     RemoteQuery remoteQuery = new RemoteQuery(query, connection, remoteRowDesc);
 
     // create localDecrypt Node
-    localDecryptRowDesc.setSignature(columnDescList);
+    localDecryptRowDesc.setSignature(localColDescList);
     LocalDecrypt localDecrypt = new LocalDecrypt(localDecryptRowDesc);
     localDecrypt.setChild(remoteQuery);
     localDecrypt.setCredential(new BigInteger(dbMeta.getPrime1()), new BigInteger

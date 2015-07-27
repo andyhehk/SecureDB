@@ -21,6 +21,7 @@ import edu.hku.sdb.exec.RowDesc;
 
 public abstract class PlanNodeDesc {
 
+  // Description for the row.
   protected RowDesc rowDesc;
 
   public RowDesc getRowDesc() {

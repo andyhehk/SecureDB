@@ -20,6 +20,8 @@ package edu.hku.sdb.exec;
 import edu.hku.sdb.plan.CreateTblDesc;
 import edu.hku.sdb.plan.LocalCreateDesc;
 
+import java.util.List;
+
 /**
  * Created by Eric Haibin Lin on 28/3/15.
  */
@@ -56,7 +58,7 @@ public class CreateTbl extends PlanNode<CreateTblDesc> {
   }
 
   @Override
-  public BasicTupleSlot nextTuple() {
+  public List<Object> nextTuple() {
     return null;
   }
 

@@ -22,11 +22,11 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
-/**
- * Created by Eric Haibin Lin on 28/3/15.
- */
 public class RemoteUpdate extends RemoteSQL {
+
+  boolean initialized = false;
 
   private static final Logger LOG = LoggerFactory
           .getLogger(RemoteUpdate.class);
@@ -37,6 +37,9 @@ public class RemoteUpdate extends RemoteSQL {
 
   @Override
   public void init() {
+    if(initialized)
+      return;
+
     long startTimeStamp = System.currentTimeMillis();
 
     try {
@@ -52,10 +55,13 @@ public class RemoteUpdate extends RemoteSQL {
     } catch (SQLException e) {
       e.printStackTrace();
     }
+
+    initialized = true;
   }
 
   @Override
-  public BasicTupleSlot nextTuple() {
+  public List<Object> nextTuple() {
+    init();
     return null;
   }
 }

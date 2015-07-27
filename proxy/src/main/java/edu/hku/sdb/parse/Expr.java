@@ -23,6 +23,7 @@ import java.util.List;
 
 import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.Type;
 
 public abstract class Expr extends TreeNode<Expr> implements ParseNode {
 
@@ -104,4 +105,11 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
   }
 
   public void setColKey(ColumnKey colKey) {}
+
+
+  public Type getType() {
+    return null;
+  }
+
+  public void setType(Type type) {}
 }

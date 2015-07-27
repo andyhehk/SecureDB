@@ -19,6 +19,8 @@ package edu.hku.sdb.exec;
 
 import edu.hku.sdb.plan.LocalJoinDesc;
 
+import java.util.List;
+
 public class LocalJoin extends PlanNode<LocalJoinDesc> {
 
   /*
@@ -38,7 +40,7 @@ public class LocalJoin extends PlanNode<LocalJoinDesc> {
    * @see edu.hku.sdb.exec.PlanNode#nextTuple()
    */
   @Override
-  public BasicTupleSlot nextTuple() {
+  public List<Object> nextTuple() {
     // TODO Auto-generated method stub
     return null;
   }

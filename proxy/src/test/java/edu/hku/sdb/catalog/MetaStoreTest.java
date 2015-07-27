@@ -131,7 +131,7 @@ public class MetaStoreTest {
     ColumnMeta col1 = new ColumnMeta(dbName1.toUpperCase(),
             tblName1.toUpperCase(), colName1);
     ColumnMeta col2 = new ColumnMeta(dbName2, tblName2.toUpperCase(),
-            colName2.toUpperCase(), DataType.CHAR, true, new ColumnKey("2", "2"));
+            colName2.toUpperCase(), ScalarType.createCharType(8).toString(), true, new ColumnKey("2", "2"));
 
     metaDB.addCol(col1);
     metaDB.addCol(col2);

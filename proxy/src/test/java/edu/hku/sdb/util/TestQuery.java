@@ -34,18 +34,18 @@ public class TestQuery {
   public static List<ColumnMeta> createColMetaT1Simple() {
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
-    ColumnMeta t1ID = new ColumnMeta(dbName, "T1", "id", DataType.INT, true,
+    ColumnMeta t1ID = new ColumnMeta(dbName, "T1", "id", Type.INT.toString(), true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta t1A = new ColumnMeta(dbName, "T1", "a", DataType.INT, true,
+    ColumnMeta t1A = new ColumnMeta(dbName, "T1", "a", Type.INT.toString(), true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta t1RowID = new ColumnMeta(dbName, "T1", BasicFieldLiteral
-            .ROW_ID_COLUMN_NAME, DataType.INT, true,
+    ColumnMeta t1RowID = new ColumnMeta(dbName, "T1", ColumnDefinition
+            .ROW_ID_COLUMN_NAME, Type.INT.toString(), true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta t1R = new ColumnMeta(dbName, "T1", BasicFieldLiteral.R_COLUMN_NAME,
-            DataType.INT, true,
+    ColumnMeta t1R = new ColumnMeta(dbName, "T1", ColumnDefinition.R_COLUMN_NAME,
+            Type.INT.toString(), true,
             new ColumnKey(new BigInteger("2"), new BigInteger("4")));
-    ColumnMeta t1S = new ColumnMeta(dbName, "T1", BasicFieldLiteral.S_COLUMN_NAME,
-            DataType.INT, true,
+    ColumnMeta t1S = new ColumnMeta(dbName, "T1", ColumnDefinition.S_COLUMN_NAME,
+            Type.INT.toString(), true,
             new ColumnKey(new BigInteger("2"), new BigInteger("4")));
 
     cols.add(t1ID);
@@ -60,20 +60,20 @@ public class TestQuery {
   public static List<ColumnMeta> createColMetaT2Simple() {
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
-    ColumnMeta t2ID = new ColumnMeta(dbName, "T2", "id", DataType.INT, true,
+    ColumnMeta t2ID = new ColumnMeta(dbName, "T2", "id", Type.INT.toString(), true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta t2B = new ColumnMeta(dbName, "T2", "b", DataType.INT, true,
+    ColumnMeta t2B = new ColumnMeta(dbName, "T2", "b", Type.INT.toString(), true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta t2C = new ColumnMeta(dbName, "T2", "c", DataType.INT, false,
+    ColumnMeta t2C = new ColumnMeta(dbName, "T2", "c", Type.INT.toString(), false,
             null);
-    ColumnMeta t2RowID = new ColumnMeta(dbName, "T2", BasicFieldLiteral
-            .ROW_ID_COLUMN_NAME, DataType.INT, true,
+    ColumnMeta t2RowID = new ColumnMeta(dbName, "T2", ColumnDefinition
+            .ROW_ID_COLUMN_NAME, Type.INT.toString(), true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta t2R = new ColumnMeta(dbName, "T2", BasicFieldLiteral.R_COLUMN_NAME,
-            DataType.INT, true,
+    ColumnMeta t2R = new ColumnMeta(dbName, "T2", ColumnDefinition.R_COLUMN_NAME,
+            Type.INT.toString(), true,
             new ColumnKey(new BigInteger("3"), new BigInteger("5")));
-    ColumnMeta t2S = new ColumnMeta(dbName, "T2", BasicFieldLiteral.S_COLUMN_NAME,
-            DataType.INT, true,
+    ColumnMeta t2S = new ColumnMeta(dbName, "T2", ColumnDefinition.S_COLUMN_NAME,
+            Type.INT.toString(), true,
             new ColumnKey(new BigInteger("3"), new BigInteger("5")));
 
     cols.add(t2ID);
@@ -88,20 +88,20 @@ public class TestQuery {
 
   public static List<ColumnMeta> createColMetaT3Simple() {
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
-    ColumnMeta t3ID1 = new ColumnMeta(dbName, "T3", "id1", DataType.INT, true,
+    ColumnMeta t3ID1 = new ColumnMeta(dbName, "T3", "id1", Type.INT.toString(), true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta t3ID2 = new ColumnMeta(dbName, "T3", "id2", DataType.INT, false,
+    ColumnMeta t3ID2 = new ColumnMeta(dbName, "T3", "id2", Type.INT.toString(), false,
             null);
-    ColumnMeta t3D = new ColumnMeta(dbName, "T3", "d", DataType.INT, true,
+    ColumnMeta t3D = new ColumnMeta(dbName, "T3", "d", Type.INT.toString(), true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta t3RowID = new ColumnMeta(dbName, "T3", BasicFieldLiteral
-            .ROW_ID_COLUMN_NAME, DataType.INT, true,
+    ColumnMeta t3RowID = new ColumnMeta(dbName, "T3", ColumnDefinition
+            .ROW_ID_COLUMN_NAME, Type.INT.toString(), true,
             new ColumnKey(new BigInteger("1"), new BigInteger("3")));
-    ColumnMeta t3R = new ColumnMeta(dbName, "T3", BasicFieldLiteral.R_COLUMN_NAME,
-            DataType.INT, true,
+    ColumnMeta t3R = new ColumnMeta(dbName, "T3", ColumnDefinition.R_COLUMN_NAME,
+            Type.INT.toString(), true,
             new ColumnKey(new BigInteger("4"), new BigInteger("6")));
-    ColumnMeta t3S = new ColumnMeta(dbName, "T3", BasicFieldLiteral.S_COLUMN_NAME,
-            DataType.INT, true,
+    ColumnMeta t3S = new ColumnMeta(dbName, "T3", ColumnDefinition.S_COLUMN_NAME,
+            Type.INT.toString(), true,
             new ColumnKey(new BigInteger("4"), new BigInteger("6")));
 
     cols.add(t3ID1);
@@ -146,20 +146,20 @@ public class TestQuery {
   public static List<ColumnMeta> createColMetaT1(BigInteger prime1, BigInteger prime2, BigInteger colKeyM) {
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
-    ColumnMeta t1ID = new ColumnMeta(dbName, "T1", "id", DataType.INT, true,
+    ColumnMeta t1ID = new ColumnMeta(dbName, "T1", "id", Type.INT.toString(), true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
-    ColumnMeta t1A = new ColumnMeta(dbName, "T1", "a", DataType.INT, true,
+    ColumnMeta t1A = new ColumnMeta(dbName, "T1", "a", Type.INT.toString(), true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
-    ColumnMeta t1C = new ColumnMeta(dbName, "T1", "c", DataType.INT, false,
+    ColumnMeta t1C = new ColumnMeta(dbName, "T1", "c", Type.INT.toString(), false,
             null);
-    ColumnMeta t1RowID = new ColumnMeta(dbName, "T1", BasicFieldLiteral
-            .ROW_ID_COLUMN_NAME, DataType.INT, true,
+    ColumnMeta t1RowID = new ColumnMeta(dbName, "T1", ColumnDefinition
+            .ROW_ID_COLUMN_NAME, Type.INT.toString(), true,
             new ColumnKey( colKeyM,  Crypto.generatePositiveRand(prime1, prime2)));
-    ColumnMeta t1R = new ColumnMeta(dbName, "T1", BasicFieldLiteral.R_COLUMN_NAME,
-            DataType.INT, true,
+    ColumnMeta t1R = new ColumnMeta(dbName, "T1", ColumnDefinition.R_COLUMN_NAME,
+            Type.INT.toString(), true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2), Crypto.generatePositiveRand(prime1, prime2)));
-    ColumnMeta t1S = new ColumnMeta(dbName, "T1", BasicFieldLiteral.S_COLUMN_NAME,
-            DataType.INT, true,
+    ColumnMeta t1S = new ColumnMeta(dbName, "T1", ColumnDefinition.S_COLUMN_NAME,
+            Type.INT.toString(), true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
 
     cols.add(t1ID);
@@ -175,19 +175,19 @@ public class TestQuery {
   public static List<ColumnMeta> createColMetaT2(BigInteger prime1, BigInteger prime2, BigInteger colKeyM) {
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
-    ColumnMeta t2ID = new ColumnMeta(dbName, "T2", "id", DataType.INT, true,
+    ColumnMeta t2ID = new ColumnMeta(dbName, "T2", "id", Type.INT.toString(), true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2), Crypto.generatePositiveRand(prime1, prime2)));
-    ColumnMeta t2B = new ColumnMeta(dbName, "T2", "b", DataType.INT, true,
+    ColumnMeta t2B = new ColumnMeta(dbName, "T2", "b", Type.INT.toString(), true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2), Crypto.generatePositiveRand(prime1, prime2)));
 
-    ColumnMeta t2RowID = new ColumnMeta(dbName, "T2", BasicFieldLiteral
-            .ROW_ID_COLUMN_NAME, DataType.INT, true,
+    ColumnMeta t2RowID = new ColumnMeta(dbName, "T2", ColumnDefinition
+            .ROW_ID_COLUMN_NAME, Type.INT.toString(), true,
             new ColumnKey( colKeyM,  Crypto.generatePositiveRand(prime1, prime2)));
-    ColumnMeta t2R = new ColumnMeta(dbName, "T2", BasicFieldLiteral.R_COLUMN_NAME,
-            DataType.INT, true,
+    ColumnMeta t2R = new ColumnMeta(dbName, "T2", ColumnDefinition.R_COLUMN_NAME,
+            Type.INT.toString(), true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
-    ColumnMeta t2S = new ColumnMeta(dbName, "T2", BasicFieldLiteral.S_COLUMN_NAME,
-            DataType.INT, true,
+    ColumnMeta t2S = new ColumnMeta(dbName, "T2", ColumnDefinition.S_COLUMN_NAME,
+            Type.INT.toString(), true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
 
     cols.add(t2ID);
@@ -202,20 +202,20 @@ public class TestQuery {
 
   public static List<ColumnMeta> createColMetaT3(BigInteger prime1, BigInteger prime2, BigInteger colKeyM) {
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
-    ColumnMeta t3ID1 = new ColumnMeta(dbName, "T3", "id1", DataType.INT, true,
+    ColumnMeta t3ID1 = new ColumnMeta(dbName, "T3", "id1", Type.INT.toString(), true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
-    ColumnMeta t3ID2 = new ColumnMeta(dbName, "T3", "id2", DataType.INT, false,
+    ColumnMeta t3ID2 = new ColumnMeta(dbName, "T3", "id2", Type.INT.toString(), false,
             null);
-    ColumnMeta t3D = new ColumnMeta(dbName, "T3", "d", DataType.INT, true,
+    ColumnMeta t3D = new ColumnMeta(dbName, "T3", "d", Type.INT.toString(), true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
-    ColumnMeta t3RowID = new ColumnMeta(dbName, "T3", BasicFieldLiteral
-            .ROW_ID_COLUMN_NAME, DataType.INT, true,
+    ColumnMeta t3RowID = new ColumnMeta(dbName, "T3", ColumnDefinition
+            .ROW_ID_COLUMN_NAME, Type.INT.toString(), true,
             new ColumnKey( colKeyM,  Crypto.generatePositiveRand(prime1, prime2)));
-    ColumnMeta t3R = new ColumnMeta(dbName, "T3", BasicFieldLiteral.R_COLUMN_NAME,
-            DataType.INT, true,
+    ColumnMeta t3R = new ColumnMeta(dbName, "T3", ColumnDefinition.R_COLUMN_NAME,
+            Type.INT.toString(), true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
-    ColumnMeta t3S = new ColumnMeta(dbName, "T3", BasicFieldLiteral.S_COLUMN_NAME,
-            DataType.INT, true,
+    ColumnMeta t3S = new ColumnMeta(dbName, "T3", ColumnDefinition.S_COLUMN_NAME,
+            Type.INT.toString(), true,
             new ColumnKey( Crypto.generatePositiveRand(prime1, prime2),  Crypto.generatePositiveRand(prime1, prime2)));
 
     cols.add(t3ID1);
@@ -285,19 +285,19 @@ public class TestQuery {
     SelectionList subSelectList = new SelectionList();
     List<TableRef> subTableRefs = new ArrayList<TableRef>();
 
-    FieldLiteral t1ID = new FieldLiteral("T1", "id", DataType.INT, true,
+    FieldLiteral t1ID = new FieldLiteral("T1", "id", Type.INT, true,
             new ColumnKey("1", "3"));
     t1ID.setUp2date(true);
 
     NormalArithmeticExpr subArithExpr = new NormalArithmeticExpr(
             Operator.MULTIPLY);
-    FieldLiteral t1A = new FieldLiteral("T1", "a", DataType.INT, true,
+    FieldLiteral t1A = new FieldLiteral("T1", "a", Type.INT, true,
             new ColumnKey("1", "3"));
     t1A.setUp2date(true);
     subArithExpr.addChild(t1A);
     subArithExpr.addChild(t1A);
 
-    FieldLiteral t3D = new FieldLiteral("T3", "d", DataType.INT, true,
+    FieldLiteral t3D = new FieldLiteral("T3", "d", Type.INT, true,
             new ColumnKey("1", "3"));
     t3D.setUp2date(true);
 
@@ -308,7 +308,7 @@ public class TestQuery {
     // Prepare join
 
     NormalBinPredicate subOnClause1 = new NormalBinPredicate(BinOperator.EQ);
-    FieldLiteral t2ID = new FieldLiteral("T2", "id", DataType.INT, true,
+    FieldLiteral t2ID = new FieldLiteral("T2", "id", Type.INT, true,
             new ColumnKey("1", "3"));
     t2ID.setUp2date(true);
     subOnClause1.addChild(t1ID);
@@ -323,10 +323,10 @@ public class TestQuery {
             .CompoundOperator.AND);
     NormalBinPredicate pred1 = new NormalBinPredicate(BinOperator.EQ);
     NormalBinPredicate pred2 = new NormalBinPredicate(BinOperator.EQ);
-    FieldLiteral t3ID1 = new FieldLiteral("T3", "id1", DataType.INT, true,
+    FieldLiteral t3ID1 = new FieldLiteral("T3", "id1", Type.INT, true,
             new ColumnKey("1", "3"));
     t3ID1.setUp2date(true);
-    FieldLiteral t3ID2 = new FieldLiteral("T3", "id2", DataType.INT, false,
+    FieldLiteral t3ID2 = new FieldLiteral("T3", "id2", Type.INT, false,
             null);
     t3ID2.setUp2date(true);
 
@@ -359,16 +359,16 @@ public class TestQuery {
     SelectionList selectList = new SelectionList();
 
 
-    FieldLiteral temp1ID = new FieldLiteral("temp1", "id", DataType.INT, true,
+    FieldLiteral temp1ID = new FieldLiteral("temp1", "id", Type.INT, true,
             new ColumnKey("1", "3"));
     temp1ID.setReferedExpr(t1ID);
     temp1ID.setUp2date(true);
 
-    FieldLiteral temp1A = new FieldLiteral("temp1", "a", DataType.UNKNOWN, false,
+    FieldLiteral temp1A = new FieldLiteral("temp1", "a", Type.UNKNOWN, false,
             null);
     temp1A.setReferedExpr(subArithExpr);
 
-    FieldLiteral temp1D = new FieldLiteral("temp1", "d", DataType.INT, true,
+    FieldLiteral temp1D = new FieldLiteral("temp1", "d", Type.INT, true,
             new ColumnKey("1", "3"));
     temp1D.setReferedExpr(t3D);
     temp1D.setUp2date(true);
@@ -404,7 +404,7 @@ public class TestQuery {
 
     // Prepare group by
     List<Expr> groupingExpr = new ArrayList<>();
-    FieldLiteral groupby = new FieldLiteral("temp1", "id", DataType.INT, true, new
+    FieldLiteral groupby = new FieldLiteral("temp1", "id", Type.INT, true, new
             ColumnKey("1", "3"));
     groupby.setReferedExpr(temp1ID);
     temp1ID.addReferredBy(groupby);
@@ -412,7 +412,7 @@ public class TestQuery {
     groupingExpr.add(groupby);
 
     Expr having = new NormalBinPredicate(BinOperator.GT);
-    FieldLiteral count = new FieldLiteral("", "count", DataType.UNKNOWN, false,
+    FieldLiteral count = new FieldLiteral("", "count", Type.UNKNOWN, false,
             null);
     count.setReferedExpr(countFunc);
     countFunc.addReferredBy(count);
@@ -422,7 +422,7 @@ public class TestQuery {
     // Prepare order by
 
     List<OrderByElement> orderByElements = new ArrayList<>();
-    FieldLiteral sum = new FieldLiteral("", "sum", DataType.UNKNOWN, false, null);
+    FieldLiteral sum = new FieldLiteral("", "sum", Type.UNKNOWN, false, null);
     sum.setReferedExpr(sumFunc);
     sumFunc.addReferredBy(sum);
     OrderByElement orderByElement = new OrderByElement(sum, false);
@@ -455,9 +455,9 @@ public class TestQuery {
     List<TableRef> tableRefs = new ArrayList<TableRef>();
 
     NormalArithmeticExpr arithExpr = new NormalArithmeticExpr(Operator.ADD);
-    FieldLiteral a = new FieldLiteral("T1", "a", DataType.INT, true,
+    FieldLiteral a = new FieldLiteral("T1", "a", Type.INT, true,
             new ColumnKey("1", "3"));
-    FieldLiteral b = new FieldLiteral("T2", "b", DataType.INT, true,
+    FieldLiteral b = new FieldLiteral("T2", "b", Type.INT, true,
             new ColumnKey("1", "3"));
     a.setUp2date(true);
     b.setUp2date(true);
@@ -475,9 +475,9 @@ public class TestQuery {
     tbl2.setJoinOp(JoinOperator.INNER_JOIN);
     tbl2.setLeftTblRef(tbl1);
     NormalBinPredicate onClause = new NormalBinPredicate(BinOperator.EQ);
-    FieldLiteral id1 = new FieldLiteral("T1", "id", DataType.INT, true,
+    FieldLiteral id1 = new FieldLiteral("T1", "id", Type.INT, true,
             new ColumnKey("1", "3"));
-    FieldLiteral id2 = new FieldLiteral("T2", "id", DataType.INT, true,
+    FieldLiteral id2 = new FieldLiteral("T2", "id", Type.INT, true,
             new ColumnKey("1", "3"));
     id1.setUp2date(true);
     id2.setUp2date(true);
@@ -508,9 +508,9 @@ public class TestQuery {
     List<TableRef> tableRefs = new ArrayList<TableRef>();
 
     NormalArithmeticExpr arithExpr = new NormalArithmeticExpr(Operator.ADD);
-    FieldLiteral a = new FieldLiteral("T1", "a", DataType.INT, true,
+    FieldLiteral a = new FieldLiteral("T1", "a", Type.INT, true,
             new ColumnKey("1", "3"));
-    FieldLiteral c = new FieldLiteral("T2", "c", DataType.INT, false,
+    FieldLiteral c = new FieldLiteral("T2", "c", Type.INT, false,
             null);
     a.setUp2date(true);
     c.setUp2date(true);
@@ -523,7 +523,7 @@ public class TestQuery {
     Expr predicate1 = new NormalBinPredicate(BinOperator.GT, c,
             new FloatLiteral("1.0"));
 
-    FieldLiteral b = new FieldLiteral("T2", "b", DataType.INT, true,
+    FieldLiteral b = new FieldLiteral("T2", "b", Type.INT, true,
             new ColumnKey("1", "3"));
     b.setUp2date(true);
     Expr predicate2 = new NormalBinPredicate(BinOperator.LT, b,
@@ -538,9 +538,9 @@ public class TestQuery {
     tbl2.setJoinOp(JoinOperator.INNER_JOIN);
     tbl2.setLeftTblRef(tbl1);
     NormalBinPredicate onClause = new NormalBinPredicate(BinOperator.EQ);
-    FieldLiteral id1 = new FieldLiteral("T1", "id", DataType.INT, true,
+    FieldLiteral id1 = new FieldLiteral("T1", "id", Type.INT, true,
             new ColumnKey("1", "3"));
-    FieldLiteral id2 = new FieldLiteral("T2", "id", DataType.INT, true,
+    FieldLiteral id2 = new FieldLiteral("T2", "id", Type.INT, true,
             new ColumnKey("1", "3"));
     id1.setUp2date(true);
     id2.setUp2date(true);
@@ -581,7 +581,7 @@ public class TestQuery {
     List<TableRef> tableRefs = new ArrayList<TableRef>();
     List<Expr> groupingExprs = new ArrayList<Expr>();
 
-    FieldLiteral a = new FieldLiteral("T1", "a", DataType.INT, true,
+    FieldLiteral a = new FieldLiteral("T1", "a", Type.INT, true,
             new ColumnKey("1", "3"));
     a.setUp2date(true);
 
@@ -590,7 +590,7 @@ public class TestQuery {
     selectList.getItemList().add(new SelectionItem(a, ""));
     selectList.getItemList().add(new SelectionItem(func, ""));
 
-    FieldLiteral b = new FieldLiteral("T2", "b", DataType.INT, true,
+    FieldLiteral b = new FieldLiteral("T2", "b", Type.INT, true,
             new ColumnKey("1", "3"));
     b.setUp2date(true);
     Expr whereClause = new NormalBinPredicate(BinOperator.GT, b,
@@ -603,9 +603,9 @@ public class TestQuery {
     tbl2.setJoinOp(JoinOperator.INNER_JOIN);
     tbl2.setLeftTblRef(tbl1);
     NormalBinPredicate onClause = new NormalBinPredicate(BinOperator.EQ);
-    FieldLiteral id1 = new FieldLiteral("T1", "id", DataType.INT, true,
+    FieldLiteral id1 = new FieldLiteral("T1", "id", Type.INT, true,
             new ColumnKey("1", "3"));
-    FieldLiteral id2 = new FieldLiteral("T2", "id", DataType.INT, true,
+    FieldLiteral id2 = new FieldLiteral("T2", "id", Type.INT, true,
             new ColumnKey("1", "3"));
     id1.setUp2date(true);
     id2.setUp2date(true);
@@ -615,7 +615,7 @@ public class TestQuery {
     tableRefs.add(tbl1);
     tableRefs.add(tbl2);
 
-    FieldLiteral group_a = new FieldLiteral("T1", "a", DataType.INT, true,
+    FieldLiteral group_a = new FieldLiteral("T1", "a", Type.INT, true,
             new ColumnKey("1", "3"));
     group_a.setReferedExpr(a);
     group_a.setUp2date(true);
@@ -643,13 +643,13 @@ public class TestQuery {
     SelectionList subSelectList = new SelectionList();
     List<TableRef> subTableRefs = new ArrayList<TableRef>();
 
-    FieldLiteral t1ID = new FieldLiteral("T1", "id", DataType.INT, true,
+    FieldLiteral t1ID = new FieldLiteral("T1", "id", Type.INT, true,
             new ColumnKey("1", "3"));
     t1ID.setUp2date(true);
 
     NormalArithmeticExpr subArithExpr = new NormalArithmeticExpr(
             Operator.MULTIPLY);
-    FieldLiteral t1A = new FieldLiteral("T1", "a", DataType.INT, true,
+    FieldLiteral t1A = new FieldLiteral("T1", "a", Type.INT, true,
             new ColumnKey("1", "3"));
     t1A.setUp2date(true);
     subArithExpr.addChild(t1A);
@@ -672,14 +672,14 @@ public class TestQuery {
     SelectionList selectList = new SelectionList();
     List<TableRef> tableRefs = new ArrayList<TableRef>();
 
-    FieldLiteral a = new FieldLiteral("temp1", "a", DataType.UNKNOWN, false,
+    FieldLiteral a = new FieldLiteral("temp1", "a", Type.UNKNOWN, false,
             null);
     a.setReferedExpr(subArithExpr);
     Expr whereClause = new NormalBinPredicate(BinOperator.GT, a,
             new FloatLiteral("1.0"));
 
     NormalArithmeticExpr arithExpr = new NormalArithmeticExpr(Operator.ADD);
-    FieldLiteral b = new FieldLiteral("T2", "b", DataType.INT, true,
+    FieldLiteral b = new FieldLiteral("T2", "b", Type.INT, true,
             new ColumnKey("1", "3"));
     b.setUp2date(true);
     arithExpr.addChild(a);
@@ -692,11 +692,11 @@ public class TestQuery {
     tbl.setJoinOp(JoinOperator.INNER_JOIN);
     tbl.setLeftTblRef(view);
     NormalBinPredicate onClause = new NormalBinPredicate(BinOperator.EQ);
-    FieldLiteral id1 = new FieldLiteral("temp1", "id", DataType.INT, true,
+    FieldLiteral id1 = new FieldLiteral("temp1", "id", Type.INT, true,
             new ColumnKey("1", "3"));
     id1.setReferedExpr(t1ID);
     id1.setUp2date(true);
-    FieldLiteral id2 = new FieldLiteral("T2", "id", DataType.INT, true,
+    FieldLiteral id2 = new FieldLiteral("T2", "id", Type.INT, true,
             new ColumnKey("1", "3"));
     id2.setUp2date(true);
     onClause.addChild(id1);
@@ -722,16 +722,13 @@ public class TestQuery {
     createStmt.setTableName(tableName);
 
     //set basic field literals
-    List<BasicFieldLiteral> literalList = new ArrayList<>();
-    BasicFieldLiteral idField = new BasicFieldLiteral("id", new ColumnType
-            (DataType.INT));
-    ColumnType columnType = new ColumnType(DataType.VARCHAR);
-    columnType.setLength(20);
-    BasicFieldLiteral nameField = new BasicFieldLiteral("name", columnType);
-    BasicFieldLiteral salaryField = new BasicFieldLiteral("salary", new
-            ColumnType(DataType.INT), tableName, true, null);
-    BasicFieldLiteral ageField = new BasicFieldLiteral("age", new ColumnType
-            (DataType.INT));
+    List<ColumnDefinition> literalList = new ArrayList<>();
+    ColumnDefinition idField = new ColumnDefinition("id", Type.INT);
+    Type columnType = ScalarType.createVarcharType(20);
+
+    ColumnDefinition nameField = new ColumnDefinition("name", columnType);
+    ColumnDefinition salaryField = new ColumnDefinition("salary",Type.INT, tableName, true, null);
+    ColumnDefinition ageField = new ColumnDefinition("age", Type.INT);
 
     idField.setTableName(tableName);
     nameField.setTableName(tableName);
@@ -743,7 +740,7 @@ public class TestQuery {
     literalList.add(salaryField);
     literalList.add(ageField);
 
-    createStmt.setFieldList(literalList);
+    createStmt.setColumnDefinitions(literalList);
 
     return createStmt;
   }
@@ -757,27 +754,23 @@ public class TestQuery {
     createStmt.setTableName(tableName);
 
     //prepare column types
-    ColumnType nameColumnType = new ColumnType(DataType.VARCHAR);
-    nameColumnType.setLength(20);
-    ColumnType sensitiveColumnType = new ColumnType(DataType.VARCHAR);
-    sensitiveColumnType.setLength(Crypto.defaultRandLength);
+    Type nameColumnType = ScalarType.createVarcharType(20);
+    Type sensitiveColumnType = ScalarType.createVarcharType(Crypto.defaultRandLength);
 
     //set basic field literals
-    List<BasicFieldLiteral> literalList = new ArrayList<>();
-    BasicFieldLiteral idField = new BasicFieldLiteral("id", new ColumnType
-            (DataType.INT));
-    BasicFieldLiteral nameField = new BasicFieldLiteral("name", nameColumnType);
-    BasicFieldLiteral salaryField = new BasicFieldLiteral("salary",
+    List<ColumnDefinition> literalList = new ArrayList<>();
+    ColumnDefinition idField = new ColumnDefinition("id", Type.INT);
+    ColumnDefinition nameField = new ColumnDefinition("name", nameColumnType);
+    ColumnDefinition salaryField = new ColumnDefinition("salary",
             sensitiveColumnType, tableName, true, new ColumnKey("1", "1"));
-    BasicFieldLiteral ageField = new BasicFieldLiteral("age", new ColumnType
-            (DataType.INT));
-    BasicFieldLiteral rowIdField = new BasicFieldLiteral(BasicFieldLiteral
+    ColumnDefinition ageField = new ColumnDefinition("age", Type.INT);
+    ColumnDefinition rowIdField = new ColumnDefinition(ColumnDefinition
             .ROW_ID_COLUMN_NAME, sensitiveColumnType, tableName, true, new
             ColumnKey("1", "1"));
-    BasicFieldLiteral rField = new BasicFieldLiteral(BasicFieldLiteral
+    ColumnDefinition rField = new ColumnDefinition(ColumnDefinition
             .R_COLUMN_NAME, sensitiveColumnType, tableName, true, new
             ColumnKey("1", "1"));
-    BasicFieldLiteral sField = new BasicFieldLiteral(BasicFieldLiteral
+    ColumnDefinition sField = new ColumnDefinition(ColumnDefinition
             .S_COLUMN_NAME, sensitiveColumnType, tableName, true, new
             ColumnKey("1", "1"));
 
@@ -794,7 +787,7 @@ public class TestQuery {
     literalList.add(rField);
     literalList.add(sField);
 
-    createStmt.setFieldList(literalList);
+    createStmt.setColumnDefinitions(literalList);
 
     TableRowFormat tableRowFormat = new TableRowFormat();
     tableRowFormat.setRowFieldFormat(";");

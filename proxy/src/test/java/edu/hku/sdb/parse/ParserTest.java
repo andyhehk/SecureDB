@@ -16,87 +16,34 @@
  */
 package edu.hku.sdb.parse;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import edu.hku.sdb.util.TestUtility;
+import org.junit.Test;
+import org.junit.Before;
 
 /**
  * Unit test for simple App.
  */
-public class ParserTest extends TestCase
-
+public class ParserTest
 {
 
   private ParseDriver parseDriver;
   private String stmtArraySimple;
   private String stmtArrayOneLevel;
-  private String showTableQuery = "CREATE TABLE employee (id INT, name VARCHAR(20), salary INT ENC, age INT)";
+  private String createTableQuery = "CREATE TABLE employee (id INT, name VARCHAR(20), salary DECIMAL(10,2) ENC, age INT ENC)";
 
-  /**
-   * Create the test case
-   *
-   * @param testName name of the test case
-   */
-  public ParserTest(String testName) {
-    super(testName);
+  @Before
+  public void prepare() {
+    parseDriver = new ParseDriver();
   }
 
-  /**
-   * @return the suite of tests being tested
-   */
-  public static Test suite() {
-    return new TestSuite(ParserTest.class);
-  }
-
-  public void setUp() {
-    this.parseDriver = new ParseDriver();
-
-    this.stmtArraySimple = "select salary * 12 from employee";
-    this.stmtArrayOneLevel = "select count(id), sum(price*quantity) from (select id, price, quantity from A JOIN B ) t group by id;";
-
+  @Test
+  public void testCreateTable() {
     try {
-      printVizTree(new ParseDriver().parse(stmtArraySimple));
+      ASTNode createStatement = parseDriver.parse(createTableQuery);
+      System.out.println(TestUtility.visualize(createStatement));
     } catch (ParseException e) {
       e.printStackTrace();
     }
-  }
-
-  /**
-   * Rigourous Test :-)
-   */
-  public void testParserSimple() {
-    String[] stmts = stmtArraySimple.split(";");
-    for (String stmt : stmts)
-      try {
-        doPrettyPrint(stmt);
-      } catch (ParseException e) {
-        System.out.println(e.getMessage());
-      }
-    assertTrue(true);
-  }
-
-  public void testParserOneLevel() {
-    String[] stmts = stmtArrayOneLevel.split(";");
-    for (String stmt : stmts)
-      try {
-        doPrettyPrint(stmt);
-      } catch (ParseException e) {
-        System.out.println(e.getMessage());
-      }
-    assertTrue(true);
-  }
-
-  private void printVizTree(ASTNode tree) {
-    TestUtility testUtility = new TestUtility(tree);
-    System.out.println(testUtility.visualize());
-  }
-
-  private void doPrettyPrint(String stmt) throws ParseException {
-    ASTNode tree = parseDriver.parse(stmt.trim());
-    System.out.println("Input SQL: " + stmt);
-    System.out.println("Output SQL: " + tree.prettyPrint());
   }
 
 }

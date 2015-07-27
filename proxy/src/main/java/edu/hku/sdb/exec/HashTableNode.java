@@ -17,6 +17,8 @@
 
 package edu.hku.sdb.exec;
 
+import java.util.List;
+
 public class HashTableNode extends PlanNode<HashTableDesc> {
 
   /*
@@ -36,7 +38,7 @@ public class HashTableNode extends PlanNode<HashTableDesc> {
    * @see edu.hku.sdb.exec.PlanNode#nextTuple()
    */
   @Override
-  public BasicTupleSlot nextTuple() {
+  public List<Object> nextTuple() {
     // TODO Auto-generated method stub
     return null;
   }

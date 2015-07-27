@@ -20,7 +20,7 @@ package edu.hku.sdb.connect;
 import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.MetaStore;
-import edu.hku.sdb.conf.DbConf;
+import edu.hku.sdb.catalog.Type;
 import edu.hku.sdb.exec.*;
 import edu.hku.sdb.optimize.Optimizer;
 import edu.hku.sdb.optimize.RuleBaseOptimizer;
@@ -123,7 +123,8 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
 
       // No need to optimize a create stmt
       if(analyzedNode instanceof CreateStmt) {
-        planNode = getCreateStmtPkanNode((CreateStmt) analyzedNode, serverConnection, metaDB);
+        planNode = getCreateStmtPlanNode((CreateStmt) analyzedNode,
+                serverConnection, metaDB);
       }
       else {
         // Optimize
@@ -250,36 +251,26 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     this.serverConnection = serverConnection;
   }
 
-  protected PlanNode getCreateStmtPkanNode(CreateStmt createStmt, Connection connection, MetaStore metaStore) {
+  protected PlanNode getCreateStmtPlanNode(CreateStmt createStmt, Connection
+          connection, MetaStore metaStore) {
 
-    String query = createStmt.toSql().toLowerCase();
+    String query = createStmt.toSql();
     RowDesc localCreateRowDesc = new RowDesc();
-    List<BasicColumnDesc> columnDescList = new ArrayList<BasicColumnDesc>();
+    List<ColumnDesc> columnDescList = new ArrayList<ColumnDesc>();
     TableName tableName = null;
 
-    for (BasicFieldLiteral fieldLiteral : createStmt.getFieldList()) {
-      BasicColumnDesc basicColumnDesc = null;
-      Class clazz = null;
+    for (ColumnDefinition fieldLiteral : createStmt.getColumnDefinitions()) {
+      ColumnDesc columnDesc = null;
+      Type type = null;
       tableName = fieldLiteral.getTableName();
       String columnName = fieldLiteral.getName();
       String alias = "";
-      boolean isSen = fieldLiteral.isSen();
-      if (isSen) {
-        clazz = Integer.class;
-        ColumnKey columnKey = fieldLiteral.getColumnKey();
-        basicColumnDesc = new ColumnDesc(columnName, alias, clazz, true, columnKey);
-      } else {
-        switch (fieldLiteral.getType().getDataType()) {
-          case INT:
-            clazz = Integer.class;
-            break;
-          default:
-            clazz = String.class;
-        }
-        basicColumnDesc = new BasicColumnDesc(columnName, alias, clazz);
-      }
-      columnDescList.add(basicColumnDesc);
+      boolean isSen = fieldLiteral.isSDBEncrypted();
+      type = fieldLiteral.getOriginType();
+      ColumnKey columnKey = fieldLiteral.getColumnKey();
+      columnDesc = new ColumnDesc(columnName, alias, type, isSen, columnKey);
 
+      columnDescList.add(columnDesc);
     }
     localCreateRowDesc.setSignature(columnDescList);
 

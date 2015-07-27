@@ -30,8 +30,7 @@ public class RemoteQuery extends RemoteSQL {
 
   private static final Logger LOG = LoggerFactory
           .getLogger(RemoteQuery.class);
-  private List<BasicTupleSlot> resultLists;
-  private int rowIndex = -1;
+  private BasicTupleSlot tupleSlot;
   boolean initialized = false;
 
   public RemoteQuery(String query, Connection connection, RowDesc rowDesc) {
@@ -46,33 +45,30 @@ public class RemoteQuery extends RemoteSQL {
  * @see edu.hku.sdb.exec.PlanNode#nextTuple()
  */
   @Override
-  public BasicTupleSlot nextTuple() {
+  public List<Object> nextTuple() {
     if (!initialized) {
       init();
     }
 
-    rowIndex++;
-    if (rowIndex == resultLists.size()) {
-      return null;
-    }
-    return resultLists.get(rowIndex);
+    return tupleSlot.nextTuple();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see edu.hku.sdb.exec.PlanNode#init()
+  /**
+   * Buffer all the remote query result at the first place.
    */
   @Override
   public void init() {
+    if(initialized)
+      return;
+
     long startTimeStamp = System.currentTimeMillis();
-    resultLists = new ArrayList<>();
+    tupleSlot = new TupleSlot();
     try {
       String query = nodeDesc.getQuery();
       java.sql.Statement statement = nodeDesc.getConnection().createStatement();
       LOG.debug("Initialize RemoteSQLDesc with sql " + query);
       ResultSet resultSet = statement.executeQuery(query);
-      List<BasicColumnDesc> basicColumnDescList = nodeDesc.getRowDesc().getSignature();
+      List<ColumnDesc> columnDescList = nodeDesc.getRowDesc().getSignature();
 
       // profile server query execution time
       long endTimeStamp = System.currentTimeMillis();
@@ -80,15 +76,13 @@ public class RemoteQuery extends RemoteSQL {
 
       //buffer all results in resultList
       while (resultSet.next()) {
-        TupleSlot tupleSlot = new TupleSlot();
         List<Object> row = new ArrayList<Object>();
 
-        for (int i = 1; i <= basicColumnDescList.size(); i++) {
+        for (int i = 1; i <= columnDescList.size(); i++) {
           row.add(resultSet.getObject(i));
         }
         if (row.size() > 0) {
-          tupleSlot.setRow(row);
-          resultLists.add(tupleSlot);
+          tupleSlot.addRow(row);
         }
       }
       resultSet.close();

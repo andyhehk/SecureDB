@@ -103,14 +103,14 @@ public class HiveRewriterTest {
     List<ColumnMeta> cols = new ArrayList<ColumnMeta>();
 
     String tableName = "T2";
-    ColumnMeta col3 = new ColumnMeta(dbName, "T2", "id", DataType.INT, true,
+    ColumnMeta col3 = new ColumnMeta(dbName, "T2", "id", Type.INT.toString(), true,
             new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
-    ColumnMeta col4 = new ColumnMeta(dbName, "T2", "b", DataType.INT, true,
+    ColumnMeta col4 = new ColumnMeta(dbName, "T2", "b", Type.INT.toString(), true,
             new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
     ColumnMeta col5 = new ColumnMeta(dbName, "T2", "c");
-    ColumnMeta col6 = new ColumnMeta(dbName, "T2", "s", DataType.INT, true,
+    ColumnMeta col6 = new ColumnMeta(dbName, "T2", "s", Type.INT.toString(), true,
             new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
-    ColumnMeta col7 = new ColumnMeta(dbName, "T2", "r", DataType.INT, true,
+    ColumnMeta col7 = new ColumnMeta(dbName, "T2", "r", Type.INT.toString(), true,
             new ColumnKey(Crypto.generatePositiveRand(p, q), Crypto.generatePositiveRand(p, q)));
 
     cols.add(col3);

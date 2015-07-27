@@ -20,13 +20,9 @@ package edu.hku.sdb.parse;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.hku.sdb.catalog.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.catalog.ColumnMeta;
-import edu.hku.sdb.catalog.DataType;
-import edu.hku.sdb.catalog.MetaStore;
 
 import static com.google.common.base.Preconditions.*;
 
@@ -37,7 +33,7 @@ public class FieldLiteral extends LiteralExpr {
   // Make sure the tbl/tbl alias is not null.
   private String tblName = "";
   private final String name;
-  private DataType type;
+  private Type type;
   private boolean isSen = false;
   private boolean isUp2date = false;
   private ColumnKey colKey;
@@ -46,31 +42,27 @@ public class FieldLiteral extends LiteralExpr {
   // It is used for query rewriting.
   private Expr referExpr;
 
-  // It is used for finding the actual base table this field refers to.
-  private String baseTblName = "";
 
-  public FieldLiteral(String name, DataType type) {
+  public FieldLiteral(String name, Type type) {
     this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
-    // this.name.trim();
-    //this.type = checkNotNull(type, "Field type is null.");
     this.type = type;
-    isSen = false;
   }
 
-  public FieldLiteral(String tbl, String name, DataType type) {
+  public FieldLiteral(String tbl,  String name) {
     this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
-    this.baseTblName = this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
-    // this.name.trim();
-    // this.tbl.trim();
-    //this.type = checkNotNull(type, "Field type is null.");
-    this.type = type;
-    isSen = false;
+    this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
   }
 
-  public FieldLiteral(String tbl, String name, DataType type, boolean isSen,
+  public FieldLiteral(String tbl, String name, Type type) {
+    this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
+    this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
+    this.type = type;
+  }
+
+  public FieldLiteral(String tbl, String name, Type type, boolean isSen,
                       ColumnKey colKey) {
     this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
-    this.baseTblName = this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
+    this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
     //this.type = checkNotNull(type, "Field type is null.");
     this.type = type;
     this.isSen = isSen;
@@ -79,10 +71,11 @@ public class FieldLiteral extends LiteralExpr {
 
   public FieldLiteral(FieldLiteral fieldLiteral) {
     this.name = fieldLiteral.name;
-    this.baseTblName =this.tblName = fieldLiteral.tblName;
+    this.tblName = fieldLiteral.tblName;
     this.type = fieldLiteral.type;
     this.colKey = new ColumnKey(fieldLiteral.getColKey());
     this.isSen = fieldLiteral.isSen;
+    this.referredByList = fieldLiteral.referredByList;
   }
 
   /**
@@ -217,12 +210,11 @@ public class FieldLiteral extends LiteralExpr {
     ColumnMeta colMeta = metaDB.getCol(tblName, name);
 
     if (colMeta != null) {
-      this.tblName = this.baseTblName = tblName;
+      this.tblName = tblName;
       // if these is alias, the output table name should be the alias.
       // We also record the true table name this field refers to.
       if (!alias.equals("")) {
         this.tblName = alias;
-        this.baseTblName = tblName;
       }
       type = colMeta.getType();
       isSen = colMeta.isSensitive();
@@ -249,7 +241,7 @@ public class FieldLiteral extends LiteralExpr {
 
     // This field is referring to a selection item of the inline view.
     if (count > 0)
-      tblName = baseTblName = viewAlias;
+      tblName = viewAlias;
 
     return count;
   }
@@ -270,7 +262,6 @@ public class FieldLiteral extends LiteralExpr {
         FieldLiteral field = (FieldLiteral) item.getExpr();
         if (name.equals(field.name)) {
           tblName = field.tblName;
-          baseTblName = field.baseTblName;
           type = field.type;
           isSen = field.isSen;
           colKey = field.colKey;
@@ -289,7 +280,6 @@ public class FieldLiteral extends LiteralExpr {
         FieldLiteral field = (FieldLiteral) item.getExpr();
         if (name.equals(field.name)) {
           tblName = field.tblName;
-          baseTblName = field.baseTblName;
           type = field.type;
           isSen = field.isSen;
           colKey = field.colKey;
@@ -302,7 +292,7 @@ public class FieldLiteral extends LiteralExpr {
       } else {
         // It is not a field literal, cannot determine if it is sensitive now.
         // remember the refer-relationship, it is used for query rewrite
-        type = DataType.UNKNOWN;
+        type = Type.UNKNOWN;
         referExpr = item.getExpr();
         referExpr.addReferredBy(this);
       }
@@ -373,26 +363,28 @@ public class FieldLiteral extends LiteralExpr {
   /**
    * @return the type
    */
-  public DataType getType() {
+  @Override
+  public Type getType() {
     return type;
   }
 
   /**
    * @return the type
    */
-  public void setType(DataType type) {
+  @Override
+  public void setType(Type type) {
     this.type = checkNotNull(type, "Field type is null.");
   }
 
   /**
-   * @return the isSen
+   * @return the isSDBEncrypted
    */
   public boolean isSen() {
     return isSen;
   }
 
   /**
-   * @param isSen the isSen to set
+   * @param isSen the isSDBEncrypted to set
    */
   public void setSen(boolean isSen) {
     this.isSen = isSen;
@@ -440,15 +432,6 @@ public class FieldLiteral extends LiteralExpr {
    */
   public void setReferedExpr(Expr referedExpr) {
     this.referExpr = referedExpr;
-  }
-
-
-  public String getBaseTblName() {
-    return baseTblName;
-  }
-
-  public void setBaseTblName(String baseTblName) {
-    this.baseTblName = baseTblName;
   }
 
   /*

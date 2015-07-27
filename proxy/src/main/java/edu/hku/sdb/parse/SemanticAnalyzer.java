@@ -16,13 +16,10 @@
  */
 package edu.hku.sdb.parse;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.hku.sdb.catalog.DBMeta;
-import edu.hku.sdb.catalog.DataType;
-import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.parse.BinaryPredicate.BinOperator;
 import edu.hku.sdb.parse.CompoundPredicate.CompoundOperator;
 import edu.hku.sdb.parse.NormalArithmeticExpr.Operator;
@@ -74,6 +71,12 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     return parseTree;
   }
 
+  /**
+   * Construct a loading data statement.
+   * @param tree
+   * @return
+   * @throws SemanticException
+   */
   private ParseNode buildLoadStmt(ASTNode tree) throws SemanticException {
 
     String filePath = tree.getChild(0).getText().replace("'", "");
@@ -191,10 +194,16 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     return insertStmt;
   }
 
+  /**
+   * Construct a create table statement.
+   * @param tree
+   * @return
+   * @throws SemanticException
+   */
   private CreateStmt buildCreateStmt(ASTNode tree) throws SemanticException {
     CreateStmt createStmt = new CreateStmt();
     TableName tableName = null;
-    List<BasicFieldLiteral> basicFieldLiterals = null;
+    List<ColumnDefinition> colDefinitions = null;
     TableRowFormat tableRowFormat = null;
 
     for (int i = 0; i < tree.getChildCount(); i++) {
@@ -205,7 +214,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
           tableName.setName(child.getChild(0).getText());
           continue;
         case HiveParser.TOK_TABCOLLIST:
-          basicFieldLiterals = buildBasicFieldLiteralList(child);
+          colDefinitions = buildColDefinitions(child);
           continue;
         case HiveParser.TOK_TABLEROWFORMATFIELD:
           tableRowFormat = buildTableRowFormat(child);
@@ -219,13 +228,20 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       }
     }
 
-    createStmt.setFieldList(basicFieldLiterals);
+    createStmt.setColumnDefinitions(colDefinitions);
     createStmt.setTableName(tableName);
     createStmt.setTableRowFormat(tableRowFormat);
 
     return createStmt;
   }
 
+  /**
+   * Construct the table row format expression. Hive specific.
+   *
+   * @param tree
+   * @return
+   * @throws SemanticException
+   */
   private TableRowFormat buildTableRowFormat(ASTNode tree) throws
           SemanticException {
     TableRowFormat tableRowFormat = null;
@@ -249,15 +265,22 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     return tableRowFormat;
   }
 
-  private List<BasicFieldLiteral> buildBasicFieldLiteralList(ASTNode tree)
+  /**
+   * Return the set of column definitions in the create table statement.
+   *
+   * @param tree
+   * @return
+   * @throws SemanticException
+   */
+  private List<ColumnDefinition> buildColDefinitions(ASTNode tree)
           throws SemanticException {
-    List<BasicFieldLiteral> basicFieldLiterals = new ArrayList<>();
+    List<ColumnDefinition> colDefinitions = new ArrayList<>();
 
     for (int i = 0; i < tree.getChildCount(); i++) {
       ASTNode child = (ASTNode) tree.getChild(i);
       switch (child.getType()) {
         case HiveParser.TOK_TABCOL:
-          basicFieldLiterals.add(buildBasicFieldLiteral(child));
+          colDefinitions.add(buildColDefinition(child));
           continue;
         default:
           throw new SemanticException("Unsupported Query Type!");
@@ -265,40 +288,66 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     }
 
 
-    return basicFieldLiterals;
+    return colDefinitions;
   }
 
-  private BasicFieldLiteral buildBasicFieldLiteral(ASTNode tree) throws
+  /**
+   * Construct a single column definition expression.
+   * @param tree
+   * @return
+   * @throws SemanticException
+   */
+  private ColumnDefinition buildColDefinition(ASTNode tree) throws
           SemanticException {
-    ColumnType type;
+    Type type;
     String fieldName = tree.getChild(0).getText();
     boolean isSensitive = false;
+    int length;
+    int precision;
+    int scale;
 
     ASTNode secondChild = (ASTNode) tree.getChild(1);
+
     switch (secondChild.getType()) {
       case HiveParser.TOK_VARCHAR:
-        type = new ColumnType(DataType.VARCHAR);
-        type.setLength(Integer.valueOf(secondChild.getChild(0).getText()));
+        length = Integer.valueOf(secondChild.getChild(0).getText());
+        type = ScalarType.createVarcharType(length);
         break;
       case HiveParser.TOK_CHAR:
-        type = new ColumnType(DataType.CHAR);
-        type.setLength(Integer.valueOf(secondChild.getChild(0).getText()));
+        length = Integer.valueOf(secondChild.getChild(0).getText());
+        type = ScalarType.createCharType(length);
         break;
       case HiveParser.TOK_INT:
-        type = new ColumnType(DataType.INT);
-        // mark sensitive in case of ENC
-        if (tree.getChildren().size() >= 3 && tree.getChild(2).getType() ==
-                (HiveParser.TOK_ENC)) {
-          isSensitive = true;
-        }
+        type = Type.INT;
+        break;
+      case HiveParser.TOK_DECIMAL:
+        precision = Integer.valueOf(secondChild.getChild(0).getText());
+        scale = Integer.valueOf(secondChild.getChild(1).getText());
+        type = ScalarType.createDecimalType(precision, scale);
         break;
       default:
-        throw new SemanticException("Unsupported Query Type!");
+        throw new SemanticException("Unsupported Data Type!");
     }
 
-    BasicFieldLiteral fieldLiteral = new BasicFieldLiteral(fieldName, type);
+    // mark sensitive in case of ENC
+    if (tree.getChildren().size() >= 3 && tree.getChild(2).getType() ==
+            (HiveParser.TOK_ENC)) {
+      if(type instanceof ScalarType) {
+        PrimitiveType priType = ((ScalarType)type).getType();
+        switch (priType) {
+          case INT:
+          case DECIMAL:
+            isSensitive = true;
+            break;
+          default:
+            throw new SemanticException(" SDB encryption cannot support data type " + priType);
+        }
+      }
+    }
+
+    ColumnDefinition fieldLiteral = new ColumnDefinition(fieldName, type);
     if (isSensitive) {
-      fieldLiteral.setSen(true);
+      fieldLiteral.setSDBEncrypted(true);
     }
 
     return fieldLiteral;
@@ -394,6 +443,12 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
   }
 
 
+  /**
+   * Construct a single/compound predicate.
+   * @param tree
+   * @return
+   * @throws SemanticException
+   */
   private Expr buildPredicate(ASTNode tree) throws SemanticException {
     Expr predicate = null;
 
@@ -440,8 +495,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       ASTNode child = (ASTNode) tree.getChild(i);
       switch (child.getType()) {
         case HiveParser.TOK_TABLE_OR_COL:
-          groupingExprs.add(new FieldLiteral("", child.getChild(0).getText(),
-                  DataType.UNKNOWN));
+          groupingExprs.add(new FieldLiteral("", child.getChild(0).getText()));
           continue;
         case HiveLexer.DOT:
           groupingExprs.add(buildDotExpr(child));
@@ -455,6 +509,12 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
   }
 
 
+  /**
+   * Construct the having expression.
+   * @param tree
+   * @return
+   * @throws SemanticException
+   */
   private Expr buildHavingExpr(ASTNode tree) throws SemanticException {
     return buildPredicate(tree);
   }
@@ -477,6 +537,12 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     return orderByElements;
   }
 
+  /**
+   * Construct the order by expression.
+   * @param tree
+   * @param isAsc
+   * @return
+   */
   private OrderByElement buildOrderbyElemt(ASTNode tree, boolean isAsc) {
     OrderByElement orderByElement = null;
     ASTNode child = (ASTNode) tree.getChild(0);
@@ -484,14 +550,18 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     switch (child.getType()) {
       case HiveParser.TOK_TABLE_OR_COL:
         orderByElement = new OrderByElement(new FieldLiteral("", child.getChild(0)
-                .getText(),
-                DataType.UNKNOWN), isAsc);
+                .getText()), isAsc);
         break;
     }
 
     return orderByElement;
   }
 
+  /**
+   * Construct the limit expression.
+   * @param tree
+   * @return
+   */
   private LimitElement buildLimitElemt(ASTNode tree) {
     LimitElement limitElemt = null;
     ASTNode child = (ASTNode) tree.getChild(0);
@@ -544,7 +614,8 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
           selectItem.setExpr(buildDotExpr(child));
           continue;
         case HiveParser.TOK_TABLE_OR_COL:
-          selectItem.setExpr(new FieldLiteral(child.getChild(0).getText(), null));
+          selectItem.setExpr(new FieldLiteral(child.getChild(0).getText(),
+                  new UnKnownType()));
           continue;
         case HiveLexer.Identifier:
           selectItem.setAlias(child.getText());
@@ -597,10 +668,10 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
           continue;
         case HiveParser.TOK_TABLE_OR_COL:
           normalArithmeticExpr.addChild(new FieldLiteral("", child.getChild(0)
-                  .getText(), DataType.UNKNOWN));
+                  .getText(), new UnKnownType()));
           continue;
         case HiveParser.Number:
-          normalArithmeticExpr.addChild(new IntLiteral(child.getText()));
+            normalArithmeticExpr.addChild(buildNumLiteral(child));
           continue;
         default:
           throw new SemanticException("Unsupported arithmetic element!");
@@ -619,7 +690,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
   private Expr buildDotExpr(ASTNode tree) {
     // TODO Better to do error checking
     return new FieldLiteral(tree.getChild(0).getChild(0).getText(), tree
-            .getChild(1).getText(), DataType.UNKNOWN);
+            .getChild(1).getText(),  new UnKnownType());
   }
 
   /**
@@ -641,7 +712,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
           functionCallExpr.setName(new FunctionName(child.getText()));
           continue;
         case HiveParser.TOK_TABLE_OR_COL:
-          Expr fieldLiteral = new FieldLiteral(child.getChild(0).getText(), null);
+          Expr fieldLiteral = new FieldLiteral(child.getChild(0).getText(),  new UnKnownType());
           functionCallExpr.getFunctionParams().getExprs().add(fieldLiteral);
           continue;
         case HiveLexer.DOT:
@@ -695,7 +766,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
           continue;
         case HiveParser.TOK_TABLE_OR_COL:
           binPred.addChild(new FieldLiteral("", child.getChild(0).getText(),
-                  DataType.UNKNOWN));
+                  new UnKnownType()));
           continue;
         case HiveParser.BigintLiteral:
         case HiveParser.SmallintLiteral:

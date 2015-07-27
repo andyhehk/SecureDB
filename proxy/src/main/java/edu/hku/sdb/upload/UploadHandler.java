@@ -19,7 +19,7 @@ package edu.hku.sdb.upload;
 
 import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.crypto.Crypto;
-import edu.hku.sdb.parse.BasicFieldLiteral;
+import edu.hku.sdb.parse.ColumnDefinition;
 import edu.hku.sdb.parse.TableName;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -36,7 +36,7 @@ import java.util.List;
  * Major tasks:
  * 1. Read plaintext line by line
  * 2. For every line, generate row-id, encrypt sensitive integer columns with row-id.
- * 3. Write file to HDFS.
+ * 3. Upload file to HDFS.
  */
 public class UploadHandler {
 
@@ -210,61 +210,72 @@ public class UploadHandler {
     // Each table has three extra column: row_id, r, s
     for (int columnIndex = 0; columnIndex < colMetas.size(); columnIndex++) {
       ColumnMeta colMeta = colMetas.get(columnIndex);
-      AbstractPlaintext plaintext;
-      if (colMeta.getColName().equals(BasicFieldLiteral.ROW_ID_COLUMN_NAME)) {
-        ColumnKey colKey = colMeta.getColkey();
+      ColumnKey colKey = colMeta.getColkey();
+      if (colMeta.getColName().equals(ColumnDefinition.ROW_ID_COLUMN_NAME)) {
         BigInteger encryptedR = Crypto.SIESEncrypt(rowId, colKey.getM(), colKey
                 .getX(), n);
         newLine = appendColumnString(newLine, columnValues.length, Crypto
                 .getSecureString(encryptedR));
-      } else if (colMeta.getColName().equals(BasicFieldLiteral.R_COLUMN_NAME)) {
+      } else if (colMeta.getColName().equals(ColumnDefinition.R_COLUMN_NAME)) {
         BigInteger randomInt = Crypto.generatePositiveRandShort(prime1, prime2);
-        IntegerPlaintext rPlaintext = getIntegerPlaintext(randomInt.toString(),
-                rowId, colMeta);
-        newLine = appendColumnString(newLine, columnIndex, rPlaintext);
-      } else if (colMeta.getColName().equals(BasicFieldLiteral.S_COLUMN_NAME)) {
-        IntegerPlaintext sPlaintext = getIntegerPlaintext("1", rowId, colMeta);
-        newLine = appendColumnString(newLine, columnIndex, sPlaintext);
-      }
+        String encryptedR = getSDBEncryptedValue(randomInt, rowId, colKey);
+        newLine = appendColumnString(newLine, columnIndex, encryptedR);
+      } else if (colMeta.getColName().equals(ColumnDefinition.S_COLUMN_NAME)) {
+        String encryptedS = getSDBEncryptedValue(new BigInteger("1"), rowId, colKey);
+        newLine = appendColumnString(newLine, columnIndex, encryptedS);
+      } else if (colMeta.getType() instanceof ScalarType) {
+        String plaintext = columnValues[columnIndex];
+        ScalarType type = (ScalarType) colMeta.getType();
 
-      // Not support encryption for string value now.
-      else if (colMeta.getType() == DataType.CHAR || colMeta.getType() == DataType
-              .VARCHAR) {
-        plaintext = new StringPlaintext();
-        plaintext.setPlainText(columnValues[columnIndex]);
-        newLine = appendColumnString(newLine, columnIndex, plaintext);
+        switch (type.getType()) {
+          case INT:
+            if (colMeta.isSensitive()) {
+              String encryptedValue = getSDBEncryptedValue(new BigInteger(plaintext),
+                      rowId, colKey);
+              newLine = appendColumnString(newLine, columnIndex, encryptedValue);
+            } else {
+              newLine = appendColumnString(newLine, columnIndex, plaintext);
+            }
+            break;
+          case DECIMAL:
+            if (colMeta.isSensitive()) {
+              int scale = type.getScale();
+              // TODO: overflow is not checked.
+              float valueF = Float.valueOf(plaintext);
+              long valueL = (long) (valueF * Math.pow(10,scale));
+              String encryptedValue = getSDBEncryptedValue(new BigInteger(String
+                      .valueOf(valueL)), rowId, colKey);
+              newLine = appendColumnString(newLine, columnIndex, encryptedValue);
+            } else
+              newLine = appendColumnString(newLine, columnIndex, plaintext);
+            break;
+          default:
+            // They should not be sensitive
+            newLine = appendColumnString(newLine, columnIndex, plaintext);
+        }
       } else {
-        //For plaintext of integer type, initiate the object with columnKeys
-        plaintext = getIntegerPlaintext(columnValues[columnIndex], rowId, colMeta);
-        newLine = appendColumnString(newLine, columnIndex, plaintext);
+        // Nothing to do now.
       }
-
     }
 
     return newLine.toString() + "\n";
   }
 
   /**
-   * Initiate a integerPlaintext object
+   * Encrypt the data based on SDB encryption scheme
    *
-   * @param columnValue
-   * @param rowId
-   * @param columnMeta
+   * @param value
+   * @param rowID
+   * @param colKey
    * @return
    */
-  private IntegerPlaintext getIntegerPlaintext(String columnValue, BigInteger
-          rowId, ColumnMeta columnMeta) {
-    IntegerPlaintext integerPlaintext = new IntegerPlaintext();
-    integerPlaintext.setPlainText(columnValue);
-    integerPlaintext.setSensitive(columnMeta.isSensitive());
-    integerPlaintext.setPrime1(prime1);
-    integerPlaintext.setPrime2(prime2);
-    integerPlaintext.setG(g);
-    integerPlaintext.setN(n);
-    integerPlaintext.setTotient(totient);
-    integerPlaintext.setRowId(rowId);
-    integerPlaintext.setColumnKey(columnMeta.getColkey());
-    return integerPlaintext;
+  private String getSDBEncryptedValue(BigInteger value, BigInteger rowID, ColumnKey
+          colKey) {
+    BigInteger itemKey = Crypto.generateItemKeyOp2(colKey.getM(), colKey.getX(),
+            rowID, g, n, totient, prime1, prime2);
+    BigInteger encryptedValue = Crypto.encrypt(value, itemKey, n);
+
+    return Crypto.getSecureString(encryptedValue);
   }
 
   /**

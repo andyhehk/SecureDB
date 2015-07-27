@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.base.Joiner;
 import edu.hku.sdb.catalog.ColumnKey;
 import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.org.mozilla.javascript.Function;
@@ -36,6 +37,7 @@ public class FunctionCallExpr extends Expr {
   private FunctionParams functionParams;
 
   private ColumnKey colKey;
+  private Type type;
 
   public FunctionCallExpr() {
 
@@ -174,4 +176,11 @@ public class FunctionCallExpr extends Expr {
     this.colKey = colKey;
   }
 
+  public Type getType() {
+    return type;
+  }
+
+  public void setType(Type type) {
+    this.type = type;
+  }
 }

@@ -19,6 +19,7 @@ package edu.hku.sdb.parse;
 
 import com.google.common.base.Joiner;
 import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,18 +31,12 @@ public class SdbArithmeticExpr extends Expr {
     SDB_MUL("sdb_mul", "sdb UDF for multiplying two columns"),
     SDB_ADDROWID("sdb_intadd", "sdb UDF for adding two row IDs"),
     SDB_SUM("sdb_sum", "sdb UDF for sum aggregation"),
-    SDB_FIRST("sdb_first", "sdb UDF for getting the first saw value"),
-    SDB_LT("sdb_lt", "sdb UDF for <"),
-    SDB_GT("sdb_gt", "sdb UDF for >"),
-    SDB_LE("sdb_le", "sdb UDF for <="),
-    SDB_GE("sdb_lt", "sdb UDF for >="),
-    SDB_EQ("sdb_lt", "sdb UDF for ="),
-    SDB_NE("sdb_lt", "sdb UDF for !=");
+    SDB_FIRST("sdb_first", "sdb UDF for getting the first saw value");
 
     private final String description;
     private final String name;
 
-    private SdbOperator(String description, String name) {
+    SdbOperator(String description, String name) {
       this.description = description;
       this.name = name;
     }
@@ -59,6 +54,15 @@ public class SdbArithmeticExpr extends Expr {
 
   public SdbArithmeticExpr() {}
 
+  public SdbArithmeticExpr(SdbArithmeticExpr another) {
+    this.op = another.op;
+    this.columnKey = another.columnKey;
+    this.referredByList = another.referredByList;
+    this.type = another.type;
+    this.children = another.children;
+    this.alias = another.alias;
+  }
+
   public SdbArithmeticExpr(SdbOperator op) {
     this.op = op;
   }
@@ -66,6 +70,19 @@ public class SdbArithmeticExpr extends Expr {
   private SdbOperator op;
 
   private ColumnKey columnKey;
+
+  private Type type;
+
+  private String alias;
+
+
+  public String getAlias() {
+    return alias;
+  }
+
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
 
 
   @Override
@@ -75,6 +92,14 @@ public class SdbArithmeticExpr extends Expr {
 
   public void setColKey(ColumnKey columnKey) {
     this.columnKey = columnKey;
+  }
+
+  public Type getType() {
+    return type;
+  }
+
+  public void setType(Type type) {
+    this.type = type;
   }
 
   @Override

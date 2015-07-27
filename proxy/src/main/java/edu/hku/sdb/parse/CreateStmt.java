@@ -25,14 +25,11 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Eric Haibin Lin on 25/3/15.
- */
-public class CreateStmt implements ParseNode {
+public class CreateStmt extends StatementBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(CreateStmt.class);
 
-  private List<BasicFieldLiteral> fieldList;
+  private List<ColumnDefinition> columnDefinitions;
   private TableName tableName;
   private TableRowFormat tableRowFormat;
 
@@ -44,12 +41,12 @@ public class CreateStmt implements ParseNode {
     this.tableRowFormat = tableRowFormat;
   }
 
-  public List<BasicFieldLiteral> getFieldList() {
-    return fieldList;
+  public List<ColumnDefinition> getColumnDefinitions() {
+    return columnDefinitions;
   }
 
-  public void setFieldList(List<BasicFieldLiteral> fieldList) {
-    this.fieldList = fieldList;
+  public void setColumnDefinitions(List<ColumnDefinition> columnDefinitions) {
+    this.columnDefinitions = columnDefinitions;
   }
 
   public TableName getTableName() {
@@ -62,7 +59,7 @@ public class CreateStmt implements ParseNode {
 
   @Override
   public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
-    for (BasicFieldLiteral fieldLiteral : fieldList) {
+    for (ColumnDefinition fieldLiteral : columnDefinitions) {
       fieldLiteral.analyze(metaDB, tableName);
     }
   }
@@ -71,7 +68,7 @@ public class CreateStmt implements ParseNode {
   public String toSql() {
 
     List<String> items = new ArrayList<String>();
-    for (BasicFieldLiteral field : fieldList) {
+    for (ColumnDefinition field : columnDefinitions) {
       items.add(field.toSql());
     }
     String fields = Joiner.on(", ").join(items);
@@ -115,8 +112,8 @@ public class CreateStmt implements ParseNode {
       }
     }
 
-    if (!fieldList.equals(((CreateStmt) object).getFieldList())) {
-      LOG.debug("The other object's fieldList does not match!");
+    if (!columnDefinitions.equals(((CreateStmt) object).getColumnDefinitions())) {
+      LOG.debug("The other object's columnDefinitions does not match!");
       return false;
     }
 

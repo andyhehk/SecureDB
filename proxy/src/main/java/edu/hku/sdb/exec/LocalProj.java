@@ -19,6 +19,8 @@ package edu.hku.sdb.exec;
 
 import edu.hku.sdb.plan.LocalProjDesc;
 
+import java.util.List;
+
 public class LocalProj extends PlanNode<LocalProjDesc> {
 
   /*
@@ -38,7 +40,7 @@ public class LocalProj extends PlanNode<LocalProjDesc> {
    * @see edu.hku.sdb.exec.PlanNode#nextTuple()
    */
   @Override
-  public BasicTupleSlot nextTuple() {
+  public List<Object> nextTuple() {
     // TODO Auto-generated method stub
     return null;
   }

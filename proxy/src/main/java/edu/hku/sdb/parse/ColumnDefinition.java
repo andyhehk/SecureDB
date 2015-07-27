@@ -31,9 +31,11 @@ public class ColumnDefinition implements ParseNode {
   public static final String R_COLUMN_NAME = "r";
 
   private TableName tableName;
-  private Type originType;
-  private Type rewritenType;
-  private boolean isSen = false;
+  // The original data type
+  private final Type originType;
+  // Type after being rewritten
+  private Type rewrittenType;
+  private boolean isSDBEncrypted = false;
   private String name;
   private ColumnKey colKey;
 
@@ -62,46 +64,43 @@ public class ColumnDefinition implements ParseNode {
   }
 
 
-  public Type getRewritenType() {
-    return rewritenType;
+  public Type getRewrittenType() {
+    return rewrittenType;
   }
 
-  public void setRewritenType(Type rewritenType) {
-    this.rewritenType = rewritenType;
+  public void setRewrittenType(Type rewrittenType) {
+    this.rewrittenType = rewrittenType;
   }
 
   public Type getOriginType() {
     return originType;
   }
 
-  public void setOriginType(Type originType) {
-    this.originType = originType;
+
+  public boolean isSDBEncrypted() {
+    return isSDBEncrypted;
   }
 
-  public boolean isSen() {
-    return isSen;
-  }
-
-  public void setSen(boolean isSen) {
-    this.isSen = isSen;
+  public void setSDBEncrypted(boolean isSen) {
+    this.isSDBEncrypted = isSen;
   }
 
   public ColumnDefinition(String name, Type type) {
     this.name = name;
-    this.rewritenType = this.originType = type;
+    this.rewrittenType = this.originType = type;
   }
 
   public ColumnDefinition(String name, Type type, TableName tableName) {
     this.name = name;
-    this.rewritenType = this.originType = type;
+    this.rewrittenType = this.originType = type;
     this.tableName = tableName;
   }
 
   public ColumnDefinition(String name, Type type, TableName tableName, boolean isSen,
                           ColumnKey columnKey) {
     this.name = name;
-    this.rewritenType = this.originType = type;
-    this.isSen = isSen;
+    this.rewrittenType = this.originType = type;
+    this.isSDBEncrypted = isSen;
     this.tableName = tableName;
     this.colKey = columnKey;
   }
@@ -117,7 +116,7 @@ public class ColumnDefinition implements ParseNode {
 
   @Override
   public String toSql() {
-    return name + " " + originType.toSql();
+    return name + " " + rewrittenType.toSql();
   }
 
   @Override
@@ -140,8 +139,8 @@ public class ColumnDefinition implements ParseNode {
       return false;
     }
 
-    if (isSen != fieldobj.isSen()) {
-      LOG.debug("isSen of right ColumnDefinition " + fieldobj.isSen() + " is not equal to " + isSen + "!");
+    if (isSDBEncrypted != fieldobj.isSDBEncrypted()) {
+      LOG.debug("isSDBEncrypted of right ColumnDefinition " + fieldobj.isSDBEncrypted() + " is not equal to " + isSDBEncrypted + "!");
       return false;
     }
 

@@ -17,6 +17,8 @@
 
 package edu.hku.sdb.exec;
 
+import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +28,20 @@ public class ColumnDesc {
 
   protected String name;
   protected String alias;
-  protected Class clazz;
+  protected boolean isSensitive;
+  protected Type type;
+
+  protected ColumnKey colKey;
+
+  public ColumnDesc(String colName, String alias, Type type, boolean
+          isSensitive, ColumnKey colKey) {
+    this.name = colName;
+    this.alias = alias;
+    this.type = type;
+    this.isSensitive = isSensitive;
+    this.colKey = colKey;
+  }
+
 
   public String getName() {
     return name;
@@ -44,18 +59,34 @@ public class ColumnDesc {
     this.alias = alias;
   }
 
-  public Class getClazz() {
-    return clazz;
+  public Type getType() {
+    return type;
   }
 
-  public void setClazz(Class clazz) {
-    this.clazz = clazz;
+  public void setType(Type type) {
+    this.type = type;
   }
 
-  public ColumnDesc(String name, String alias, Class clazz) {
+  public boolean isSensitive() {
+    return isSensitive;
+  }
+
+  public void setSensitive(boolean isSensitive) {
+    this.isSensitive = isSensitive;
+  }
+
+  public void setColKey(ColumnKey colKey) {
+    this.colKey = colKey;
+  }
+
+  public ColumnKey getColKey() {
+    return colKey;
+  }
+
+  public ColumnDesc(String name, String alias, Type type) {
     this.name = name;
     this.alias = alias;
-    this.clazz = clazz;
+    this.type = type;
   }
 
   @Override
@@ -69,7 +100,7 @@ public class ColumnDesc {
       LOG.debug("name is not equal!");
       return false;
     }
-    if (!clazz.equals(((ColumnDesc) object).getClazz())) {
+    if (!type.equals(((ColumnDesc) object).getType())) {
       LOG.debug("clazz is not equal!");
       return false;
     }

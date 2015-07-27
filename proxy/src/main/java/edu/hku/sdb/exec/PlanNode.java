@@ -19,6 +19,8 @@ package edu.hku.sdb.exec;
 
 import edu.hku.sdb.plan.PlanNodeDesc;
 
+import java.util.List;
+
 public abstract class PlanNode<T extends PlanNodeDesc> {
 
   protected T nodeDesc;
@@ -33,7 +35,7 @@ public abstract class PlanNode<T extends PlanNodeDesc> {
    *
    * @return
    */
-  public abstract BasicTupleSlot nextTuple();
+  public abstract List<Object> nextTuple();
 
   /**
    * Close all resource.

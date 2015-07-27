@@ -19,6 +19,7 @@ package edu.hku.sdb.parse;
 
 import com.google.common.base.Joiner;
 import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,8 +54,28 @@ public class SdbKeyUpdateExpr extends Expr {
 
   private ColumnKey colKey;
 
+  private Type type;
+
   public SdbKeyUpdateExpr(SdbKeyUpOperator op) {
     this.op = op;
+  }
+
+  public SdbKeyUpdateExpr(SdbKeyUpdateExpr another) {
+    this.op = another.op;
+    this.children = another.children;
+    this.referredByList = another.referredByList;
+    this.colKey = another.colKey;
+    this.type = another.type;
+  }
+
+  @Override
+  public Type getType() {
+    return type;
+  }
+
+  @Override
+  public void setType(Type type) {
+    this.type = type;
   }
 
   @Override

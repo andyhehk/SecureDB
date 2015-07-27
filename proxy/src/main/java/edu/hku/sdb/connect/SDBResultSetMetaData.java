@@ -17,7 +17,8 @@
 
 package edu.hku.sdb.connect;
 
-import edu.hku.sdb.exec.BasicColumnDesc;
+import edu.hku.sdb.catalog.Type;
+import edu.hku.sdb.exec.ColumnDesc;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
@@ -28,17 +29,17 @@ public class SDBResultSetMetaData extends UnicastRemoteObject implements ResultS
         Serializable {
 
   private static final long serialVersionUID = 198103L;
-  List<BasicColumnDesc> columnList;
+  List<ColumnDesc> columnList;
 
   public SDBResultSetMetaData() throws RemoteException {
     super();
   }
 
-  public List<BasicColumnDesc> getColumnList() {
+  public List<ColumnDesc> getColumnList() {
     return columnList;
   }
 
-  public void setColumnList(List<BasicColumnDesc> columnList) {
+  public void setColumnList(List<ColumnDesc> columnList) {
     this.columnList = columnList;
   }
 
@@ -49,7 +50,7 @@ public class SDBResultSetMetaData extends UnicastRemoteObject implements ResultS
    * @return
    */
   public String getColumnName(int columnIndex) throws RemoteException {
-    BasicColumnDesc columnDesc = columnList.get(columnIndex - 1);
+    ColumnDesc columnDesc = columnList.get(columnIndex - 1);
     String alias = columnDesc.getAlias();
     String name = columnDesc.getName();
     return (alias.equals("") ? name : alias);
@@ -59,14 +60,14 @@ public class SDBResultSetMetaData extends UnicastRemoteObject implements ResultS
     return columnList.size();
   }
 
-  /**
-   * Get the designated column's class.
-   *
-   * @param columnIndex - the first column is 1, the second is 2, ...
-   * @return either String.class or Integer.class
-   */
-  public Class getColumnType(int columnIndex) throws RemoteException {
-    return columnList.get(columnIndex - 1).getClazz();
-  }
+//  /**
+//   * Get the designated column's TYPE.
+//   *
+//   * @param columnIndex - the first column is 1, the second is 2, ...
+//   * @return
+//   */
+//  public Type getColumnType(int columnIndex) throws RemoteException {
+//    return columnList.get(columnIndex - 1).getType();
+//  }
 
 }

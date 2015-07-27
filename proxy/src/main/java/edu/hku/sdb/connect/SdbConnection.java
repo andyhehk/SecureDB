@@ -136,9 +136,9 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
       con = DriverManager.getConnection(connectionURL, username, password);
       java.sql.Statement stmt = con.createStatement();
 
-      // LOG.debug("Registering UDFS in server: " + connectionURL);
       // register UDFs
       // failed in Spark 1.1.0
+      // successful in Hive 0.12
       stmt.execute("add jar /home/andy/git/SecureDB/udfs/udfs-hive/target/sdb-udfs-hive-0.1.1-SNAPSHOT.jar");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.hive.SdbIntAddUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_add AS 'edu.hku.sdb.udf.hive.SdbAddUDF'");
@@ -154,6 +154,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_ge AS 'edu.hku.sdb.udf.hive.SdbGeUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_eq AS 'edu.hku.sdb.udf.hive.SdbEqUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_ne AS 'edu.hku.sdb.udf.hive.SdbNeUDF'");
+      stmt.execute("set hive.auto.convert.join=false");
 
     } catch (SQLException e) {
       e.printStackTrace();

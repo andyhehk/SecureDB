@@ -44,14 +44,14 @@ public abstract class AbstractRewriter {
 
     if (parseTree instanceof SelectStmt) {
       rewriteSelStmt((SelectStmt) parseTree);
-      // No need to get the auxiliary column at the final step.
+      // No need to get the auxiliary columns at the final step.
       ((SelectStmt) parseTree).getSelectList().setAuxiliaryR(null);
       ((SelectStmt) parseTree).getSelectList().setAuxiliaryS(null);
     } else if (parseTree instanceof CreateStmt) {
       rewriteCreateStmt((CreateStmt) parseTree);
     } else if (parseTree instanceof LoadStmt) {
       ;
-    } else throw new UnSupportedException(parseTree.getClass().toString());
+    } else throw new UnSupportedException(" this kind of query statement!");
   }
 
   protected abstract void rewriteSelStmt(SelectStmt selStmt)

@@ -23,7 +23,7 @@ import java.math.BigInteger;
 
 public class SdbBinPredicate extends BinaryPredicate {
 
-  private SdbTransformExpr arithExpr;
+  private SdbArithmeticExpr arithExpr;
   private SdbKeyUpdateExpr keyUpExpr;
   private String sdbCompareUDF = "sdb_compare";
   private BigInteger threshold;
@@ -46,7 +46,7 @@ public class SdbBinPredicate extends BinaryPredicate {
     this.threshold = threshold;
   }
 
-  public SdbBinPredicate(BinOperator op, SdbTransformExpr arithExpr,
+  public SdbBinPredicate(BinOperator op, SdbArithmeticExpr arithExpr,
                          SdbKeyUpdateExpr keyUpExpr) {
     super(op);
     this.arithExpr = arithExpr;

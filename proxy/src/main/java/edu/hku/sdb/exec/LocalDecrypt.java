@@ -18,9 +18,11 @@
 package edu.hku.sdb.exec;
 
 import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.PrimitiveType;
+import edu.hku.sdb.catalog.ScalarType;
 import edu.hku.sdb.connect.SDBResultSetMetaData;
 import edu.hku.sdb.crypto.Crypto;
-import edu.hku.sdb.parse.BasicFieldLiteral;
+import edu.hku.sdb.parse.ColumnDefinition;
 import edu.hku.sdb.plan.LocalDecryptDesc;
 import edu.hku.sdb.plan.RemoteSQLDesc;
 import org.slf4j.Logger;
@@ -28,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
@@ -38,8 +39,15 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
 
   PlanNode child;
   boolean initialized = false;
-  private List<BasicTupleSlot> basicTupleSlotList;
-  private int rowIndex = -1;
+  private BasicTupleSlot tupleSlot;
+  List<ColumnDesc> childColDescList;
+  int bufferSize = 100;
+
+  BigInteger prime1;
+  BigInteger prime2;
+  BigInteger n;
+  BigInteger g;
+  BigInteger totient;
 
   public LocalDecrypt(RowDesc rowDesc) {
     nodeDesc = new LocalDecryptDesc();
@@ -53,10 +61,8 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
     } catch (RemoteException e) {
       e.printStackTrace();
     }
-    List<BasicColumnDesc> basicColumnDescList = nodeDesc.getRowDesc().getSignature();
+    sdbMetaData.setColumnList(nodeDesc.getRowDesc().getSignature());
     //Remove row_id before init resultSetMetaData for localDecrypt
-    sdbMetaData.setColumnList(basicColumnDescList.subList(0, basicColumnDescList
-            .size() - 1));
     return sdbMetaData;
   }
 
@@ -67,53 +73,14 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
    */
   @Override
   public void init() {
-    child.init();
-
-    BigInteger prime1 = nodeDesc.getPrime1();
-    BigInteger prime2 = nodeDesc.getPrime2();
-    BigInteger n = nodeDesc.getN();
-    BigInteger g = nodeDesc.getG();
-    BigInteger totient = Crypto.evaluateTotient(prime1, prime2);
-
-    // decrypt and buffer result
-    basicTupleSlotList = new ArrayList<>();
-    BasicTupleSlot tupleSlot = child.nextTuple();
-    while (tupleSlot != null) {
-      List<Object> row = tupleSlot.nextTuple();
-      Object rowId = null;
-
-      List<BasicColumnDesc> columnDescList = nodeDesc.getRowDesc().getSignature();
-
-      // RowID is always at index 0
-      for (int index = columnDescList.size() - 1; index >= 0; index--) {
-        BasicColumnDesc columnDesc = columnDescList.get(index);
-        if (columnDesc.getName().equals(BasicFieldLiteral.ROW_ID_COLUMN_NAME)) {
-          ColumnKey columnKey = ((ColumnDesc) columnDesc).getColumnKey();
-          BigInteger rowIdEncrypted = Crypto.getSecureBigInt((String) row.get
-                  (index));
-          rowId = Crypto.SIESDecrypt(rowIdEncrypted, columnKey.getM(), columnKey
-                  .getX(), n);
-        }
-
-        // Decrypt with columnKey if sensitive
-        else if (((ColumnDesc) columnDesc).isSensitive()) {
-          ColumnKey columnKey = ((ColumnDesc) columnDesc).getColumnKey();
-          BigInteger itemKey = Crypto.generateItemKeyOp2(columnKey.getM(),
-                  columnKey.getX(), (BigInteger) rowId, g, n, totient, prime1,
-                  prime2);
-          BigInteger cipherText = Crypto.getSecureBigInt((String) row.get(index));
-          BigInteger plainText = Crypto.decrypt(cipherText, itemKey, n);
-          if (plainText.compareTo(n.subtract(BigInteger.ONE).divide(new BigInteger
-                  ("2"))) >= 0) {
-            plainText = plainText.subtract(n);
-          }
-          row.set(index, plainText);
-        }
-      }
-      basicTupleSlotList.add(tupleSlot);
-      tupleSlot = child.nextTuple();
-    }
-
+    tupleSlot = new TupleSlot();
+    prime1 = nodeDesc.getPrime1();
+    prime2 = nodeDesc.getPrime2();
+    n = nodeDesc.getN();
+    g = nodeDesc.getG();
+    totient = Crypto.evaluateTotient(prime1, prime2);
+    // Get the row signature of the RemoteSQL query
+    childColDescList = child.nodeDesc.getRowDesc().getSignature();
     initialized = true;
   }
 
@@ -123,16 +90,63 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
    * @see edu.hku.sdb.exec.PlanNode#nextTuple()
    */
   @Override
-  public BasicTupleSlot nextTuple() {
+  public List<Object> nextTuple() {
     if (!initialized) {
       init();
     }
 
-    rowIndex++;
-    if (rowIndex == basicTupleSlotList.size()) {
-      return null;
+    List<Object> tuple = tupleSlot.nextTuple();
+
+    if(tuple != null) {
+      return tuple;
+    } else {
+      List<Object> childTuple = child.nextTuple();
+      int rowCount = 0;
+
+      // Buffer a set of tuple up to the buffer size.
+      while (childTuple != null && rowCount <= bufferSize) {
+        BigInteger rowId = null;
+
+        // RowID is always at index 0
+        for (int index = childColDescList.size() - 1; index >= 0; index--) {
+          ColumnDesc columnDesc = childColDescList.get(index);
+          if (columnDesc.getName().equals(ColumnDefinition.ROW_ID_COLUMN_NAME)) {
+            ColumnKey columnKey = columnDesc.getColKey();
+            BigInteger rowIdEncrypted = Crypto.getSecureBigInt((String) childTuple.get
+                    (index));
+            rowId = Crypto.SIESDecrypt(rowIdEncrypted, columnKey.getM(), columnKey
+                    .getX(), n);
+          }
+
+          // Decrypt with columnKey if sensitive
+          else if (columnDesc.isSensitive()) {
+            ColumnKey columnKey = columnDesc.getColKey();
+            BigInteger itemKey = Crypto.generateItemKeyOp2(columnKey.getM(),
+                    columnKey.getX(), rowId, g, n, totient, prime1,
+                    prime2);
+            BigInteger cipherText = Crypto.getSecureBigInt((String) childTuple.get(index));
+            BigInteger plainText = Crypto.decrypt(cipherText, itemKey, n);
+            // Check if it is negative or positive
+            if (plainText.compareTo(n.subtract(BigInteger.ONE).divide(new BigInteger
+                    ("2"))) >= 0) {
+              plainText = plainText.subtract(n);
+            }
+            childTuple.set(index, plainText);
+            if(((ScalarType)columnDesc.getType()).getType() == PrimitiveType.DECIMAL) {
+              int scale = ((ScalarType)columnDesc.getType()).getScale();
+              long plainValue = plainText.longValue();
+              childTuple.set(index, plainValue / Math.pow(10, scale));
+            }
+
+          }
+        }
+        tupleSlot.addRow(childTuple);
+        childTuple = child.nextTuple();
+        rowCount++;
+      }
     }
-    return basicTupleSlotList.get(rowIndex);
+
+    return tupleSlot.nextTuple();
   }
 
   /*

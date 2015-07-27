@@ -17,7 +17,6 @@
 
 package edu.hku.sdb.exec;
 
-import edu.hku.sdb.connect.SDBResultSetMetaData;
 import edu.hku.sdb.connect.SdbResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +26,7 @@ import java.util.List;
 
 public class Executor {
 
-  private static final Logger LOG = LoggerFactory
-          .getLogger(Executor.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
 
   public void execute(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
 
@@ -45,10 +43,10 @@ public class Executor {
 
   private void executeLocalDecrypt(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
     List<Object[]> resultList = resultSet.getTuple();
-    BasicTupleSlot basicTupleSlot = plan.nextTuple();
-    while (basicTupleSlot != null) {
-      resultList.add(basicTupleSlot.nextTuple().toArray());
-      basicTupleSlot = plan.nextTuple();
+    List<Object> tuple = plan.nextTuple();
+    while (tuple != null) {
+      resultList.add(tuple.toArray());
+      tuple = plan.nextTuple();
     }
 
     try {
@@ -74,10 +72,10 @@ public class Executor {
 
   private void executeRemoteQuery(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
     List<Object[]> resultList = resultSet.getTuple();
-    BasicTupleSlot basicTupleSlot = plan.nextTuple();
-    while (basicTupleSlot != null) {
-      resultList.add(basicTupleSlot.nextTuple().toArray());
-      basicTupleSlot = plan.nextTuple();
+    List<Object> tuple = plan.nextTuple();
+    while (tuple != null) {
+      resultList.add(tuple.toArray());
+      tuple = plan.nextTuple();
     }
 
     try {
