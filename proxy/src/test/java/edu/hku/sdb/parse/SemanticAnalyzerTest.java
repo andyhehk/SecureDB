@@ -128,14 +128,30 @@ public class SemanticAnalyzerTest {
   }
 
   @Test
-  public void testAnalyzeNested() {
+  public void testAnalyzeNested1() {
+    String command = "SELECT a FROM (SELECT a*a as a FROM T1) temp1";
+
+    try {
+      ASTNode astTree = parser.parse(command);
+
+      ParseNode ansTree = TestQuery.prepareAnsNestedAnalyzed1();
+      ParseNode resultTree = testObj.analyze(astTree);
+
+      assertEquals(ansTree, resultTree);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void testAnalyzeNested2() {
     String command = "SELECT a + b FROM (SELECT id, a*a as a FROM T1) temp1 "
             + "JOIN T2 ON temp1.id = T2.id WHERE a > 1.0";
 
     try {
       ASTNode astTree = parser.parse(command);
 
-      ParseNode ansTree = TestQuery.prepareAnsNestedAnalyzed();
+      ParseNode ansTree = TestQuery.prepareAnsNestedAnalyzed2();
       ParseNode resultTree = testObj.analyze(astTree);
 
       assertEquals(ansTree, resultTree);

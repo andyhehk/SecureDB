@@ -46,4 +46,15 @@ public class ParserTest
     }
   }
 
+  @Test
+  public void testNestedQuery() {
+    String command = "SELECT a FROM (SELECT a FROM test) test";
+    try {
+      ASTNode createStatement = parseDriver.parse(command);
+      System.out.println(TestUtility.visualize(createStatement));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
+
 }

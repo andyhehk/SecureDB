@@ -26,7 +26,6 @@ import java.util.List;
 
 public class SdbKeyUpdateExpr extends Expr {
 
-
   public enum SdbKeyUpOperator {
     SDB_KEYUP("sdb_keyUp", "sdb UDF for key update a sensitive column"),
     SDB_KEYUP_PLAIN("sdb_keyUpPlain", "sdb UDF for key update a plaintext column");
@@ -55,6 +54,8 @@ public class SdbKeyUpdateExpr extends Expr {
   private ColumnKey colKey;
 
   private Type type;
+
+  private String alias;
 
   public SdbKeyUpdateExpr(SdbKeyUpOperator op) {
     this.op = op;
@@ -116,4 +117,15 @@ public class SdbKeyUpdateExpr extends Expr {
   public ColumnKey getColKey() {
     return colKey;
   }
+
+
+  @Override
+  public String getAlias() {
+    return alias;
+  }
+
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
+
 }

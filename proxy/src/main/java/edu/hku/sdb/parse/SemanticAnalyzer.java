@@ -434,6 +434,9 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         case HiveParser.TOK_TABREF:
           tblRefs.add(buildBaseTableRef(child, JoinOperator.NULL_JOIN));
           continue;
+        case HiveParser.TOK_SUBQUERY:
+          tblRefs.add(buildInlineViewRef(child, JoinOperator.NULL_JOIN));
+          continue;
         default:
           throw new SemanticException("Unsupported from element!");
       }

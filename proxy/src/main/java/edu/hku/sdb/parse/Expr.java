@@ -54,7 +54,7 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
   }
 
   /**
-   * Add a new field refers to this expr.
+   * Remove a field refers to this expr.
    *
    * @param field
    */
@@ -75,7 +75,9 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
   public void notifyAllFields() {
     for (FieldLiteral field : referredByList) {
       field.setReferedExpr(this);
-      field.updateColKey();
+      field.setSDBEncrypted(involveSdbEncrytedCol());
+      field.setType(getType());
+      field.setColKey(getColKey());
     }
   }
 
@@ -106,10 +108,27 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
 
   public void setColKey(ColumnKey colKey) {}
 
+  /**
+   * @return the isSDBEncrypted
+   */
+  public boolean isSDBEncrypted() {
+    return false;
+  }
+
+  /**
+   * @param isSen the isSDBEncrypted to set
+   */
+  public void setSDBEncrypted(boolean isSen){}
+
 
   public Type getType() {
     return null;
   }
 
   public void setType(Type type) {}
+
+  public String getAlias(){
+    return null;
+  }
+  
 }

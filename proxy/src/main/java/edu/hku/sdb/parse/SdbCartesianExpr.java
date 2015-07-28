@@ -27,7 +27,7 @@ import java.util.List;
 public class SdbCartesianExpr extends Expr {
 
   private final String op = "sdb_cartesian";
-  private String alia;
+  private String alias;
 
   private ColumnKey columnKey;
   private String tblName;
@@ -44,12 +44,12 @@ public class SdbCartesianExpr extends Expr {
     this.type = type;
   }
 
-  public String getAlia() {
-    return alia;
+  public String getAlias() {
+    return alias;
   }
 
-  public void setAlia(String alia) {
-    this.alia = alia;
+  public void setAlias(String alias) {
+    this.alias = alias;
   }
 
   public String getTblName() {

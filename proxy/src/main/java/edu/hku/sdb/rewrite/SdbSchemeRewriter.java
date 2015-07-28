@@ -382,8 +382,24 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         // Do transform for all sensitive columns in the selection list
         for (SelectionItem selItem : selList.getItemList()) {
           if (selItem.involveSdbEncrytedCol()) {
-            selItem.setExpr(buildCartesianExpr(selItem.getExpr(), leftS, rightS,
-                    visitedTbl));
+            Expr originExpr = selItem.getExpr();
+            Expr rewrittenExpr = buildCartesianExpr(originExpr, leftS, rightS,
+                    visitedTbl);
+            rewrittenExpr.setReferredByList(originExpr.getReferredByList());
+
+            if(selItem.getAlias().equals("")) {
+              if(originExpr instanceof FieldLiteral) {
+                selItem.setAlias(((FieldLiteral)originExpr).getName());
+              }
+              else {
+                RewriteException e = new UnSupportedException("Only column can be " +
+                        "without alias in the selection list");
+                LOG.error("There is unsupport seletcion item!", e);
+                throw e;
+              }
+            }
+
+            selItem.setExpr(rewrittenExpr);
           }
         }
 
@@ -624,7 +640,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
           transformedCol.addChild(new BigIntLiteral(auxiliaryP));
           transformedCol.addChild(new BigIntLiteral(n));
 
-          transformedCol.setAlia(column.getName());
+          transformedCol.setAlias(column.getName());
           transformedCol.setColKey(new ColumnKey(colKey[0], colKey[1]));
           transformedCol.setType(expr.getType());
           transformedCol.setReferredByList(column.getReferredByList());
@@ -648,7 +664,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
           transformedCol.addChild(new BigIntLiteral(auxiliaryP));
           transformedCol.addChild(new BigIntLiteral(n));
 
-          transformedCol.setAlia(column.getName());
+          transformedCol.setAlias(column.getName());
           transformedCol.setColKey(new ColumnKey(colKey[0], colKey[1]));
           transformedCol.setType(expr.getType());
           transformedCol.setReferredByList(column.getReferredByList());
@@ -676,7 +692,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       transformedCol.addChild(new BigIntLiteral(auxiliaryP));
       transformedCol.addChild(new BigIntLiteral(n));
 
-      transformedCol.setAlia(cartesianExpr.getAlia());
+      transformedCol.setAlias(cartesianExpr.getAlias());
       transformedCol.setColKey(new ColumnKey(colKey[0], colKey[1]));
       transformedCol.setType(expr.getType());
       transformedCol.setReferredByList(cartesianExpr.getReferredByList());
@@ -801,9 +817,10 @@ public class SdbSchemeRewriter extends AbstractRewriter {
                       .S_COLUMN_NAME, Type.INT, true, null);
               S.setColKey(getTableColumnKey(tblName, ColumnDefinition
                       .S_COLUMN_NAME));
-              selItem.setExpr(rewriteNorArithExpr((NormalArithmeticExpr) expr, S));
 
-
+              Expr rewrittenExpr = rewriteNorArithExpr((NormalArithmeticExpr) expr, S);
+              rewrittenExpr.setReferredByList(expr.getReferredByList());
+              selItem.setExpr(rewrittenExpr);
             } else {
               UnSupportedException e = new UnSupportedException("Cannot " +
                       "support " +
@@ -843,7 +860,10 @@ public class SdbSchemeRewriter extends AbstractRewriter {
                     .S_COLUMN_NAME, Type.INT, true, null);
             S.setColKey(getTableColumnKey(tblName, ColumnDefinition
                     .S_COLUMN_NAME));
-            selItem.setExpr(rewriteFunCallExpr((FunctionCallExpr) expr, S));
+            Expr rewrittenExpr = rewriteFunCallExpr((FunctionCallExpr) expr, S);
+            rewrittenExpr.setReferredByList(expr.getReferredByList());
+            selItem.setExpr(rewrittenExpr);
+
           } else {
             UnSupportedException e = new UnSupportedException("Cannot support " +
                     "function call with sensitive column and arithmetic " +

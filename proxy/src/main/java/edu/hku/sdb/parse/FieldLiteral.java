@@ -34,8 +34,7 @@ public class FieldLiteral extends LiteralExpr {
   private String tblName = "";
   private final String name;
   private Type type;
-  private boolean isSen = false;
-  private boolean isUp2date = false;
+  private boolean isSDBEncrypted = false;
   private ColumnKey colKey;
 
   // It will be set after the analyze function is called.
@@ -59,13 +58,13 @@ public class FieldLiteral extends LiteralExpr {
     this.type = type;
   }
 
-  public FieldLiteral(String tbl, String name, Type type, boolean isSen,
+  public FieldLiteral(String tbl, String name, Type type, boolean isSDBEncrypted,
                       ColumnKey colKey) {
     this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
     this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
     //this.type = checkNotNull(type, "Field type is null.");
     this.type = type;
-    this.isSen = isSen;
+    this.isSDBEncrypted = isSDBEncrypted;
     this.colKey = colKey;
   }
 
@@ -74,7 +73,7 @@ public class FieldLiteral extends LiteralExpr {
     this.tblName = fieldLiteral.tblName;
     this.type = fieldLiteral.type;
     this.colKey = new ColumnKey(fieldLiteral.getColKey());
-    this.isSen = fieldLiteral.isSen;
+    this.isSDBEncrypted = fieldLiteral.isSDBEncrypted;
     this.referredByList = fieldLiteral.referredByList;
   }
 
@@ -217,9 +216,8 @@ public class FieldLiteral extends LiteralExpr {
         this.tblName = alias;
       }
       type = colMeta.getType();
-      isSen = colMeta.isSensitive();
+      isSDBEncrypted = colMeta.isSensitive();
       colKey = colMeta.getColkey();
-      isUp2date = true;
       count++;
     }
 
@@ -263,10 +261,9 @@ public class FieldLiteral extends LiteralExpr {
         if (name.equals(field.name)) {
           tblName = field.tblName;
           type = field.type;
-          isSen = field.isSen;
+          isSDBEncrypted = field.isSDBEncrypted;
           colKey = field.colKey;
 
-          isUp2date = field.isUp2date;
           // remember the refer-relationship, it is used for query rewrite
           referExpr = field;
           referExpr.addReferredBy(this);
@@ -281,10 +278,9 @@ public class FieldLiteral extends LiteralExpr {
         if (name.equals(field.name)) {
           tblName = field.tblName;
           type = field.type;
-          isSen = field.isSen;
+          isSDBEncrypted = field.isSDBEncrypted;
           colKey = field.colKey;
 
-          isUp2date = field.isUp2date;
           // remember the refer-relationship, it is used for query rewrite
           referExpr = field;
           referExpr.addReferredBy(this);
@@ -334,8 +330,7 @@ public class FieldLiteral extends LiteralExpr {
     }
 
     return tblName.equals(fieldobj.getTblName()) && name.equals(fieldobj.getName())
-            && type.equals(fieldobj.getType()) && isSen == fieldobj.isSen()
-            && isUp2date == fieldobj.isUp2date();
+            && type.equals(fieldobj.getType()) && isSDBEncrypted == fieldobj.isSDBEncrypted();
   }
 
   /**
@@ -379,29 +374,15 @@ public class FieldLiteral extends LiteralExpr {
   /**
    * @return the isSDBEncrypted
    */
-  public boolean isSen() {
-    return isSen;
+  public boolean isSDBEncrypted() {
+    return isSDBEncrypted;
   }
 
   /**
    * @param isSen the isSDBEncrypted to set
    */
-  public void setSen(boolean isSen) {
-    this.isSen = isSen;
-  }
-
-  /**
-   * @return the isUp2date
-   */
-  public boolean isUp2date() {
-    return isUp2date;
-  }
-
-  /**
-   * @param isUp2date the isUp2date to set
-   */
-  public void setUp2date(boolean isUp2date) {
-    this.isUp2date = isUp2date;
+  public void setSDBEncrypted(boolean isSen) {
+    this.isSDBEncrypted = isSen;
   }
 
   /**
@@ -451,14 +432,10 @@ public class FieldLiteral extends LiteralExpr {
     sb.append("Table Name: " + tblName + "|");
     sb.append("Name: " + name + "|");
     sb.append("DataType: " + type + "|");
-    if (isSen)
+    if (isSDBEncrypted)
       sb.append("Sensitive: true" + "|");
     else
       sb.append("Sensitive: false" + "|");
-    if (isUp2date)
-      sb.append("IsUp2date: true" + "|");
-    else
-      sb.append("IsUp2date: false" + "|");
 
     sb.append("ColumnKeys: " + colKey);
 
@@ -473,7 +450,7 @@ public class FieldLiteral extends LiteralExpr {
    */
   @Override
   public boolean involveSdbEncrytedCol() {
-    return isSen;
+    return isSDBEncrypted;
   }
 
   public void updateColKey() {
