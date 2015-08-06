@@ -18,6 +18,8 @@
 package edu.hku.sdb.exec;
 
 import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.SdbColumnKey;
+import edu.hku.sdb.catalog.SearchColumnKey;
 import edu.hku.sdb.catalog.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +33,10 @@ public class ColumnDesc {
   protected boolean isSensitive;
   protected Type type;
 
-  protected ColumnKey colKey;
+  // Column key for SDB encryption scheme
+  protected SdbColumnKey sdbColKey;
+  // Column key for Search encrytion scheme
+  protected SearchColumnKey searchColKey;
 
   public ColumnDesc(String colName, String alias, Type type, boolean
           isSensitive, ColumnKey colKey) {
@@ -39,7 +44,10 @@ public class ColumnDesc {
     this.alias = alias;
     this.type = type;
     this.isSensitive = isSensitive;
-    this.colKey = colKey;
+    if(colKey instanceof SdbColumnKey)
+      this.sdbColKey = (SdbColumnKey) colKey;
+    else if(colKey instanceof SearchColumnKey)
+      this.searchColKey = (SearchColumnKey) colKey;
   }
 
 
@@ -75,12 +83,20 @@ public class ColumnDesc {
     this.isSensitive = isSensitive;
   }
 
-  public void setColKey(ColumnKey colKey) {
-    this.colKey = colKey;
+  public void setSdbColKey(SdbColumnKey sdbColKey) {
+    this.sdbColKey = sdbColKey;
   }
 
-  public ColumnKey getColKey() {
-    return colKey;
+  public SdbColumnKey getSdbColKey() {
+    return sdbColKey;
+  }
+
+  public SearchColumnKey getSearchColKey() {
+    return searchColKey;
+  }
+
+  public void setSearchColKey(SearchColumnKey searchColKey) {
+    this.searchColKey = searchColKey;
   }
 
   public ColumnDesc(String name, String alias, Type type) {

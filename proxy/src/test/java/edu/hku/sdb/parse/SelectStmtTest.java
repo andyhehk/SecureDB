@@ -23,11 +23,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.hku.sdb.catalog.SdbColumnKey;
 import edu.hku.sdb.catalog.Type;
 import org.junit.Test;
 
-import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.catalog.DataType;
 import edu.hku.sdb.parse.BinaryPredicate.BinOperator;
 
 /**
@@ -50,9 +49,9 @@ public class SelectStmtTest {
     BaseTableRef tbl1 = new BaseTableRef("T1", "T11");
     tbl1.setJoinOp(JoinOperator.INNER_JOIN);
     FieldLiteral left = new FieldLiteral("T1", "id", Type.INT, true,
-            new ColumnKey("1", "2"));
+            new SdbColumnKey("1", "2"));
     FieldLiteral right = new FieldLiteral("T2", "id", Type.INT, true,
-            new ColumnKey("2", "3"));
+            new SdbColumnKey("2", "3"));
     Expr onClause = new NormalBinPredicate(BinOperator.EQ, left, right);
 
     BaseTableRef tbl2 = new BaseTableRef("T2", "");

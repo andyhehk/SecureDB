@@ -18,7 +18,7 @@
 package edu.hku.sdb.parse;
 
 import com.google.common.base.Joiner;
-import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.SdbColumnKey;
 import edu.hku.sdb.catalog.Type;
 
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ public class SdbKeyUpdateExpr extends Expr {
 
   private SdbKeyUpOperator op;
 
-  private ColumnKey colKey;
+  private SdbColumnKey colKey;
 
   private Type type;
 
@@ -105,16 +105,21 @@ public class SdbKeyUpdateExpr extends Expr {
    * @see edu.hku.sdb.parse.Expr#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     return true;
   }
 
-  public void setColKey(ColumnKey colKey) {
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
+  }
+
+  public void setSdbColKey(SdbColumnKey colKey) {
     this.colKey = colKey;
   }
 
   @Override
-  public ColumnKey getColKey() {
+  public SdbColumnKey getSdbColKey() {
     return colKey;
   }
 

@@ -17,7 +17,7 @@
 
 package edu.hku.sdb.optimize;
 
-import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.SdbColumnKey;
 import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.Type;
 import edu.hku.sdb.exec.*;
@@ -97,8 +97,8 @@ public class RuleBaseOptimizer extends Optimizer {
       }
 
       // get column keys for sensitive columns
-      ColumnKey colKey = expr.getColKey();
-      boolean isSensitive = expr.involveSdbEncrytedCol();
+      SdbColumnKey colKey = expr.getSdbColKey();
+      boolean isSensitive = expr.involveEncrytedCol();
 
       // create column desc for remoteSQL
       ColumnDesc remoteColDesc = new ColumnDesc(colName, alias, type, isSensitive,
@@ -112,13 +112,13 @@ public class RuleBaseOptimizer extends Optimizer {
     }
 
     // insert Row ID if involved encrypted column.
-    if (selStmt.involveSdbEncrytedCol()){
+    if (selStmt.involveEncrytedCol()){
       if(rowID == null) {
       LOG.error("No rowID return by the server query");
       return null;
       } else {
         remoteColDescList.add(new ColumnDesc(ColumnDefinition.ROW_ID_COLUMN_NAME,
-                ColumnDefinition.ROW_ID_COLUMN_NAME, Type.INT, true, rowID.getExpr().getColKey()));
+                ColumnDefinition.ROW_ID_COLUMN_NAME, Type.INT, true, rowID.getExpr().getSdbColKey()));
       }
     }
 

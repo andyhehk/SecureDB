@@ -15,14 +15,23 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.parse;
+package edu.hku.sdb.udf.hive;
 
-public abstract class Predicate extends Expr {
+import edu.hku.sdb.udf.util.TextArrayWritable;
+import edu.hku.sdb.udf.util.TypeCast;
+import edu.hku.sdb.udf.util.UDFHandler;
+import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.Text;
 
-  protected boolean isEqJoinConjunct;
+import java.math.BigInteger;
+import java.util.ArrayList;
 
-  @Override
-  public EncryptionScheme getEncrytionScheme() {
-    return null;
+public class SdbSearchUDF extends UDF {
+
+  public BooleanWritable evaluate(ArrayList<String> a, Text b, Text n) {
+
+    return new BooleanWritable(UDFHandler.match(a, b.toString(), n.toString()));
   }
+
 }

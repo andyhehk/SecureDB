@@ -28,7 +28,7 @@ import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 
-import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.crypto.SDBEncrypt;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -95,8 +95,8 @@ public class MetaStoreTest {
 
     DBMeta db1 = new DBMeta(dbName1);
     DBMeta db2 = new DBMeta(dbName2.toUpperCase());
-    BigInteger p = Crypto.generateRandPrime();
-    BigInteger q = Crypto.generateRandPrime();
+    BigInteger p = SDBEncrypt.generateRandPrime();
+    BigInteger q = SDBEncrypt.generateRandPrime();
     db1.setPrime1(p.toString());
     db1.setPrime2(q.toString());
     metaDB.addDB(db1);
@@ -131,7 +131,7 @@ public class MetaStoreTest {
     ColumnMeta col1 = new ColumnMeta(dbName1.toUpperCase(),
             tblName1.toUpperCase(), colName1);
     ColumnMeta col2 = new ColumnMeta(dbName2, tblName2.toUpperCase(),
-            colName2.toUpperCase(), ScalarType.createCharType(8).toString(), true, new ColumnKey("2", "2"));
+            colName2.toUpperCase(), ScalarType.createCharType(8).toString(), true,"2", "2");
 
     metaDB.addCol(col1);
     metaDB.addCol(col2);
@@ -154,7 +154,10 @@ public class MetaStoreTest {
 
     assertEquals(1, metaDB.getTbl(dbName2, tblName2).getCols().size());
 
-    assertEquals(metaDB.getCol(dbName2.toUpperCase(), tblName2.toUpperCase(), colName2).getColkey(), new ColumnKey("2", "2"));
+    ColumnMeta testColMeta = metaDB.getCol(dbName2.toUpperCase(), tblName2
+            .toUpperCase(), colName2);
+
+    assertEquals(new SdbColumnKey(testColMeta.getM(), testColMeta.getX()), new SdbColumnKey("2", "2"));
     assertEquals(metaDB.getDB("dummy_db1").getTbls().size(), 1);
     assertEquals(metaDB.getDB("dummy_db1").getTbls().get(0).getCols().size(), 1);
   }

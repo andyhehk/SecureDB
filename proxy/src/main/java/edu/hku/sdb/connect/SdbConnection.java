@@ -22,13 +22,10 @@ import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.conf.ConnectionConf;
 import edu.hku.sdb.conf.DbConf;
 import edu.hku.sdb.conf.SdbConf;
-import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.crypto.SDBEncrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jdo.JDOHelper;
-import javax.jdo.PersistenceManager;
-import javax.jdo.PersistenceManagerFactory;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
@@ -38,7 +35,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
 
 public class SdbConnection extends UnicastRemoteObject implements Connection,
         Serializable {
@@ -67,10 +63,10 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
     if (dbMeta == null) {
       String dbName = serverDBName;
       dbMeta = new DBMeta(dbName);
-      BigInteger prime1 = Crypto.generateRandPrime();
-      BigInteger prime2 = Crypto.generateRandPrime();
+      BigInteger prime1 = SDBEncrypt.generateRandPrime();
+      BigInteger prime2 = SDBEncrypt.generateRandPrime();
       BigInteger n = prime1.multiply(prime2);
-      BigInteger g = Crypto.generatePositiveRand(prime1, prime2);
+      BigInteger g = SDBEncrypt.generatePositiveRand(prime1, prime2);
       dbMeta.setN(n.toString());
       dbMeta.setPrime1(prime1.toString());
       dbMeta.setPrime2(prime2.toString());
@@ -154,6 +150,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_ge AS 'edu.hku.sdb.udf.hive.SdbGeUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_eq AS 'edu.hku.sdb.udf.hive.SdbEqUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_ne AS 'edu.hku.sdb.udf.hive.SdbNeUDF'");
+      stmt.execute("CREATE TEMPORARY FUNCTION sdb_search AS 'edu.hku.sdb.udf.hive.SdbSearchUDF'");
       stmt.execute("set hive.auto.convert.join=false");
 
     } catch (SQLException e) {

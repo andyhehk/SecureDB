@@ -254,7 +254,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
           if (secondLevelChild.getType() == HiveParser
                   .TOK_TABLEROWFORMATFIELD) {
             tableRowFormat = new TableRowFormat();
-            tableRowFormat.setRowFieldFormat(secondLevelChild.getChild(0)
+            tableRowFormat.setFieldDelimiter(secondLevelChild.getChild(0)
                     .getText());
             return tableRowFormat;
           }
@@ -336,7 +336,13 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         PrimitiveType priType = ((ScalarType)type).getType();
         switch (priType) {
           case INT:
+          case TINYINT:
+          case SMALLINT:
+          case BIGINT:
           case DECIMAL:
+          case CHAR:
+          case VARCHAR:
+          case STRING:
             isSensitive = true;
             break;
           default:
@@ -466,6 +472,9 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         case HiveLexer.GREATERTHANOREQUALTO:
           predicate = buildNormalBinPredicate(child,
                   ParseUtils.BIN_OPERATOR_MAP.get(child.getType()));
+          continue;
+        case HiveLexer.KW_LIKE:
+          predicate = buildLikePredicate(child);
           continue;
         case HiveLexer.KW_AND:
         case HiveLexer.KW_OR:
@@ -740,6 +749,26 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     return functionCallExpr;
   }
 
+  private Expr buildLikePredicate(ASTNode tree) throws SemanticException {
+    LikePredicate likePredicate = new LikePredicate(null, null);
+
+    for (int i = 0; i < tree.getChildCount(); i++) {
+      ASTNode child = (ASTNode) tree.getChild(i);
+      switch (child.getType()) {
+        case HiveParser.TOK_TABLE_OR_COL:
+          likePredicate.setColumn(new FieldLiteral("", child.getChild(0).getText(),
+                  new UnKnownType()));
+          continue;
+        case HiveParser.StringLiteral:
+          likePredicate.setPattern(new StringLiteral(child.getText().substring(1, child.getText().length()-1)));
+          continue;
+        default:
+          throw new SemanticException("Unsupported like expression!");
+      }
+    }
+    return likePredicate;
+  }
+
   /**
    * Construct a normal binary predicate.
    *
@@ -816,6 +845,9 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         case HiveLexer.GREATERTHANOREQUALTO:
           compoundPred.addChild(buildNormalBinPredicate(child,
                   ParseUtils.BIN_OPERATOR_MAP.get(child.getType())));
+          continue;
+        case HiveLexer.KW_LIKE:
+          compoundPred.addChild(buildLikePredicate(child));
           continue;
         case HiveLexer.KW_AND:
         case HiveLexer.KW_OR:

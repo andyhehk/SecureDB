@@ -432,32 +432,37 @@ public class SelectStmt extends QueryStmt {
    * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
-    if (selectList.involveSdbEncrytedCol()) {
+  public boolean involveEncrytedCol() {
+    if (selectList.involveEncrytedCol()) {
       return true;
     }
 
     for (TableRef tblRef : tableRefs) {
-      if (tblRef.involveSdbEncrytedCol())
+      if (tblRef.involveEncrytedCol())
         return true;
     }
 
-    if (whereClause != null && whereClause.involveSdbEncrytedCol()) {
+    if (whereClause != null && whereClause.involveEncrytedCol()) {
       return true;
     }
 
     if (groupingExprs != null) {
       for (Expr group : groupingExprs) {
-        if (group.involveSdbEncrytedCol())
+        if (group.involveEncrytedCol())
           return true;
       }
     }
 
-    if (havingExpr != null && havingExpr.involveSdbEncrytedCol()) {
+    if (havingExpr != null && havingExpr.involveEncrytedCol()) {
       return true;
     }
 
     return false;
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
 }

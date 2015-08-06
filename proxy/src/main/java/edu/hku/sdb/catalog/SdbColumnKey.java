@@ -15,50 +15,57 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.parse;
+package edu.hku.sdb.catalog;
 
-public class StringLiteral extends LiteralExpr {
+import java.math.BigInteger;
 
-  private final String value;
+public class SdbColumnKey extends ColumnKey {
+  // The m part of the column key
+  private final BigInteger m;
+  // The x part of the column key
+  private final BigInteger x;
 
-  public StringLiteral(String value) {
-    this.value = value;
+  public SdbColumnKey(String m, String x) {
+    this.m =  m != null?  new BigInteger(m): null;
+    this.x =  m != null?  new BigInteger(x): null;
+  }
+
+  public SdbColumnKey(BigInteger m, BigInteger x) {
+    this.m = m;
+    this.x = x;
+  }
+
+  public SdbColumnKey(SdbColumnKey colKey) {
+    this.m = colKey.m;
+    this.x = colKey.x;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof StringLiteral))
+    if (!(obj instanceof SdbColumnKey))
       return false;
 
-    return value.equals(((StringLiteral) obj).value);
+    SdbColumnKey colkeyObj = (SdbColumnKey) obj;
+    return m.equals(colkeyObj.m) && x.equals(colkeyObj.x);
   }
 
   /**
-   * @return the value
+   * @return the m
    */
-  public String getValue() {
-    return value;
+  public BigInteger getM() {
+    return m;
   }
 
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.ParseNode#toSql()
+  /**
+   * @return the x
    */
-  @Override
-  public String toSql() {
-    return "\"" + value + "\"";
+  public BigInteger getX() {
+    return x;
   }
 
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
-   */
-  @Override
-  public boolean involveEncrytedCol() {
-    return false;
-  }
 
   @Override
-  public EncryptionScheme getEncrytionScheme() {
-    return null;
+  public String toString() {
+    return "m: " + m + "; x: " + x;
   }
-
 }

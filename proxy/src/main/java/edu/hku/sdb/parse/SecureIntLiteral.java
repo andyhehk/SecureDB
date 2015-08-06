@@ -16,7 +16,7 @@
  */
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.crypto.SDBEncrypt;
 
 import java.math.BigInteger;
 
@@ -47,15 +47,20 @@ public class SecureIntLiteral extends LiteralExpr {
    */
   @Override
   public String toSql() {
-    return "\"" + Crypto.getSecureString(secureInteger) + "\"";
+    return "\"" + SDBEncrypt.getSecureString(secureInteger) + "\"";
   }
 
   /* (non-Javadoc)
    * @see edu.hku.sdb.parse.Expr#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     return false;
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
 }

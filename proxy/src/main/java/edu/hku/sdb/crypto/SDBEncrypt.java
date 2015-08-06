@@ -26,7 +26,7 @@ import thep.paillier.PrivateKey;
 import thep.paillier.PublicKey;
 import thep.paillier.exceptions.BigIntegerClassNotValid;
 
-public class Crypto {
+public class SDBEncrypt {
 
   public static int defaultCertainty = 100;
   public static int FIVE_HUNDRED_AND_TWELVE = 512;
@@ -45,7 +45,7 @@ public class Crypto {
    * @return a random prime number with bit length = 512, certainty = 10
    */
   public static BigInteger generateRandPrime() {
-    return BigInteger.probablePrime(defaultPrimeLength, new SecureRandom());
+    return generateRandPrime(defaultPrimeLength);
   }
 
   public static BigInteger generateRandPrime(int length) {
@@ -109,7 +109,7 @@ public class Crypto {
                                                          BigInteger q, int
                                                                  numBits) {
     BigInteger n = p.multiply(q);
-    BigInteger totient = Crypto.evaluateTotient(p, q);
+    BigInteger totient = SDBEncrypt.evaluateTotient(p, q);
     BigInteger r = null;
     while (true) {
       r = generatePositiveRand(numBits);
@@ -143,7 +143,7 @@ public class Crypto {
                                             BigInteger p, BigInteger q) {
 
     BigInteger n = p.multiply(q);
-    BigInteger totient = Crypto.evaluateTotient(p, q);
+    BigInteger totient = SDBEncrypt.evaluateTotient(p, q);
     BigInteger power = r.multiply(x).mod(totient);
     BigInteger grx = g.modPow(power, n);
 
@@ -165,7 +165,7 @@ public class Crypto {
       gx = modPowMap.get(key);
     }
     BigInteger power = rowID.mod(totient);
-    BigInteger grx = Crypto.modPow(gx, power, prime1, prime2);
+    BigInteger grx = SDBEncrypt.modPow(gx, power, prime1, prime2);
 
     return (m.multiply(grx)).mod(n);
   }
@@ -317,7 +317,7 @@ public class Crypto {
                                              BigInteger xc, BigInteger xs,
                                              BigInteger prime1, BigInteger prime2) {
     BigInteger[] pq = new BigInteger[2];
-    BigInteger totient = Crypto.evaluateTotient(prime1, prime2);
+    BigInteger totient = SDBEncrypt.evaluateTotient(prime1, prime2);
     BigInteger n = prime1.multiply(prime2);
 
     //prepare numbers for p
@@ -326,7 +326,7 @@ public class Crypto {
     BigInteger p = (xsInverse.multiply(xcMinusXa)).mod(totient);
 
     //prepare numbers for q
-    BigInteger msp = Crypto.modPow(ms, p, prime1, prime2);
+    BigInteger msp = SDBEncrypt.modPow(ms, p, prime1, prime2);
     BigInteger mcInverse = mc.modInverse(n);
     BigInteger q = ((ma.mod(n)).multiply(msp).multiply(mcInverse)).mod(n);
 

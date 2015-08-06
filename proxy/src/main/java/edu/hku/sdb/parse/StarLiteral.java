@@ -61,12 +61,17 @@ public class StarLiteral extends LiteralExpr {
   }
 
   /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.ParseNode#involveSdbEncrytedCol()
+   * @see edu.hku.sdb.parse.ParseNode#involveEncrytedCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     // TODO Auto-generated method stub
     return false;
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
 }

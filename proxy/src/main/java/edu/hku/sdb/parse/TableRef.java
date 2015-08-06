@@ -153,4 +153,8 @@ public abstract class TableRef implements ParseNode {
   }
 
 
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
+  }
 }

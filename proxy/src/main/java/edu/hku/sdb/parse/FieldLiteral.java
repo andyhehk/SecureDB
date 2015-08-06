@@ -35,7 +35,9 @@ public class FieldLiteral extends LiteralExpr {
   private final String name;
   private Type type;
   private boolean isSDBEncrypted = false;
-  private ColumnKey colKey;
+  private SdbColumnKey sdbColKey;
+
+  private SearchColumnKey searchColKey;
 
   // It will be set after the analyze function is called.
   // It is used for query rewriting.
@@ -59,20 +61,20 @@ public class FieldLiteral extends LiteralExpr {
   }
 
   public FieldLiteral(String tbl, String name, Type type, boolean isSDBEncrypted,
-                      ColumnKey colKey) {
+                      SdbColumnKey colKey) {
     this.name = checkNotNull(name.toLowerCase(), "Field name is null.");
     this.tblName = checkNotNull(tbl.toLowerCase(), "Table name is null.");
     //this.type = checkNotNull(type, "Field type is null.");
     this.type = type;
     this.isSDBEncrypted = isSDBEncrypted;
-    this.colKey = colKey;
+    this.sdbColKey = colKey;
   }
 
   public FieldLiteral(FieldLiteral fieldLiteral) {
     this.name = fieldLiteral.name;
     this.tblName = fieldLiteral.tblName;
     this.type = fieldLiteral.type;
-    this.colKey = new ColumnKey(fieldLiteral.getColKey());
+    this.sdbColKey = new SdbColumnKey(fieldLiteral.getSdbColKey());
     this.isSDBEncrypted = fieldLiteral.isSDBEncrypted;
     this.referredByList = fieldLiteral.referredByList;
   }
@@ -129,16 +131,6 @@ public class FieldLiteral extends LiteralExpr {
           throw e;
         }
 
-        //        if (resolve(metaDB, tbl.tblName, tbl.alias) > 0) {
-        //          tbls.add(tbl.tblName);
-        //        }
-        //
-        //        // This field is ambiguous.
-        //        if (tbls.size() + count > 1) {
-        //          AmbiguousException e = new AmbiguousException(name);
-        //          LOG.error("One or more fields are ambiguous!", e);
-        //          throw e;
-        //        }
       }
 
       for (InLineViewRef view : inlineViews) {
@@ -151,19 +143,6 @@ public class FieldLiteral extends LiteralExpr {
           throw e;
         }
 
-        //
-        //        if (resolve(((SelectStmt) view.queryStmt).getSelectList()
-        // .itemList, view
-        //                .alias) > 0) {
-        //          tbls.add(view.alias);
-        //        }
-        //
-        //        // This field is ambiguous.
-        //        if (tbls.size() + count > 1) {
-        //          AmbiguousException e = new AmbiguousException(name);
-        //          LOG.error("One or more fields are ambiguous!", e);
-        //          throw e;
-        //        }
       }
 
     } else {
@@ -217,7 +196,23 @@ public class FieldLiteral extends LiteralExpr {
       }
       type = colMeta.getType();
       isSDBEncrypted = colMeta.isSensitive();
-      colKey = colMeta.getColkey();
+      if(type instanceof ScalarType) {
+
+        switch(((ScalarType) type).getType()) {
+          case INT:
+          case BIGINT:
+          case TINYINT:
+          case SMALLINT:
+          case DECIMAL:
+            sdbColKey = new SdbColumnKey(colMeta.getM(), colMeta.getX());
+            break;
+          case CHAR:
+          case VARCHAR:
+          case STRING:
+            searchColKey = new SearchColumnKey(colMeta.getM(), colMeta.getX());
+            break;
+        }
+      }
       count++;
     }
 
@@ -262,8 +257,8 @@ public class FieldLiteral extends LiteralExpr {
           tblName = field.tblName;
           type = field.type;
           isSDBEncrypted = field.isSDBEncrypted;
-          colKey = field.colKey;
-
+          sdbColKey = field.sdbColKey;
+          searchColKey = field.searchColKey;
           // remember the refer-relationship, it is used for query rewrite
           referExpr = field;
           referExpr.addReferredBy(this);
@@ -279,8 +274,8 @@ public class FieldLiteral extends LiteralExpr {
           tblName = field.tblName;
           type = field.type;
           isSDBEncrypted = field.isSDBEncrypted;
-          colKey = field.colKey;
-
+          sdbColKey = field.sdbColKey;
+          searchColKey = field.searchColKey;
           // remember the refer-relationship, it is used for query rewrite
           referExpr = field;
           referExpr.addReferredBy(this);
@@ -305,7 +300,7 @@ public class FieldLiteral extends LiteralExpr {
     FieldLiteral fieldobj = (FieldLiteral) obj;
 
     // Log messages are used for debug.
-    if ((colKey == null) != (fieldobj.colKey == null)) {
+    if ((sdbColKey == null) != (fieldobj.sdbColKey == null)) {
       LOG.debug("Column Key is not equal!");
       return false;
     }
@@ -315,8 +310,8 @@ public class FieldLiteral extends LiteralExpr {
       return false;
     }
 
-    if (colKey != null) {
-      if (!colKey.equals(fieldobj.getColKey())) {
+    if (sdbColKey != null) {
+      if (!sdbColKey.equals(fieldobj.getSdbColKey())) {
         LOG.debug("Column Key is not equal!");
         return false;
       }
@@ -386,19 +381,29 @@ public class FieldLiteral extends LiteralExpr {
   }
 
   /**
-   * @return the colKey
+   * @return the sdbColKey
    */
   @Override
-  public ColumnKey getColKey() {
-    return colKey;
+  public SdbColumnKey getSdbColKey() {
+    return sdbColKey;
   }
 
   /**
-   * @param colKey the colKey to set
+   * @param sdbColKey the sdbColKey to set
    */
   @Override
-  public void setColKey(ColumnKey colKey) {
-    this.colKey = colKey;
+  public void setSdbColKey(SdbColumnKey sdbColKey) {
+    this.sdbColKey = sdbColKey;
+  }
+
+  @Override
+  public SearchColumnKey getSearchColKey() {
+    return searchColKey;
+  }
+
+  @Override
+  public void setSearchColKey(SearchColumnKey searchColKey) {
+    this.searchColKey = searchColKey;
   }
 
   /**
@@ -437,7 +442,7 @@ public class FieldLiteral extends LiteralExpr {
     else
       sb.append("Sensitive: false" + "|");
 
-    sb.append("ColumnKeys: " + colKey);
+    sb.append("ColumnKeys: " + sdbColKey);
 
     return sb.toString();
 
@@ -449,11 +454,16 @@ public class FieldLiteral extends LiteralExpr {
    * @see edu.hku.sdb.parse.Expr#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     return isSDBEncrypted;
   }
 
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
+  }
+
   public void updateColKey() {
-    colKey = referExpr.getColKey();
+    sdbColKey = referExpr.getSdbColKey();
   }
 }

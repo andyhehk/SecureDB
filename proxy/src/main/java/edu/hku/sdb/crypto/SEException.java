@@ -15,14 +15,16 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.parse;
+package edu.hku.sdb.crypto;
 
-public abstract class Predicate extends Expr {
-
-  protected boolean isEqJoinConjunct;
-
-  @Override
-  public EncryptionScheme getEncrytionScheme() {
-    return null;
+public class SEException extends Exception {
+  public SEException(String msg) {
+    // TODO Auto-generated constructor stub
+    super(msg);
   }
+
+  /**
+   *
+   */
+  private static final long serialVersionUID = -4688846619534553909L;
 }

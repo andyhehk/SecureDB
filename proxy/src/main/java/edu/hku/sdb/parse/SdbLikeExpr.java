@@ -17,28 +17,54 @@
 
 package edu.hku.sdb.parse;
 
-public class InPredicate extends Predicate {
+import com.google.common.base.Joiner;
+import edu.hku.sdb.catalog.SdbColumnKey;
+import edu.hku.sdb.catalog.SearchColumnKey;
+import edu.hku.sdb.catalog.Type;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
-   * )
-   */
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
-    // TODO Auto-generated method stub
+import java.util.ArrayList;
+import java.util.List;
 
+public class SdbLikeExpr extends Expr {
+
+  private final String op = "sdb_search";
+
+  private SearchColumnKey searchColumnKey;
+
+  private Type type;
+
+  @Override
+  public Type getType() {
+    return type;
+  }
+
+  @Override
+  public void setType(Type type) {
+    this.type = type;
+  }
+
+  @Override
+  public SearchColumnKey getSearchColKey() {
+    return searchColumnKey;
+  }
+
+  @Override
+  public void setSearchColKey(SearchColumnKey searchColumnKey) {
+    this.searchColumnKey = searchColumnKey;
   }
 
   /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.parse.ParseNode#toSql()
-   */
+     * (non-Javadoc)
+     *
+     * @see edu.hku.sdb.parse.ParseNode#toSql()
+     */
+  @Override
   public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+    List<String> items = new ArrayList<String>();
+    for (Expr child : children) {
+      items.add(child.toSql());
+    }
+    return op + "(" + Joiner.on(",").join(items) + ")";
   }
 
   /* (non-Javadoc)
@@ -46,8 +72,7 @@ public class InPredicate extends Predicate {
    */
   @Override
   public boolean involveEncrytedCol() {
-    // TODO Auto-generated method stub
-    return false;
+    return true;
   }
 
   @Override

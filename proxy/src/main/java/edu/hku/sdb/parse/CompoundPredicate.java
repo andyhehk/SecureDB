@@ -87,9 +87,14 @@ public class CompoundPredicate extends Predicate {
      * @see edu.hku.sdb.parse.Expr#involveSdbCol()
      */
   @Override
-  public boolean involveSdbEncrytedCol() {
-    return getLeftPred().involveSdbEncrytedCol() || getRightPred()
-            .involveSdbEncrytedCol();
+  public boolean involveEncrytedCol() {
+    return getLeftPred().involveEncrytedCol() || getRightPred()
+            .involveEncrytedCol();
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
   public CompoundOperator getOp() {

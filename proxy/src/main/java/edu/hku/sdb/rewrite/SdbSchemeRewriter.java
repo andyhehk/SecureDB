@@ -21,13 +21,19 @@ import java.math.BigInteger;
 import java.util.*;
 
 import edu.hku.sdb.catalog.*;
-import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.crypto.SDBEncrypt;
+import edu.hku.sdb.crypto.SEException;
+import edu.hku.sdb.crypto.SEKey;
+import edu.hku.sdb.crypto.SearchEncrypt;
 import edu.hku.sdb.parse.*;
 import edu.hku.sdb.parse.SdbArithmeticExpr.SdbOperator;
 import edu.hku.sdb.parse.SdbKeyUpdateExpr.SdbKeyUpOperator;
 import edu.hku.sdb.utility.ParserConstant;
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.crypto.SecretKey;
 
 /**
  * The rewrite class performs all query rewriting based on SDB's encryption scheme.
@@ -50,7 +56,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   BigInteger totient;
 
   // TODO: we assume the names for all tables and inlineView are unique.
-  private Map<String, ColumnKey> colKeyMap = new HashMap<>();
+  private Map<String, SdbColumnKey> colKeyMap = new HashMap<>();
   private Map<String, String> aliasTblMap = new HashMap<>();
 
   /**
@@ -63,7 +69,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     prime2 = new BigInteger(dbMeta.getPrime2());
     n = new BigInteger(dbMeta.getN());
     g = new BigInteger(dbMeta.getG());
-    totient = Crypto.evaluateTotient(prime1, prime2);
+    totient = SDBEncrypt.evaluateTotient(prime1, prime2);
   }
 
   @Override
@@ -145,25 +151,59 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     //TODO get default separator ";" from config file
     if (tableRowFormat == null) {
       tableRowFormat = new TableRowFormat();
-      tableRowFormat.setRowFieldFormat(";");
+      tableRowFormat.setFieldDelimiter(ParserConstant.DEFAULT_FIELD_DELIMETER);
+      tableRowFormat.setColletionDelimiter(ParserConstant.DEFAULT_COLLETION_DELIMETER);
       createStmt.setTableRowFormat(tableRowFormat);
     }
   }
 
-  private void rewriteCreateFieldLists(List<ColumnDefinition> fieldList) {
+  private void rewriteCreateFieldLists(List<ColumnDefinition> fieldList) throws UnSupportedException {
     TableName tableName = fieldList.get(0).getTableName();
 
     for (ColumnDefinition colDefinition : fieldList) {
-      if (colDefinition.isSDBEncrypted()) {
-        int index = fieldList.indexOf(colDefinition);
-        Type type = ScalarType.createVarcharType(Crypto.defaultRandLength);
-        BigInteger m = Crypto.generatePositiveRand(prime1, prime2);
-        BigInteger x = Crypto.generatePositiveRand(prime1, prime2);
-        ColumnKey colKey = new ColumnKey(m, x);
-        colDefinition.setSDBEncrypted(true);
-        colDefinition.setRewrittenType(type);
-        colDefinition.setColumnKey(colKey);
-        fieldList.set(index, colDefinition);
+      if (colDefinition.involveEncrytedCol()) {
+        Type originType = colDefinition.getOriginType();
+
+        if(originType instanceof ScalarType) {
+          int index = fieldList.indexOf(colDefinition);
+          Type type;
+          switch ( ((ScalarType) originType).getType()) {
+            case INT:
+            case BIGINT:
+            case TINYINT:
+            case DECIMAL:
+              type = ScalarType.createVarcharType(SDBEncrypt.defaultRandLength);
+              BigInteger m = SDBEncrypt.generatePositiveRand(prime1, prime2);
+              BigInteger x = SDBEncrypt.generatePositiveRand(prime1, prime2);
+              SdbColumnKey colKey = new SdbColumnKey(m, x);
+              colDefinition.setSDBEncrypted(true);
+              colDefinition.setRewrittenType(type);
+              colDefinition.setSDBColumnKey(colKey);
+              break;
+            case CHAR:
+            case VARCHAR:
+            case STRING:
+              type = new ArrayType(ScalarType.createVarcharType(SearchEncrypt.DEAULTT_LENGTH));
+              SearchEncrypt searchEncrypt = SearchEncrypt.getInstance();
+              try {
+                SEKey key = searchEncrypt.keyGen();
+                SearchColumnKey searchColKey = new SearchColumnKey(key, searchEncrypt.prkey);
+                colDefinition.setSDBEncrypted(true);
+                colDefinition.setRewrittenType(type);
+                colDefinition.setSearchColKey(searchColKey);
+              } catch (SEException e) {
+                e.printStackTrace();
+              }
+
+              break;
+            default:
+              UnSupportedException e = new UnSupportedException("Can not support " +
+                      "sdb encryption for data type " + originType);
+              LOG.error("There is unsupported data type!", e);
+              throw e;
+          }
+          fieldList.set(index, colDefinition);
+        }
       }
     }
 
@@ -184,12 +224,12 @@ public class SdbSchemeRewriter extends AbstractRewriter {
                                                 TableName tableName,
                                                 BigInteger p,
                                                 BigInteger q) {
-    Type type = ScalarType.createVarcharType(Crypto.defaultRandLength);
-    BigInteger m = Crypto.generatePositiveRand(p, q);
-    BigInteger x = Crypto.generatePositiveRand(p, q);
-    ColumnKey columnKey = new ColumnKey(m, x);
+    Type type = ScalarType.createVarcharType(SDBEncrypt.defaultRandLength);
+    BigInteger m = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger x = SDBEncrypt.generatePositiveRand(p, q);
+    SdbColumnKey sdbColumnKey = new SdbColumnKey(m, x);
     ColumnDefinition fieldLiteral = new ColumnDefinition(fieldName, Type.INT,
-            tableName, true, columnKey);
+            tableName, true, sdbColumnKey);
     fieldLiteral.setRewrittenType(type);
     return fieldLiteral;
   }
@@ -233,7 +273,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       if (isFirstOne) {
         if (tblRef instanceof BaseTableRef) {
           String tblName = tblRef.getTblName();
-          ColumnKey rowIDColKey = getTableColumnKey(tblName, ColumnDefinition
+          SdbColumnKey rowIDColKey = getTableColumnKey(tblName, ColumnDefinition
                   .ROW_ID_COLUMN_NAME);
 
           FieldLiteral rowID = new FieldLiteral(tblName, ColumnDefinition
@@ -241,14 +281,14 @@ public class SdbSchemeRewriter extends AbstractRewriter {
                   true, rowIDColKey);
           leftRowID.setExpr(rowID);
 
-          ColumnKey rColKey = getTableColumnKey(tblName, ColumnDefinition
+          SdbColumnKey rColKey = getTableColumnKey(tblName, ColumnDefinition
                   .R_COLUMN_NAME);
           FieldLiteral r = new FieldLiteral(tblName, ColumnDefinition
                   .R_COLUMN_NAME, Type.INT,
                   true, rColKey);
           leftR.setExpr(r);
 
-          ColumnKey sColKey = getTableColumnKey(tblName, ColumnDefinition
+          SdbColumnKey sColKey = getTableColumnKey(tblName, ColumnDefinition
                   .S_COLUMN_NAME);
           FieldLiteral s = new FieldLiteral(tblName, ColumnDefinition
                   .S_COLUMN_NAME, Type.INT,
@@ -287,9 +327,10 @@ public class SdbSchemeRewriter extends AbstractRewriter {
                   ColumnDefinition.S_COLUMN_NAME, Type.INT);
 
           // Get column keys for rowID, R and S
-          inlineRowID.setColKey(inLineSelList.getRowID().getExpr().getColKey());
-          inlineR.setColKey(inLineSelList.getAuxiliaryR().getExpr().getColKey());
-          inlineS.setColKey(inLineSelList.getAuxiliaryS().getExpr().getColKey());
+          inlineRowID.setSdbColKey(inLineSelList.getRowID().getExpr().getSdbColKey());
+          inlineR.setSdbColKey(inLineSelList.getAuxiliaryR().getExpr()
+                  .getSdbColKey());
+          inlineS.setSdbColKey(inLineSelList.getAuxiliaryS().getExpr().getSdbColKey());
 
           leftRowID = new SelectionItem(inlineRowID, ColumnDefinition
                   .ROW_ID_COLUMN_NAME);
@@ -313,7 +354,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         if (tblRef instanceof BaseTableRef) {
           String tblName = tblRef.getTblName();
 
-          ColumnKey rowIDColKey = getTableColumnKey(tblName, ColumnDefinition
+          SdbColumnKey rowIDColKey = getTableColumnKey(tblName, ColumnDefinition
                   .ROW_ID_COLUMN_NAME);
 
           FieldLiteral rowID = new FieldLiteral(tblName, ColumnDefinition
@@ -321,7 +362,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
                   true, rowIDColKey);
           rightRowID.setExpr(rowID);
 
-          ColumnKey sColKey = getTableColumnKey(tblName, ColumnDefinition
+          SdbColumnKey sColKey = getTableColumnKey(tblName, ColumnDefinition
                   .S_COLUMN_NAME);
 
           FieldLiteral s = new FieldLiteral(tblName, ColumnDefinition
@@ -358,10 +399,10 @@ public class SdbSchemeRewriter extends AbstractRewriter {
                   ColumnDefinition.S_COLUMN_NAME, Type.INT);
 
           // Get column keys for rowID, R and S
-          inlineRowID.setColKey(inLineSelList.getRowID().getExpr().getColKey());
-          //          inlineR.setColKey(inLineSelList.getAuxiliaryR().getExpr()
-          // .getColKey());
-          inlineS.setColKey(inLineSelList.getAuxiliaryS().getExpr().getColKey());
+          inlineRowID.setSdbColKey(inLineSelList.getRowID().getExpr().getSdbColKey());
+          //          inlineR.setSdbColKey(inLineSelList.getAuxiliaryR().getExpr()
+          // .getSdbColKey());
+          inlineS.setSdbColKey(inLineSelList.getAuxiliaryS().getExpr().getSdbColKey());
 
           rightRowID = new SelectionItem(inlineRowID, ColumnDefinition
                   .ROW_ID_COLUMN_NAME);
@@ -373,7 +414,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         // item key m. That means if two values a1, a2 are equal, then their
         // encrypted
         // value E(a1) and E(a2) are equal as well.
-        BigInteger targetM = Crypto.generatePositiveRand(prime1, prime2);
+        BigInteger targetM = SDBEncrypt.generatePositiveRand(prime1, prime2);
         BigInteger targetX = BigInteger.ZERO;
 
         // Perform Key updates on the join columns
@@ -381,7 +422,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
         // Do transform for all sensitive columns in the selection list
         for (SelectionItem selItem : selList.getItemList()) {
-          if (selItem.involveSdbEncrytedCol()) {
+          if (selItem.involveEncrytedCol()) {
             Expr originExpr = selItem.getExpr();
             Expr rewrittenExpr = buildCartesianExpr(originExpr, leftS, rightS,
                     visitedTbl);
@@ -404,8 +445,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         }
 
         // The row column key should be equal for across all tables.
-        assert (leftRowID.getExpr().getColKey().getM().equals(rightRowID.getExpr()
-                .getColKey().getM()));
+        assert (leftRowID.getExpr().getSdbColKey().getM().equals(rightRowID.getExpr()
+                .getSdbColKey().getM()));
 
         // Update the auxiliary columns
         // The row id is homomorphic additive
@@ -414,10 +455,10 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         newRowID.addChild(rightRowID.getExpr());
         newRowID.addChild(new BigIntLiteral(n));
 
-        BigInteger m = leftRowID.getExpr().getColKey().getM();
-        BigInteger x = leftRowID.getExpr().getColKey().getX().add(rightRowID
-                .getExpr().getColKey().getX());
-        newRowID.setColKey(new ColumnKey(m, x));
+        BigInteger m = leftRowID.getExpr().getSdbColKey().getM();
+        BigInteger x = leftRowID.getExpr().getSdbColKey().getX().add(rightRowID
+                .getExpr().getSdbColKey().getX());
+        newRowID.setSdbColKey(new SdbColumnKey(m, x));
 
         Expr newR = buildCartesianExpr(leftR.getExpr(), leftS, rightS, visitedTbl);
         Expr newS = buildCartesianExpr(leftS.getExpr(), leftS, rightS, visitedTbl);
@@ -486,7 +527,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
                                        BigInteger targetX) throws
           RewriteException {
     LOG.debug("Rewriting join predicate for " + normalBinPred.toSql());
-    if (!normalBinPred.involveSdbEncrytedCol())
+    if (!normalBinPred.involveEncrytedCol())
       return;
 
     if (normalBinPred.getOp() != BinaryPredicate.BinOperator.EQ) {
@@ -517,19 +558,21 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     }
 
     // EE mode
-    if (leftField.involveSdbEncrytedCol() && rightField.involveSdbEncrytedCol()) {
-      ColumnKey leftSColKey = leftS.getExpr().getColKey();
+    if (leftField.involveEncrytedCol() && rightField.involveEncrytedCol()) {
+      SdbColumnKey leftSColKey = leftS.getExpr().getSdbColKey();
 
       // The auxiliary update values p, q for the left field
-      BigInteger[] pqLeft = Crypto.keyUpdateClient(leftExpr.getColKey().getM(),
-              targetM, leftSColKey.getM(), leftExpr.getColKey().getX(), targetX,
+      BigInteger[] pqLeft = SDBEncrypt.keyUpdateClient(leftExpr.getSdbColKey()
+                      .getM(),
+              targetM, leftSColKey.getM(), leftExpr.getSdbColKey().getX(), targetX,
               leftSColKey.getX(), prime1, prime2);
 
       // The auxiliary update values p, q for the right field
-      BigInteger[] pqRight = Crypto.keyUpdateClient(rightExpr.getColKey().getM(),
-              targetM, rightS.getExpr().getColKey().getM(), rightExpr.getColKey()
+      BigInteger[] pqRight = SDBEncrypt.keyUpdateClient(rightExpr.getSdbColKey()
+                      .getM(),
+              targetM, rightS.getExpr().getSdbColKey().getM(), rightExpr.getSdbColKey()
                       .getX(), targetX,
-              rightS.getExpr().getColKey().getX(), prime1, prime2);
+              rightS.getExpr().getSdbColKey().getX(), prime1, prime2);
 
 
       // The order must be:(field, auxiliaryS, p, q, n)
@@ -544,19 +587,20 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       normalBinPred.setLeftExpr(leftKeyUp);
       normalBinPred.setRightExpr(rightKeyUp);
     } else {
-      if (leftField.involveSdbEncrytedCol()) {
-        ColumnKey leftSColKey = leftS.getExpr().getColKey();
+      if (leftField.involveEncrytedCol()) {
+        SdbColumnKey leftSColKey = leftS.getExpr().getSdbColKey();
 
         // The auxiliary update values p, q for the left field
-        BigInteger[] pqLeft = Crypto.keyUpdateClient(leftExpr.getColKey().getM(),
-                targetM, leftSColKey.getM(), leftExpr.getColKey().getX(), targetX,
+        BigInteger[] pqLeft = SDBEncrypt.keyUpdateClient(leftExpr.getSdbColKey()
+                        .getM(),
+                targetM, leftSColKey.getM(), leftExpr.getSdbColKey().getX(), targetX,
                 leftSColKey.getX(), prime1, prime2);
 
         // The auxiliary update values p, q for the right field
-        BigInteger[] pqRight = Crypto.keyUpdateClient(BigInteger.ONE,
-                targetM, rightS.getExpr().getColKey().getM(), BigInteger.ZERO,
+        BigInteger[] pqRight = SDBEncrypt.keyUpdateClient(BigInteger.ONE,
+                targetM, rightS.getExpr().getSdbColKey().getM(), BigInteger.ZERO,
                 targetX,
-                rightS.getExpr().getColKey().getX(), prime1, prime2);
+                rightS.getExpr().getSdbColKey().getX(), prime1, prime2);
 
 
         // The order must be:(field, auxiliaryS, p, q, n)
@@ -573,18 +617,19 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         normalBinPred.setLeftExpr(leftKeyUp);
         normalBinPred.setRightExpr(rightKeyUp);
       } else {
-        ColumnKey leftSColKey = leftS.getExpr().getColKey();
+        SdbColumnKey leftSColKey = leftS.getExpr().getSdbColKey();
 
         // The auxiliary update values p, q for the left field
-        BigInteger[] pqLeft = Crypto.keyUpdateClient(BigInteger.ONE,
+        BigInteger[] pqLeft = SDBEncrypt.keyUpdateClient(BigInteger.ONE,
                 targetM, leftSColKey.getM(), BigInteger.ZERO, targetX,
                 leftSColKey.getX(), prime1, prime2);
 
         // The auxiliary update values p, q for the right field
-        BigInteger[] pqRight = Crypto.keyUpdateClient(rightExpr.getColKey().getM(),
-                targetM, rightS.getExpr().getColKey().getM(), rightExpr.getColKey()
+        BigInteger[] pqRight = SDBEncrypt.keyUpdateClient(rightExpr.getSdbColKey()
+                        .getM(),
+                targetM, rightS.getExpr().getSdbColKey().getM(), rightExpr.getSdbColKey()
                         .getX(), targetX,
-                rightS.getExpr().getColKey().getX(), prime1, prime2);
+                rightS.getExpr().getSdbColKey().getX(), prime1, prime2);
 
 
         // The order must be:(field, auxiliaryS, p, q, n)
@@ -619,20 +664,20 @@ public class SdbSchemeRewriter extends AbstractRewriter {
           rightS, Set<String> visitedTbl) throws UnSupportedException {
     LOG.debug("Building cartesian expression for " + expr.toSql());
     if (expr instanceof FieldLiteral) {
-      if (expr.involveSdbEncrytedCol()) {
+      if (expr.involveEncrytedCol()) {
         FieldLiteral column = (FieldLiteral) expr;
         FieldLiteral rightSExpr = (FieldLiteral) rightS.getExpr();
         SdbCartesianExpr transformedCol = new SdbCartesianExpr();
         // This field is from the left side of the join
         if (visitedTbl.contains(column.getTblName())) {
-          BigInteger ma = column.getColKey().getM();
-          BigInteger xa = column.getColKey().getX();
+          BigInteger ma = column.getSdbColKey().getM();
+          BigInteger xa = column.getSdbColKey().getX();
 
-          BigInteger ms = rightSExpr.getColKey().getM();
-          BigInteger xs = rightSExpr.getColKey().getX();
-          BigInteger auxiliaryP = Crypto.cartesianAuxiliaryP(xa, xs, totient);
+          BigInteger ms = rightSExpr.getSdbColKey().getM();
+          BigInteger xs = rightSExpr.getSdbColKey().getX();
+          BigInteger auxiliaryP = SDBEncrypt.cartesianAuxiliaryP(xa, xs, totient);
           // Update the column key
-          BigInteger[] colKey = Crypto.cartesianUpdateColyKey(ma, xa, ms,
+          BigInteger[] colKey = SDBEncrypt.cartesianUpdateColyKey(ma, xa, ms,
                   auxiliaryP, n);
 
           transformedCol.addChild(column);
@@ -641,7 +686,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
           transformedCol.addChild(new BigIntLiteral(n));
 
           transformedCol.setAlias(column.getName());
-          transformedCol.setColKey(new ColumnKey(colKey[0], colKey[1]));
+          transformedCol.setSdbColKey(new SdbColumnKey(colKey[0], colKey[1]));
           transformedCol.setType(expr.getType());
           transformedCol.setReferredByList(column.getReferredByList());
 
@@ -649,14 +694,14 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         }
         // This field is from the right side of the join
         else if (column.getTblName().equals(rightSExpr.getTblName())) {
-          BigInteger ma = column.getColKey().getM();
-          BigInteger xa = column.getColKey().getX();
+          BigInteger ma = column.getSdbColKey().getM();
+          BigInteger xa = column.getSdbColKey().getX();
 
-          BigInteger ms = leftS.getExpr().getColKey().getM();
-          BigInteger xs = leftS.getExpr().getColKey().getX();
-          BigInteger auxiliaryP = Crypto.cartesianAuxiliaryP(xa, xs, totient);
+          BigInteger ms = leftS.getExpr().getSdbColKey().getM();
+          BigInteger xs = leftS.getExpr().getSdbColKey().getX();
+          BigInteger auxiliaryP = SDBEncrypt.cartesianAuxiliaryP(xa, xs, totient);
           // Update the column key
-          BigInteger[] colKey = Crypto.cartesianUpdateColyKey(ma, xa, ms,
+          BigInteger[] colKey = SDBEncrypt.cartesianUpdateColyKey(ma, xa, ms,
                   auxiliaryP, n);
 
           transformedCol.addChild(column);
@@ -665,7 +710,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
           transformedCol.addChild(new BigIntLiteral(n));
 
           transformedCol.setAlias(column.getName());
-          transformedCol.setColKey(new ColumnKey(colKey[0], colKey[1]));
+          transformedCol.setSdbColKey(new SdbColumnKey(colKey[0], colKey[1]));
           transformedCol.setType(expr.getType());
           transformedCol.setReferredByList(column.getReferredByList());
 
@@ -679,13 +724,14 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       SdbCartesianExpr transformedCol = new SdbCartesianExpr();
       FieldLiteral rightSExpr = (FieldLiteral) rightS.getExpr();
 
-      BigInteger ma = cartesianExpr.getColKey().getM();
-      BigInteger xa = cartesianExpr.getColKey().getX();
-      BigInteger ms = rightSExpr.getColKey().getM();
-      BigInteger xs = rightSExpr.getColKey().getX();
-      BigInteger auxiliaryP = Crypto.cartesianAuxiliaryP(xa, xs, totient);
+      BigInteger ma = cartesianExpr.getSdbColKey().getM();
+      BigInteger xa = cartesianExpr.getSdbColKey().getX();
+      BigInteger ms = rightSExpr.getSdbColKey().getM();
+      BigInteger xs = rightSExpr.getSdbColKey().getX();
+      BigInteger auxiliaryP = SDBEncrypt.cartesianAuxiliaryP(xa, xs, totient);
       // Update the column key
-      BigInteger[] colKey = Crypto.cartesianUpdateColyKey(ma, xa, ms, auxiliaryP, n);
+      BigInteger[] colKey = SDBEncrypt.cartesianUpdateColyKey(ma, xa, ms,
+              auxiliaryP, n);
 
       transformedCol.addChild(cartesianExpr);
       transformedCol.addChild(rightSExpr);
@@ -693,7 +739,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       transformedCol.addChild(new BigIntLiteral(n));
 
       transformedCol.setAlias(cartesianExpr.getAlias());
-      transformedCol.setColKey(new ColumnKey(colKey[0], colKey[1]));
+      transformedCol.setSdbColKey(new SdbColumnKey(colKey[0], colKey[1]));
       transformedCol.setType(expr.getType());
       transformedCol.setReferredByList(cartesianExpr.getReferredByList());
 
@@ -728,7 +774,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   protected void rewriteInLineViewRef(InLineViewRef inlineView)
           throws RewriteException {
     LOG.debug("Rewriting inline view " + inlineView.toSql());
-    if (!inlineView.involveSdbEncrytedCol())
+    if (!inlineView.involveEncrytedCol())
       return;
 
     // WARNING: This is casting is dangerous, since it could be an Union Statement.
@@ -766,8 +812,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         FieldLiteral S = new FieldLiteral(tblName, ColumnDefinition
                 .S_COLUMN_NAME, Type.INT, true, null);
 
-        R.setColKey(getTableColumnKey(tblName, ColumnDefinition.R_COLUMN_NAME));
-        S.setColKey(getTableColumnKey(tblName, ColumnDefinition.S_COLUMN_NAME));
+        R.setSdbColKey(getTableColumnKey(tblName, ColumnDefinition.R_COLUMN_NAME));
+        S.setSdbColKey(getTableColumnKey(tblName, ColumnDefinition.S_COLUMN_NAME));
 
         return rewriteNorBinPredicate((NormalBinPredicate) whereClause, R, S);
       } else {
@@ -776,7 +822,11 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         LOG.error("There is unsupported predicates!", e);
         throw e;
       }
-    } else {
+    } else if (whereClause instanceof LikePredicate) {
+      LOG.info("Rewriting like predicate during rewriteWhereClause");
+      return rewriteLikePredicate((LikePredicate) whereClause);
+    }
+    else {
       UnSupportedException e = new UnSupportedException("Can not support " +
               whereClause.getClass().getName());
       LOG.error("There is unsupported predicates!", e);
@@ -801,10 +851,10 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       Expr expr = selItem.getExpr();
 
       if (expr instanceof NormalArithmeticExpr) {
-        if (expr.involveSdbEncrytedCol()) {
+        if (expr.involveEncrytedCol()) {
           // This rewrite is wrong if there exist cartesian transformation in the
           // arithmetic expression.
-          if (expr.involveSdbEncrytedCol()) {
+          if (expr.involveEncrytedCol()) {
             Set<String> tbls = findAllTbls(expr);
             assert (tbls != null);
             if (tbls.size() < 1) {
@@ -815,7 +865,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
               FieldLiteral S = new FieldLiteral(tblName, ColumnDefinition
                       .S_COLUMN_NAME, Type.INT, true, null);
-              S.setColKey(getTableColumnKey(tblName, ColumnDefinition
+              S.setSdbColKey(getTableColumnKey(tblName, ColumnDefinition
                       .S_COLUMN_NAME));
 
               Expr rewrittenExpr = rewriteNorArithExpr((NormalArithmeticExpr) expr, S);
@@ -841,7 +891,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         }
 
         // Currently, only
-        if (expr.involveSdbEncrytedCol()) {
+        if (expr.involveEncrytedCol()) {
           Set<String> tbls = new HashSet<>();
 
           List<Expr> exprs = funParams.getExprs();
@@ -858,7 +908,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
             FieldLiteral S = new FieldLiteral(tblName, ColumnDefinition
                     .S_COLUMN_NAME, Type.INT, true, null);
-            S.setColKey(getTableColumnKey(tblName, ColumnDefinition
+            S.setSdbColKey(getTableColumnKey(tblName, ColumnDefinition
                     .S_COLUMN_NAME));
             Expr rewrittenExpr = rewriteFunCallExpr((FunctionCallExpr) expr, S);
             rewrittenExpr.setReferredByList(expr.getReferredByList());
@@ -880,18 +930,18 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     if (involveAggFunc) {
       SdbArithmeticExpr sdbTransformExprRowID = new SdbArithmeticExpr(SdbOperator.SDB_FIRST);
       sdbTransformExprRowID.addChild(selList.getRowID().getExpr());
-      sdbTransformExprRowID.setColKey(selList.getRowID().getExpr()
-              .getColKey());
+      sdbTransformExprRowID.setSdbColKey(selList.getRowID().getExpr()
+              .getSdbColKey());
 
       SdbArithmeticExpr sdbTransformExprR = new SdbArithmeticExpr(SdbOperator.SDB_FIRST);
       sdbTransformExprR.addChild(selList.getAuxiliaryR().getExpr());
-      sdbTransformExprR.setColKey(selList.getAuxiliaryR().getExpr()
-              .getColKey());
+      sdbTransformExprR.setSdbColKey(selList.getAuxiliaryR().getExpr()
+              .getSdbColKey());
 
       SdbArithmeticExpr sdbTransformExprS = new SdbArithmeticExpr(SdbOperator.SDB_FIRST);
       sdbTransformExprS.addChild(selList.getAuxiliaryS().getExpr());
-      sdbTransformExprS.setColKey(selList.getAuxiliaryS().getExpr()
-              .getColKey());
+      sdbTransformExprS.setSdbColKey(selList.getAuxiliaryS().getExpr()
+              .getSdbColKey());
 
       selList.getRowID().setExpr(sdbTransformExprRowID);
       selList.getAuxiliaryR().setExpr(sdbTransformExprR);
@@ -900,7 +950,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
     // Propagate the new Column keys to all its ascendants
     for (SelectionItem selItem : selList.getItemList()) {
-      if (selItem.involveSdbEncrytedCol()) {
+      if (selItem.involveEncrytedCol()) {
         selItem.getExpr().notifyAllFields();
       }
     }
@@ -932,19 +982,20 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       FieldLiteral S = new FieldLiteral(tblName, ColumnDefinition
               .S_COLUMN_NAME, Type.INT, true, null);
 
-      S.setColKey(getTableColumnKey(tblName, ColumnDefinition.S_COLUMN_NAME));
+      S.setSdbColKey(getTableColumnKey(tblName, ColumnDefinition.S_COLUMN_NAME));
 
       for (int i = 0; i < groupExprs.size(); i++) {
-        if (groupExprs.get(i).involveSdbEncrytedCol()) {
+        if (groupExprs.get(i).involveEncrytedCol()) {
           if (groupExprs.get(i) instanceof FieldLiteral) {
-            BigInteger targetM = Crypto.generatePositiveRand(prime1, prime2);
+            BigInteger targetM = SDBEncrypt.generatePositiveRand(prime1, prime2);
             BigInteger targetX = BigInteger.ZERO;
 
-            BigInteger[] pqLeft = Crypto.keyUpdateClient(groupExprs.get(i).getColKey
-                            ().getM(),
-                    targetM, S.getColKey().getM(), groupExprs.get(i).getColKey()
+            BigInteger[] pqLeft = SDBEncrypt.keyUpdateClient(groupExprs.get(i)
+                            .getSdbColKey
+                                    ().getM(),
+                    targetM, S.getSdbColKey().getM(), groupExprs.get(i).getSdbColKey()
                             .getX(), targetX,
-                    S.getColKey().getX(), prime1, prime2);
+                    S.getSdbColKey().getX(), prime1, prime2);
 
             groupExprs.set(i, buildSdbKeyUpdateExpr(groupExprs.get(i), S, new
                             BigIntLiteral
@@ -991,7 +1042,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   protected void rewriteCompoundPredicate(CompoundPredicate compoundPred) throws
           UnSupportedException {
     // No SDB encrypted column
-    if (!compoundPred.involveSdbEncrytedCol())
+    if (!compoundPred.involveEncrytedCol())
       return;
 
     LOG.debug("Rewriting compounding predicate " + compoundPred.toSql());
@@ -1015,8 +1066,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         FieldLiteral S = new FieldLiteral(tblName, ColumnDefinition
                 .S_COLUMN_NAME, Type.INT, true, null);
 
-        R.setColKey(getTableColumnKey(tblName, ColumnDefinition.R_COLUMN_NAME));
-        S.setColKey(getTableColumnKey(tblName, ColumnDefinition.S_COLUMN_NAME));
+        R.setSdbColKey(getTableColumnKey(tblName, ColumnDefinition.R_COLUMN_NAME));
+        S.setSdbColKey(getTableColumnKey(tblName, ColumnDefinition.S_COLUMN_NAME));
 
         compoundPred.setLeftPred(rewriteNorBinPredicate((NormalBinPredicate)
                 leftPred, R, S));
@@ -1043,8 +1094,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         FieldLiteral S = new FieldLiteral(tblName, ColumnDefinition
                 .S_COLUMN_NAME, Type.INT, true, null);
 
-        R.setColKey(getTableColumnKey(tblName, ColumnDefinition.R_COLUMN_NAME));
-        S.setColKey(getTableColumnKey(tblName, ColumnDefinition.S_COLUMN_NAME));
+        R.setSdbColKey(getTableColumnKey(tblName, ColumnDefinition.R_COLUMN_NAME));
+        S.setSdbColKey(getTableColumnKey(tblName, ColumnDefinition.S_COLUMN_NAME));
 
         compoundPred.setRightPred(rewriteNorBinPredicate((NormalBinPredicate)
                 rightPred, R, S));
@@ -1189,23 +1240,24 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
       Expr expr = functionParams.getExprs().get(0);
 
-      BigInteger targetM = Crypto.generatePositiveRand(prime1, prime2);
+      BigInteger targetM = SDBEncrypt.generatePositiveRand(prime1, prime2);
       BigInteger targetX = BigInteger.ZERO;
 
-      BigInteger[] pqLeft = Crypto.keyUpdateClient(expr.getColKey().getM(), targetM,
-              S.getColKey().getM(), expr.getColKey().getX(), targetX, S.getColKey
+      BigInteger[] pqLeft = SDBEncrypt.keyUpdateClient(expr.getSdbColKey().getM(),
+              targetM,
+              S.getSdbColKey().getM(), expr.getSdbColKey().getX(), targetX, S.getSdbColKey
                       ().getX(), prime1, prime2);
 
       functionParams.getExprs().set(0, buildSdbKeyUpdateExpr(expr, S, new
                       BigIntLiteral(pqLeft[0]),
               new BigIntLiteral(pqLeft[1]), new BigIntLiteral(n), targetM, targetX));
-      functionParams.getExprs().get(0).setColKey(new ColumnKey(targetM, targetX));
+      functionParams.getExprs().get(0).setSdbColKey(new SdbColumnKey(targetM, targetX));
       functionParams.getExprs().add(new BigIntLiteral(n));
 
       funName.setName(SdbOperator.SDB_SUM.toString());
       funCallExpr.setName(funName);
       funCallExpr.setFunctionParams(functionParams);
-      funCallExpr.setColKey(new ColumnKey(targetM, targetX));
+      funCallExpr.setSdbColKey(new SdbColumnKey(targetM, targetX));
       funCallExpr.setType(functionParams.getExprs().get(0).getType());
 
       return funCallExpr;
@@ -1244,7 +1296,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     }
 
     // EE mode
-    if (leftExpr.involveSdbEncrytedCol() && rightExpr.involveSdbEncrytedCol()) {
+    if (leftExpr.involveEncrytedCol() && rightExpr.involveEncrytedCol()) {
       switch (arithExpr.getOp()) {
         //SDB_MUL EE Mode
         case MULTIPLY: {
@@ -1268,7 +1320,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     }
 
     // EC mode or EP mode
-    else if (leftExpr.involveSdbEncrytedCol() || rightExpr.involveSdbEncrytedCol()) {
+    else if (leftExpr.involveEncrytedCol() || rightExpr.involveEncrytedCol()) {
       switch (arithExpr.getOp()) {
         case MULTIPLY:
           // EC mode only support Integer and Float type currently
@@ -1317,7 +1369,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    */
   protected Expr rewriteAddEE(Expr leftExpr, Expr rightExpr, Expr S) throws
           UnSupportedException {
-    assert (leftExpr.involveSdbEncrytedCol() && rightExpr.involveSdbEncrytedCol());
+    assert (leftExpr.involveEncrytedCol() && rightExpr.involveEncrytedCol());
 
     LOG.debug("Rewriting EE mode addition");
 
@@ -1382,18 +1434,22 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       BigInteger targetX;
 
       // If not equal, update to the same column key.
-      if (!leftExpr.getColKey().equals(rightExpr.getColKey())) {
-        targetM = Crypto.generatePositiveRand(prime1, prime2);
-        targetX = Crypto.generatePositiveRand(prime1, prime2);
+      if (!leftExpr.getSdbColKey().equals(rightExpr.getSdbColKey())) {
+        targetM = SDBEncrypt.generatePositiveRand(prime1, prime2);
+        targetX = SDBEncrypt.generatePositiveRand(prime1, prime2);
 
         // What if we only update one side? Does it affect the security level?
-        BigInteger[] pqLeft = Crypto.keyUpdateClient(leftExpr.getColKey().getM(),
-                targetM, S.getColKey().getM(), leftExpr.getColKey().getX(), targetX,
-                S.getColKey().getX(), prime1, prime2);
+        BigInteger[] pqLeft = SDBEncrypt.keyUpdateClient(leftExpr.getSdbColKey()
+                        .getM(),
+                targetM, S.getSdbColKey().getM(), leftExpr.getSdbColKey().getX(), targetX,
 
-        BigInteger[] pqRight = Crypto.keyUpdateClient(rightExpr.getColKey().getM(),
-                targetM, S.getColKey().getM(), rightExpr.getColKey().getX(), targetX,
-                S.getColKey().getX(), prime1, prime2);
+
+                S.getSdbColKey().getX(), prime1, prime2);
+
+        BigInteger[] pqRight = SDBEncrypt.keyUpdateClient(rightExpr.getSdbColKey()
+                        .getM(),
+                targetM, S.getSdbColKey().getM(), rightExpr.getSdbColKey().getX(), targetX,
+                S.getSdbColKey().getX(), prime1, prime2);
 
         leftKeyUp = buildSdbKeyUpdateExpr(leftExpr, S, new BigIntLiteral
                         (pqLeft[0]),
@@ -1408,15 +1464,15 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       } else {
         leftKeyUp = leftExpr;
         rightKeyUp = rightExpr;
-        targetM = leftExpr.getColKey().getM();
-        targetX = leftExpr.getColKey().getX();
+        targetM = leftExpr.getSdbColKey().getM();
+        targetX = leftExpr.getSdbColKey().getX();
       }
 
 
       sdbArithmeticExpr.addChild(leftKeyUp);
       sdbArithmeticExpr.addChild(rightKeyUp);
       sdbArithmeticExpr.addChild(new BigIntLiteral(n));
-      sdbArithmeticExpr.setColKey(new ColumnKey(targetM, targetX));
+      sdbArithmeticExpr.setSdbColKey(new SdbColumnKey(targetM, targetX));
 
       return sdbArithmeticExpr;
     } else {
@@ -1437,11 +1493,11 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     // only one involves encrypted column
     LOG.debug("Rewriting EP mode addition");
 
-    assert (leftExpr.involveSdbEncrytedCol() ^ rightExpr.involveSdbEncrytedCol());
+    assert (leftExpr.involveEncrytedCol() ^ rightExpr.involveEncrytedCol());
 
     Expr E;
     Expr P;
-    if (leftExpr.involveSdbEncrytedCol()) {
+    if (leftExpr.involveEncrytedCol()) {
       E = leftExpr;
       P = rightExpr;
     } else {
@@ -1449,14 +1505,14 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       P = leftExpr;
     }
 
-    BigInteger targetM = Crypto.generatePositiveRand(prime1, prime2);
-    BigInteger targetX = Crypto.generatePositiveRand(prime1, prime2);
+    BigInteger targetM = SDBEncrypt.generatePositiveRand(prime1, prime2);
+    BigInteger targetX = SDBEncrypt.generatePositiveRand(prime1, prime2);
 
     Expr pKeyUp = keyUpdatePlainCol(P, S, targetM, targetX);
 
-    //    BigInteger[] pq = Crypto.keyUpdateClient(E.getColKey().getM(),
-    //            targetM, S.getColKey().getM(), E.getColKey().getX(), targetX,
-    //            S.getColKey().getX(), prime1, prime2);
+    //    BigInteger[] pq = SDBEncrypt.keyUpdateClient(E.getSdbColKey().getM(),
+    //            targetM, S.getSdbColKey().getM(), E.getSdbColKey().getX(), targetX,
+    //            S.getSdbColKey().getX(), prime1, prime2);
 
     return rewriteAddEE(pKeyUp, E, S);
   }
@@ -1504,12 +1560,12 @@ public class SdbSchemeRewriter extends AbstractRewriter {
           UnSupportedException {
     LOG.debug("Rewriting EE mode subtraction");
 
-    assert (leftExpr.involveSdbEncrytedCol() && rightExpr.involveSdbEncrytedCol());
-    BigInteger inverseM = rightExpr.getColKey().getM().multiply(n.subtract
+    assert (leftExpr.involveEncrytedCol() && rightExpr.involveEncrytedCol());
+    BigInteger inverseM = rightExpr.getSdbColKey().getM().multiply(n.subtract
             (BigInteger.ONE)).mod(n);
 
-    ColumnKey colKey = new ColumnKey(inverseM, rightExpr.getColKey().getX());
-    rightExpr.setColKey(colKey);
+    SdbColumnKey colKey = new SdbColumnKey(inverseM, rightExpr.getSdbColKey().getX());
+    rightExpr.setSdbColKey(colKey);
 
     return rewriteAddEE(leftExpr, rightExpr, S);
   }
@@ -1525,31 +1581,31 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   protected Expr rewriteSubtractEP(Expr leftExpr, Expr rightExpr, Expr S) throws UnSupportedException {
     LOG.debug("Rewriting EP mode subtraction");
     // only one involves encrypted column
-    assert (leftExpr.involveSdbEncrytedCol() ^ rightExpr.involveSdbEncrytedCol());
+    assert (leftExpr.involveEncrytedCol() ^ rightExpr.involveEncrytedCol());
 
 
-    BigInteger targetM = Crypto.generatePositiveRand(prime1, prime2);
-    BigInteger targetX = Crypto.generatePositiveRand(prime1, prime2);
+    BigInteger targetM = SDBEncrypt.generatePositiveRand(prime1, prime2);
+    BigInteger targetX = SDBEncrypt.generatePositiveRand(prime1, prime2);
 
     // We need to inverse the value of the right expression
-    if (leftExpr.involveSdbEncrytedCol()) {
+    if (leftExpr.involveEncrytedCol()) {
       // P is the right expression. Inverse P.
       rightExpr = keyUpdateInversedPlainCol(rightExpr, S, targetM, targetX);
-      BigInteger[] pq = Crypto.keyUpdateClient(leftExpr.getColKey().getM(),
-              targetM, S.getColKey().getM(), leftExpr.getColKey().getX(), targetX,
-              S.getColKey().getX(), prime1, prime2);
+      BigInteger[] pq = SDBEncrypt.keyUpdateClient(leftExpr.getSdbColKey().getM(),
+              targetM, S.getSdbColKey().getM(), leftExpr.getSdbColKey().getX(), targetX,
+              S.getSdbColKey().getX(), prime1, prime2);
       leftExpr = buildSdbKeyUpdateExpr(leftExpr, S, new BigIntLiteral(pq[0]),
               new BigIntLiteral(pq[1]), new BigIntLiteral(n), targetM, targetX);
     } else {
       // P is the left expression.
       leftExpr = keyUpdatePlainCol(leftExpr, S, targetM, targetX);
       // Inverse E expression.
-      BigInteger inverseM = rightExpr.getColKey().getM().multiply(n.subtract
+      BigInteger inverseM = rightExpr.getSdbColKey().getM().multiply(n.subtract
               (BigInteger.ONE)).mod(n);
-      BigInteger[] pq = Crypto.keyUpdateClient(inverseM,
-              targetM, S.getColKey().getM(), rightExpr.getColKey().getX(),
+      BigInteger[] pq = SDBEncrypt.keyUpdateClient(inverseM,
+              targetM, S.getSdbColKey().getM(), rightExpr.getSdbColKey().getX(),
               targetX,
-              S.getColKey().getX(), prime1, prime2);
+              S.getSdbColKey().getX(), prime1, prime2);
       rightExpr = buildSdbKeyUpdateExpr(rightExpr, S, new BigIntLiteral(pq[0]),
               new BigIntLiteral(pq[1]), new BigIntLiteral(n), targetM, targetX);
     }
@@ -1590,7 +1646,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
    */
   protected Expr rewriteMultiplyEE(Expr leftExpr, Expr rightExpr) throws UnSupportedException {
     LOG.debug("Rewriting EE mode multiplication");
-    assert (leftExpr.involveSdbEncrytedCol() && rightExpr.involveSdbEncrytedCol());
+    assert (leftExpr.involveEncrytedCol() && rightExpr.involveEncrytedCol());
 
     if (!(leftExpr.getType() instanceof ScalarType) || !(rightExpr.getType()
             instanceof ScalarType)) {
@@ -1631,18 +1687,18 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         sdbArithmeticExpr.setType(ScalarType.createDecimalType(precision, scale));
       }
 
-      BigInteger m = leftExpr.getColKey().getM().multiply(rightExpr.getColKey().getM
+      BigInteger m = leftExpr.getSdbColKey().getM().multiply(rightExpr.getSdbColKey().getM
               ()).mod(n);
 
-      BigInteger x = leftExpr.getColKey().getX().add(rightExpr.getColKey()
+      BigInteger x = leftExpr.getSdbColKey().getX().add(rightExpr.getSdbColKey()
               .getX()).mod(totient);
 
-      ColumnKey colKey = new ColumnKey(m, x);
+      SdbColumnKey colKey = new SdbColumnKey(m, x);
 
       sdbArithmeticExpr.addChild(leftExpr);
       sdbArithmeticExpr.addChild(rightExpr);
       sdbArithmeticExpr.addChild(new BigIntLiteral(n));
-      sdbArithmeticExpr.setColKey(colKey);
+      sdbArithmeticExpr.setSdbColKey(colKey);
 
       return sdbArithmeticExpr;
     } else {
@@ -1661,11 +1717,11 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   protected Expr rewriteMultiplyEP(Expr leftExpr, Expr rightExpr, Expr S) throws UnSupportedException {
     LOG.debug("Rewriting EP mode multiplication");
     // only one involves encrypted column
-    assert (leftExpr.involveSdbEncrytedCol() ^ rightExpr.involveSdbEncrytedCol());
+    assert (leftExpr.involveEncrytedCol() ^ rightExpr.involveEncrytedCol());
 
     Expr E;
     Expr P;
-    if (leftExpr.involveSdbEncrytedCol()) {
+    if (leftExpr.involveEncrytedCol()) {
       E = leftExpr;
       P = rightExpr;
     } else {
@@ -1674,8 +1730,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     }
 
     // Need to do key update for the unencrypted expr
-    BigInteger targetM = Crypto.generatePositiveRand(prime1, prime2);
-    BigInteger targetX = Crypto.generatePositiveRand(prime1, prime2);
+    BigInteger targetM = SDBEncrypt.generatePositiveRand(prime1, prime2);
+    BigInteger targetX = SDBEncrypt.generatePositiveRand(prime1, prime2);
 
     Expr pKeyUp = keyUpdatePlainCol(P, S, targetM, targetX);
 
@@ -1718,10 +1774,10 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     }
 
     // For EC multiplication, we only need to multiply the m part of column key
-    BigInteger m = cValue.multiply(E.getColKey().getM()).mod(n);
-    BigInteger x = E.getColKey().getX();
+    BigInteger m = cValue.multiply(E.getSdbColKey().getM()).mod(n);
+    BigInteger x = E.getSdbColKey().getX();
 
-    ColumnKey colKey = new ColumnKey(m, x);
+    SdbColumnKey colKey = new SdbColumnKey(m, x);
 
     Expr resultExpr;
 
@@ -1737,7 +1793,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
               .getCanonicalName() + " in EC mode multiplication!");
     }
 
-    resultExpr.setColKey(colKey);
+    resultExpr.setSdbColKey(colKey);
 
     // It will become a Decimal type from now on.
     if (scale >= 1) {
@@ -1766,8 +1822,9 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     BigInteger pM = BigInteger.ONE;
     BigInteger pX = BigInteger.ZERO;
 
-    BigInteger[] pq = Crypto.keyUpdateClient(pM, targetM, S.getColKey().getM(), pX,
-            targetX, S.getColKey().getX(), prime1, prime2);
+    BigInteger[] pq = SDBEncrypt.keyUpdateClient(pM, targetM, S.getSdbColKey().getM()
+            , pX,
+            targetX, S.getSdbColKey().getX(), prime1, prime2);
 
     return buildSdbKeyUpdateExpr(P, S, new BigIntLiteral(pq[0]),
             new BigIntLiteral(pq[1]), new BigIntLiteral(n), targetM, targetX);
@@ -1790,8 +1847,8 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     BigInteger pM = n.subtract(BigInteger.ONE);
     BigInteger pX = BigInteger.ZERO;
 
-    BigInteger[] pq = Crypto.keyUpdateClient(pM, targetM, S.getColKey().getM(),
-            pX, targetX, S.getColKey().getX(), prime1, prime2);
+    BigInteger[] pq = SDBEncrypt.keyUpdateClient(pM, targetM, S.getSdbColKey().getM(),
+            pX, targetX, S.getSdbColKey().getX(), prime1, prime2);
 
     return buildSdbKeyUpdateExpr(P, S, new BigIntLiteral(pq[0]),
             new BigIntLiteral(pq[1]), new BigIntLiteral(n), targetM, targetX);
@@ -1816,7 +1873,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
     SdbKeyUpdateExpr keyUpdateExpr;
 
-    if (expr.involveSdbEncrytedCol())
+    if (expr.involveEncrytedCol())
       keyUpdateExpr = new SdbKeyUpdateExpr(SdbKeyUpOperator.SDB_KEYUP);
     else
       keyUpdateExpr = new SdbKeyUpdateExpr(SdbKeyUpOperator.SDB_KEYUP_PLAIN);
@@ -1828,7 +1885,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     keyUpdateExpr.addChild(n);
 
     keyUpdateExpr.setType(expr.getType());
-    keyUpdateExpr.setColKey(new ColumnKey(targetM, targetX));
+    keyUpdateExpr.setSdbColKey(new SdbColumnKey(targetM, targetX));
 
     return keyUpdateExpr;
   }
@@ -1847,7 +1904,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     LOG.debug("Rewriting normal binary predicate " + normalBinPred.toSql());
 
     // No SDB encrypted column.
-    if (!normalBinPred.involveSdbEncrytedCol())
+    if (!normalBinPred.involveEncrytedCol())
       return normalBinPred;
 
     Expr leftExpr = normalBinPred.getLeftExpr();
@@ -1863,7 +1920,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     Expr compareExpr = new SdbComparisonExpr(normalBinPred.getOp());
 
     // EE mode
-    if (leftExpr.involveSdbEncrytedCol() && rightExpr.involveSdbEncrytedCol()) {
+    if (leftExpr.involveEncrytedCol() && rightExpr.involveEncrytedCol()) {
       if (leftExpr instanceof NormalArithmeticExpr) {
         leftExpr = rewriteNorArithExpr((NormalArithmeticExpr) leftExpr, S);
       }
@@ -1875,15 +1932,15 @@ public class SdbSchemeRewriter extends AbstractRewriter {
       subtractExpr = rewriteSubtractEE(leftExpr, rightExpr, S);
       multiplyExpr = rewriteMultiplyEE(R, subtractExpr);
 
-      BigInteger[] pq = Crypto.keyUpdateClient(multiplyExpr.getColKey().getM(),
-              targetM, S.getColKey().getM(), multiplyExpr.getColKey().getX(),
-              targetX, S.getColKey().getX(), prime1, prime2);
+      BigInteger[] pq = SDBEncrypt.keyUpdateClient(multiplyExpr.getSdbColKey().getM(),
+              targetM, S.getSdbColKey().getM(), multiplyExpr.getSdbColKey().getX(),
+              targetX, S.getSdbColKey().getX(), prime1, prime2);
 
       keyUpdateExpr = buildSdbKeyUpdateExpr(multiplyExpr, S, new
               BigIntLiteral(pq[0]), new BigIntLiteral(pq[1]), new
               BigIntLiteral(n), targetM, targetX);
 
-    } else if (leftExpr.involveSdbEncrytedCol() || rightExpr.involveSdbEncrytedCol
+    } else if (leftExpr.involveEncrytedCol() || rightExpr.involveEncrytedCol
             ()) {
       // EC mode
 
@@ -1900,9 +1957,9 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         subtractExpr = rewriteSubtractEC(leftExpr, rightExpr, S);
         multiplyExpr = rewriteMultiplyEE(R, subtractExpr);
 
-        BigInteger[] pq = Crypto.keyUpdateClient(multiplyExpr.getColKey().getM(),
-                targetM, S.getColKey().getM(), multiplyExpr.getColKey().getX(),
-                targetX, S.getColKey().getX(), prime1, prime2);
+        BigInteger[] pq = SDBEncrypt.keyUpdateClient(multiplyExpr.getSdbColKey().getM(),
+                targetM, S.getSdbColKey().getM(), multiplyExpr.getSdbColKey().getX(),
+                targetX, S.getSdbColKey().getX(), prime1, prime2);
 
         keyUpdateExpr = buildSdbKeyUpdateExpr(multiplyExpr, S, new
                 BigIntLiteral(pq[0]), new BigIntLiteral(pq[1]), new
@@ -1923,9 +1980,9 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         subtractExpr = rewriteSubtractEP(leftExpr, rightExpr, S);
         multiplyExpr = rewriteMultiplyEE(R, subtractExpr);
 
-        BigInteger[] pq = Crypto.keyUpdateClient(multiplyExpr.getColKey().getM(),
-                targetM, S.getColKey().getM(), multiplyExpr.getColKey().getX(),
-                targetX, S.getColKey().getX(), prime1, prime2);
+        BigInteger[] pq = SDBEncrypt.keyUpdateClient(multiplyExpr.getSdbColKey().getM(),
+                targetM, S.getSdbColKey().getM(), multiplyExpr.getSdbColKey().getX(),
+                targetX, S.getSdbColKey().getX(), prime1, prime2);
 
         keyUpdateExpr = buildSdbKeyUpdateExpr(multiplyExpr, S, new
                 BigIntLiteral(pq[0]), new BigIntLiteral(pq[1]), new
@@ -1944,10 +2001,34 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     return compareExpr;
   }
 
-  private ColumnKey getTableColumnKey(String tblName, String colName) {
+  private Expr rewriteLikePredicate(LikePredicate likePred) {
+    if(!likePred.involveEncrytedCol())
+      return likePred;
+
+    SdbLikeExpr expr = new SdbLikeExpr();
+
+    assert(likePred.getColumn() instanceof FieldLiteral);
+    assert(likePred.getPattern() instanceof StringLiteral);
+
+    FieldLiteral column = (FieldLiteral) likePred.getColumn();
+    StringLiteral keyword = (StringLiteral) likePred.getPattern();
+
+    expr.addChild(column);
+    expr.addChild(keyword);
+
+    SecretKey pubKey = column.getSearchColKey().getPubKey();
+
+    StringLiteral pubKeyEncoded = new StringLiteral(Base64.encodeBase64String(pubKey.getEncoded()));
+
+    expr.addChild(pubKeyEncoded);
+
+    return expr;
+  }
+
+  private SdbColumnKey getTableColumnKey(String tblName, String colName) {
     LOG.debug("Getting column key for column " + tblName + "." + colName);
 
-    ColumnKey colKey = null;
+    SdbColumnKey colKey = null;
     String key = tblName + colName;
 
     if (colKeyMap.containsKey(key)) {
@@ -1957,9 +2038,9 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         if (tableMeta.getTblName().equals(tblName)) {
           for (ColumnMeta columnMeta : tableMeta.getCols()) {
             if (columnMeta.getColName().equals(colName)) {
-              BigInteger m = columnMeta.getColkey().getM();
-              BigInteger x = columnMeta.getColkey().getX();
-              colKey = new ColumnKey(m, x);
+              BigInteger m = new BigInteger(columnMeta.getM());
+              BigInteger x = new BigInteger(columnMeta.getX());
+              colKey = new SdbColumnKey(m, x);
               colKeyMap.put(tblName + colName, colKey);
               return colKey;
             }
@@ -1969,9 +2050,9 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         else if (tableMeta.getTblName().equals(aliasTblMap.get(tblName))) {
           for (ColumnMeta columnMeta : tableMeta.getCols()) {
             if (columnMeta.getColName().equals(colName)) {
-              BigInteger m = columnMeta.getColkey().getM();
-              BigInteger x = columnMeta.getColkey().getX();
-              colKey = new ColumnKey(m, x);
+              BigInteger m = new BigInteger(columnMeta.getM());
+              BigInteger x = new BigInteger(columnMeta.getX());
+              colKey = new SdbColumnKey(m, x);
               colKeyMap.put(tblName + colName, colKey);
               return colKey;
             }
@@ -2018,7 +2099,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
 
     // EE mode
-    if (leftExpr.involveSdbEncrytedCol() && rightExpr.involveSdbEncrytedCol()) {
+    if (leftExpr.involveEncrytedCol() && rightExpr.involveEncrytedCol()) {
       switch (arithExpr.getOp()) {
         //SDB_MUL EE Mode
         case MULTIPLY: {
@@ -2040,7 +2121,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     }
 
     // EC mode or EP mode
-    else if (leftExpr.involveSdbEncrytedCol() || rightExpr.involveSdbEncrytedCol()) {
+    else if (leftExpr.involveEncrytedCol() || rightExpr.involveEncrytedCol()) {
       switch (arithExpr.getOp()) {
         case MULTIPLY:
           // EC mode only support Integer type currently
@@ -2078,12 +2159,12 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
   protected Expr rewriteAddEEFast(Expr leftExpr, Expr rightExpr, BigInteger
           targetM) throws UnSupportedException {
-    assert (leftExpr.involveSdbEncrytedCol() && rightExpr.involveSdbEncrytedCol());
+    assert (leftExpr.involveEncrytedCol() && rightExpr.involveEncrytedCol());
     BigInteger targetX = BigInteger.ZERO;
 
     SdbArithmeticExpr sdbArithmeticExpr = new SdbArithmeticExpr(SdbOperator.SDB_ADD);
 
-    //      BigInteger targetM = Crypto.generatePositiveRand(prime1, prime2);
+    //      BigInteger targetM = SDBEncrypt.generatePositiveRand(prime1, prime2);
     //      BigInteger targetX = BigInteger.ZERO;
     //
     //      FieldLiteral eLiteral = (FieldLiteral) E;
@@ -2099,30 +2180,30 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     //      String key1 = eLiteral.getTblName() + ColumnDefinition.S_COLUMN_NAME;
     //      String key2 = pLiteral.getTblName() + ColumnDefinition.S_COLUMN_NAME;
     //      if(colKeyMap.containsKey(key1)) {
-    //        eS.setColKey(colKeyMap.get(key1));
+    //        eS.setSdbColKey(colKeyMap.get(key1));
     //      }
     //      else {
-    //        ColumnKey colKey = getTableColumnKey(eLiteral.getTblName(),
+    //        ColumnKey sdbColKey = getTableColumnKey(eLiteral.getTblName(),
     //                ColumnDefinition.S_COLUMN_NAME);
-    //        eS.setColKey(colKey);
-    //        colKeyMap.put(key1, colKey);
+    //        eS.setSdbColKey(sdbColKey);
+    //        colKeyMap.put(key1, sdbColKey);
     //      }
     //
     //      if(colKeyMap.containsKey(key2)){
-    //        pS.setColKey(colKeyMap.get(key2));
+    //        pS.setSdbColKey(colKeyMap.get(key2));
     //      }
     //      else {
-    //        ColumnKey colKey = getTableColumnKey(pLiteral.getTblName(),
+    //        ColumnKey sdbColKey = getTableColumnKey(pLiteral.getTblName(),
     //                ColumnDefinition.S_COLUMN_NAME);
-    //        pS.setColKey(colKey);
-    //        colKeyMap.put(key2, colKey);
+    //        pS.setSdbColKey(sdbColKey);
+    //        colKeyMap.put(key2, sdbColKey);
     //      }
     //
     //      Expr pKeyUp = keyUpdatePlainCol(P, pS, targetM, targetX);
     //
-    //      BigInteger[] pq = Crypto.keyUpdateClient(E.getColKey().getM(),
-    //              targetM, eS.getColKey().getX(), E.getColKey().getX(), targetX,
-    //              S.getColKey().getX(), prime1, prime2);
+    //      BigInteger[] pq = SDBEncrypt.keyUpdateClient(E.getSdbColKey().getM(),
+    //              targetM, eS.getSdbColKey().getX(), E.getSdbColKey().getX(), targetX,
+    //              S.getSdbColKey().getX(), prime1, prime2);
     //
     //      Expr eKeyUp = buildSdbKeyUpdateExpr(E, eS, new BigIntLiteral
     //                      (pq[0]),
@@ -2132,7 +2213,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     //      sdbArithmeticExpr.addChild(eKeyUp);
     //      sdbArithmeticExpr.addChild(pKeyUp);
     //      sdbArithmeticExpr.addChild(new BigIntLiteral(n));
-    //      sdbArithmeticExpr.setColKey(new ColumnKey(targetM, targetX));
+    //      sdbArithmeticExpr.setSdbColKey(new ColumnKey(targetM, targetX));
 
     return sdbArithmeticExpr;
 

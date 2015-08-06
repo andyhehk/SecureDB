@@ -58,8 +58,13 @@ public class LoadStmt implements ParseNode {
   }
 
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     return false;
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
   @Override

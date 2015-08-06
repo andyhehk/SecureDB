@@ -19,12 +19,11 @@ package edu.hku.sdb.parse;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Joiner;
-import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.SdbColumnKey;
 import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.catalog.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.org.mozilla.javascript.Function;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +35,7 @@ public class FunctionCallExpr extends Expr {
   private FunctionName name;
   private FunctionParams functionParams;
 
-  private ColumnKey colKey;
+  private SdbColumnKey colKey;
   private Type type;
 
   public FunctionCallExpr() {
@@ -155,24 +154,29 @@ public class FunctionCallExpr extends Expr {
    * @see edu.hku.sdb.parse.Expr#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     //TODO: we dont support secure operator with *
     if(functionParams.isStar())
       return false;
 
     for( Expr expr : functionParams.getExprs()) {
-      if(expr.involveSdbEncrytedCol())
+      if(expr.involveEncrytedCol())
         return true;
     }
 
     return false;
   }
 
-  public ColumnKey getColKey() {
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
+  }
+
+  public SdbColumnKey getSdbColKey() {
     return colKey;
   }
 
-  public void setColKey(ColumnKey colKey) {
+  public void setSdbColKey(SdbColumnKey colKey) {
     this.colKey = colKey;
   }
 

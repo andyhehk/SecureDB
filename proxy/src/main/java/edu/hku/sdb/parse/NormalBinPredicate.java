@@ -57,9 +57,9 @@ public class NormalBinPredicate extends BinaryPredicate {
    * @see edu.hku.sdb.parse.Expr#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
-    return checkNotNull(getLeftExpr(), "Left expression is null.").involveSdbEncrytedCol() ||
-            checkNotNull(getRightExpr(), "Right expression is null.").involveSdbEncrytedCol();
+  public boolean involveEncrytedCol() {
+    return checkNotNull(getLeftExpr(), "Left expression is null.").involveEncrytedCol() ||
+            checkNotNull(getRightExpr(), "Right expression is null.").involveEncrytedCol();
   }
 
   @Override

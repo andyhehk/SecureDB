@@ -17,53 +17,9 @@
 
 package edu.hku.sdb.parse;
 
-public class AggregateExpr extends Expr {
-
-  public AggregateExpr(Expr expr, AggregateType type) {
-    this.expr = expr;
-    this.type = type;
-  }
-
-  private Expr expr;
-  private AggregateType type;
-
-  public Expr getExpr() {
-    return expr;
-  }
-
-  public void setExpr(Expr expr) {
-    this.expr = expr;
-  }
-
-
-  public enum AggregateType {
-    COUNT("count"),
-    SUM("sum");
-
-    private final String description;
-
-    private AggregateType(String description) {
-      this.description = description;
-    }
-
-    @Override
-    public String toString() {
-      return description;
-    }
-  }
-
-
-  public String toSql() {
-    return type.toString() + "(" + expr.toSql() + ")";
-  }
-
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
-   */
-  @Override
-  public boolean involveSdbEncrytedCol() {
-    return false;
-  }
-
-
+public enum EncryptionScheme {
+  SDB,
+  PILLIAR,
+  SIES,
+  SEARCH
 }

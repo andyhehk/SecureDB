@@ -20,4 +20,9 @@ package edu.hku.sdb.parse;
 public abstract class StatementBase implements ParseNode {
 
   protected boolean isExplain = false;
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
+  }
 }

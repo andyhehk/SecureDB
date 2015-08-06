@@ -18,13 +18,18 @@
 package edu.hku.sdb.upload;
 
 import edu.hku.sdb.catalog.*;
-import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.crypto.SDBEncrypt;
+import edu.hku.sdb.crypto.SearchEncrypt;
 import edu.hku.sdb.parse.ColumnDefinition;
 import edu.hku.sdb.parse.TableName;
+import edu.hku.sdb.utility.ParserConstant;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Progressable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -39,6 +44,9 @@ import java.util.List;
  * 3. Upload file to HDFS.
  */
 public class UploadHandler {
+
+  private static final Logger LOG = LoggerFactory.getLogger(UploadHandler.class);
+
 
   private String HDFS_URL;
   private String HDFS_FILE_PATH;
@@ -63,8 +71,16 @@ public class UploadHandler {
   private String defaultRowFormat = "\\|";
   private String rowFormat = defaultRowFormat;
 
+  private SearchEncrypt searchEncrypt;
+
   //List<ColumnMeta> allCols;
 
+
+  public UploadHandler(MetaStore metaStore, TableName tableName) {
+    setMetaStore(metaStore);
+    setTableName(tableName);
+    searchEncrypt = SearchEncrypt.getInstance();
+  }
 
   public TableName getTableName() {
     return tableName;
@@ -115,10 +131,6 @@ public class UploadHandler {
     this.localMode = localMode;
   }
 
-  public UploadHandler(MetaStore metaStore, TableName tableName) {
-    setMetaStore(metaStore);
-    setTableName(tableName);
-  }
 
   public void upload() {
     BufferedWriter bufferedWriter = getBufferedWriter();
@@ -129,7 +141,7 @@ public class UploadHandler {
     prime1 = new BigInteger(dbMeta.getPrime1());
     prime2 = new BigInteger(dbMeta.getPrime2());
     g = new BigInteger(dbMeta.getG());
-    totient = Crypto.evaluateTotient(prime1, prime2);
+    totient = SDBEncrypt.evaluateTotient(prime1, prime2);
     nPlusOne = n.add(BigInteger.ONE);
     nSquared = n.multiply(n);
 
@@ -151,6 +163,7 @@ public class UploadHandler {
     } catch (IOException e) {
       e.printStackTrace();
     }
+
   }
 
   /**
@@ -192,11 +205,65 @@ public class UploadHandler {
     prime1 = new BigInteger(dbMeta.getPrime1());
     prime2 = new BigInteger(dbMeta.getPrime2());
     g = new BigInteger(dbMeta.getG());
-    totient = Crypto.evaluateTotient(prime1, prime2);
+    totient = SDBEncrypt.evaluateTotient(prime1, prime2);
     nPlusOne = n.add(BigInteger.ONE);
     nSquared = n.multiply(n);
 
     return processLine(line);
+  }
+
+  private void processLines(BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
+    try {
+      bufferedReader = new BufferedReader(new FileReader(sourceFile), 32768);
+      String line;
+
+      SdbColumnKey [] sdbColumnKeys = new SdbColumnKey[colMetas.size()];
+      SearchColumnKey [] searchColumnKeys = new SearchColumnKey[colMetas.size()];
+
+      for (int columnIndex = 0; columnIndex < colMetas.size(); columnIndex++) {
+        ColumnMeta colMeta = colMetas.get(columnIndex);
+
+        if(colMeta.getType() instanceof ScalarType) {
+          ScalarType type = (ScalarType) colMeta.getType();
+
+          switch (type.getType()) {
+            case INT:
+            case TINYINT:
+            case SMALLINT:
+            case BIGINT:
+            case DECIMAL:
+              // Assume SDB encryption scheme is used.
+              sdbColumnKeys[columnIndex] = new SdbColumnKey(colMeta.getM(), colMeta.getX());
+              continue;
+            case CHAR:
+            case VARCHAR:
+            case STRING:
+              // Assume search encryption scheme is used.
+              searchColumnKeys[columnIndex] = new SearchColumnKey(colMeta.getM(), colMeta.getX());
+              continue;
+            default:
+                continue;
+          }
+
+        }
+      }
+
+      // Read and process plaintext line by line
+      // TODO: find a way to reduce the redundant work.
+      while ((line = bufferedReader.readLine()) != null) {
+        String newLine = processLine(line);
+        bufferedWriter.write(newLine);
+      }
+
+
+
+      //close resources
+      bufferedReader.close();
+      bufferedWriter.close();
+      hdfs.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   private String processLine(String line) {
@@ -205,22 +272,25 @@ public class UploadHandler {
     String[] columnValues = line.split(rowFormat);
 
     //80 bit long rowId is sufficient
-    BigInteger rowId = Crypto.generatePositiveRandShort(prime1, prime2);
+    BigInteger rowId = SDBEncrypt.generatePositiveRandShort(prime1, prime2);
 
     // Each table has three extra column: row_id, r, s
     for (int columnIndex = 0; columnIndex < colMetas.size(); columnIndex++) {
       ColumnMeta colMeta = colMetas.get(columnIndex);
-      ColumnKey colKey = colMeta.getColkey();
+
       if (colMeta.getColName().equals(ColumnDefinition.ROW_ID_COLUMN_NAME)) {
-        BigInteger encryptedR = Crypto.SIESEncrypt(rowId, colKey.getM(), colKey
-                .getX(), n);
-        newLine = appendColumnString(newLine, columnValues.length, Crypto
+        SdbColumnKey colKey = new SdbColumnKey(colMeta.getM(), colMeta.getX());
+        BigInteger encryptedR = SDBEncrypt.SIESEncrypt(rowId, colKey.getM(),
+                colKey.getX(), n);
+        newLine = appendColumnString(newLine, columnValues.length, SDBEncrypt
                 .getSecureString(encryptedR));
       } else if (colMeta.getColName().equals(ColumnDefinition.R_COLUMN_NAME)) {
-        BigInteger randomInt = Crypto.generatePositiveRandShort(prime1, prime2);
+        BigInteger randomInt = SDBEncrypt.generatePositiveRandShort(prime1, prime2);
+        SdbColumnKey colKey = new SdbColumnKey(colMeta.getM(), colMeta.getX());
         String encryptedR = getSDBEncryptedValue(randomInt, rowId, colKey);
         newLine = appendColumnString(newLine, columnIndex, encryptedR);
       } else if (colMeta.getColName().equals(ColumnDefinition.S_COLUMN_NAME)) {
+        SdbColumnKey colKey = new SdbColumnKey(colMeta.getM(), colMeta.getX());
         String encryptedS = getSDBEncryptedValue(new BigInteger("1"), rowId, colKey);
         newLine = appendColumnString(newLine, columnIndex, encryptedS);
       } else if (colMeta.getType() instanceof ScalarType) {
@@ -229,7 +299,11 @@ public class UploadHandler {
 
         switch (type.getType()) {
           case INT:
+          case TINYINT:
+          case SMALLINT:
+          case BIGINT:
             if (colMeta.isSensitive()) {
+              SdbColumnKey colKey = new SdbColumnKey(colMeta.getM(), colMeta.getX());
               String encryptedValue = getSDBEncryptedValue(new BigInteger(plaintext),
                       rowId, colKey);
               newLine = appendColumnString(newLine, columnIndex, encryptedValue);
@@ -239,6 +313,7 @@ public class UploadHandler {
             break;
           case DECIMAL:
             if (colMeta.isSensitive()) {
+              SdbColumnKey colKey = new SdbColumnKey(colMeta.getM(), colMeta.getX());
               int scale = type.getScale();
               // TODO: overflow is not checked.
               float valueF = Float.valueOf(plaintext);
@@ -249,9 +324,38 @@ public class UploadHandler {
             } else
               newLine = appendColumnString(newLine, columnIndex, plaintext);
             break;
+          case CHAR:
+          case VARCHAR:
+          case STRING:
+            if (colMeta.isSensitive()) {
+              SearchColumnKey searchColKey = new SearchColumnKey(colMeta.getM(),colMeta.getX());
+              searchEncrypt.prkey = searchColKey.getPubKey();
+              // We only count letters and numbers as keyword.
+              String[] parts = plaintext.split("[^a-zA-Z0-9]+");
+              StringBuilder encryptedValues = new StringBuilder();
+              int count = 0;
+              for (int i = 0; i < parts.length; i++) {
+                if (parts[i].length() > 2) { // keyword with at least 3 chars
+                  if(count > 0)
+                    encryptedValues.append(ParserConstant.DEFAULT_COLLETION_DELIMETER);
+                  String value = searchEncrypt.encrypt(searchColKey.getPriKey(), count, parts[i]).toString();
+                  encryptedValues.append(Base64.encodeBase64String(searchEncrypt.encrypt(
+                          searchColKey.getPriKey(), count, parts[i])).trim());
+                  count++;
+                } else {
+                  LOG.warn("There is sensitive string with length less than 3.");
+                }
+              }
+              newLine = appendColumnString(newLine, columnIndex, encryptedValues);
+            }
+            else {
+              newLine = appendColumnString(newLine, columnIndex, plaintext);
+            }
+            break;
           default:
-            // They should not be sensitive
+            // They should not be sensitive, since we have do the checking before.
             newLine = appendColumnString(newLine, columnIndex, plaintext);
+            break;
         }
       } else {
         // Nothing to do now.
@@ -269,13 +373,14 @@ public class UploadHandler {
    * @param colKey
    * @return
    */
-  private String getSDBEncryptedValue(BigInteger value, BigInteger rowID, ColumnKey
+  private String getSDBEncryptedValue(BigInteger value, BigInteger rowID, SdbColumnKey
           colKey) {
-    BigInteger itemKey = Crypto.generateItemKeyOp2(colKey.getM(), colKey.getX(),
+    BigInteger itemKey = SDBEncrypt.generateItemKeyOp2(colKey.getM(), colKey
+                    .getX(),
             rowID, g, n, totient, prime1, prime2);
-    BigInteger encryptedValue = Crypto.encrypt(value, itemKey, n);
+    BigInteger encryptedValue = SDBEncrypt.encrypt(value, itemKey, n);
 
-    return Crypto.getSecureString(encryptedValue);
+    return SDBEncrypt.getSecureString(encryptedValue);
   }
 
   /**
@@ -289,7 +394,7 @@ public class UploadHandler {
   private StringBuffer appendColumnString(StringBuffer newLine, int columnIndex,
                                           Object plaintext) {
     if (columnIndex != 0) {
-      newLine.append(";");
+      newLine.append(ParserConstant.DEFAULT_FIELD_DELIMETER);
     }
     newLine.append(plaintext.toString());
     return newLine;

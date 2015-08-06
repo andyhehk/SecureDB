@@ -20,19 +20,17 @@ package edu.hku.sdb.parse;
 
 import edu.hku.sdb.catalog.MetaStore;
 
-/**
- * Created by Eric Haibin Lin on 25/3/15.
- */
 public class TableRowFormat implements ParseNode {
 
-  private String rowFieldFormat;
+  private String fieldDelimiter;
+  private String colletionDelimiter;
 
-  public String getRowFieldFormat() {
-    return rowFieldFormat;
+  public String getFieldDelimiter() {
+    return fieldDelimiter;
   }
 
-  public void setRowFieldFormat(String rowFieldFormat) {
-    this.rowFieldFormat = rowFieldFormat;
+  public void setFieldDelimiter(String fieldDelimiter) {
+    this.fieldDelimiter = fieldDelimiter;
   }
 
   @Override
@@ -42,13 +40,22 @@ public class TableRowFormat implements ParseNode {
 
   @Override
   public String toSql() {
-    return "ROW FORMAT DELIMITED FIELDS TERMINATED BY " + "'" + rowFieldFormat + "'";
+    StringBuilder sb = new StringBuilder();
+    sb.append("ROW FORMAT DELIMITED FIELDS TERMINATED BY " + "'" + fieldDelimiter + "'");
+    sb.append("\n");
+    sb.append("COLLECTION ITEMS TERMINATED BY " + "'" + colletionDelimiter + "'");
+    return sb.toString();
 
   }
 
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     return false;
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
   @Override
@@ -56,10 +63,17 @@ public class TableRowFormat implements ParseNode {
     if (!(object instanceof TableRowFormat)) {
       return false;
     }
-    if (!rowFieldFormat.equals(((TableRowFormat) object).getRowFieldFormat())) {
+    if (!fieldDelimiter.equals(((TableRowFormat) object).getFieldDelimiter())) {
       return false;
     }
     return true;
   }
 
+  public String getColletionDelimiter() {
+    return colletionDelimiter;
+  }
+
+  public void setColletionDelimiter(String colletionDelimiter) {
+    this.colletionDelimiter = colletionDelimiter;
+  }
 }

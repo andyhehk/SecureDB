@@ -15,14 +15,25 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.parse;
+package edu.hku.sdb.catalog;
 
-public abstract class Predicate extends Expr {
+public class ArrayType extends Type {
 
-  protected boolean isEqJoinConjunct;
+  private final Type itemType;
+
+  public ArrayType(Type itemType) {
+    this.itemType = itemType;
+  }
+
+  public Type getItemType() { return itemType; }
 
   @Override
-  public EncryptionScheme getEncrytionScheme() {
-    return null;
+  public String toSql() {
+    return String.format("ARRAY<%s>", itemType.toSql());
+  }
+
+  @Override
+  public String toString() {
+    return String.format("ARRAY<%s>", itemType.toString());
   }
 }

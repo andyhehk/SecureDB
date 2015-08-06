@@ -16,8 +16,6 @@
  */
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.ColumnKey;
-
 import static com.google.common.base.Preconditions.*;
 
 public class NormalArithmeticExpr extends Expr {
@@ -115,11 +113,16 @@ public class NormalArithmeticExpr extends Expr {
    * @see edu.hku.sdb.parse.Expr#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     return checkNotNull(getLeftExpr(), "Left expression is null.")
-            .involveSdbEncrytedCol()
+            .involveEncrytedCol()
             || checkNotNull(getRightExpr(), "Right expression is null.")
-            .involveSdbEncrytedCol();
+            .involveEncrytedCol();
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
   @Override

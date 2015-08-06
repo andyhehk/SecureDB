@@ -63,9 +63,14 @@ public class IntLiteral extends LiteralExpr {
      * @see edu.hku.sdb.parse.Expr#involveSdbCol()
      */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     // TODO Auto-generated method stub
     return false;
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
 }

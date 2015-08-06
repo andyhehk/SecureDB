@@ -17,8 +17,9 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.SdbColumnKey;
 import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.SearchColumnKey;
 import edu.hku.sdb.catalog.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,14 +38,17 @@ public class ColumnDefinition implements ParseNode {
   private Type rewrittenType;
   private boolean isSDBEncrypted = false;
   private String name;
-  private ColumnKey colKey;
+  // Column Key for SDB encryption scheme.
+  private SdbColumnKey sdbColKey;
+  // Column Key for Search ecnvryption scheme.
+  private SearchColumnKey searchColKey;
 
-  public ColumnKey getColumnKey() {
-    return colKey;
+  public SdbColumnKey getSDBColumnKey() {
+    return sdbColKey;
   }
 
-  public void setColumnKey(ColumnKey columnKey) {
-    this.colKey = columnKey;
+  public void setSDBColumnKey(SdbColumnKey sdbColKey) {
+    this.sdbColKey = sdbColKey;
   }
 
   public TableName getTableName() {
@@ -97,12 +101,12 @@ public class ColumnDefinition implements ParseNode {
   }
 
   public ColumnDefinition(String name, Type type, TableName tableName, boolean isSen,
-                          ColumnKey columnKey) {
+                          SdbColumnKey sdbColumnKey) {
     this.name = name;
     this.rewrittenType = this.originType = type;
     this.isSDBEncrypted = isSen;
     this.tableName = tableName;
-    this.colKey = columnKey;
+    this.sdbColKey = sdbColumnKey;
   }
 
   @Override
@@ -120,8 +124,13 @@ public class ColumnDefinition implements ParseNode {
   }
 
   @Override
-  public boolean involveSdbEncrytedCol() {
-    return false;
+  public boolean involveEncrytedCol() {
+    return isSDBEncrypted;
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
   @Override
@@ -154,19 +163,19 @@ public class ColumnDefinition implements ParseNode {
       return false;
     }
 
-    if ((colKey == null) != (fieldobj.colKey == null)) {
-      String err = (colKey == null) ? "Left column key is null, while "
-              + "right column key is: " + fieldobj.colKey : "Left column is: "
-              + colKey + ", while right column key is null";
+    if ((sdbColKey == null) != (fieldobj.sdbColKey == null)) {
+      String err = (sdbColKey == null) ? "Left column key is null, while "
+              + "right column key is: " + fieldobj.sdbColKey : "Left column is: "
+              + sdbColKey + ", while right column key is null";
       LOG.debug(err);
       return false;
     }
 
-    if (colKey != null) {
+    if (sdbColKey != null) {
       //TODO temporarily disabled for testing convenience
-      /*if (!colKey.equals(fieldobj.getColumnKey())) {
-        String err = "Left column key is: " + colKey + ";Right column key is: "
-                + fieldobj.colKey;
+      /*if (!sdbColKey.equals(fieldobj.getSDBColumnKey())) {
+        String err = "Left column key is: " + sdbColKey + ";Right column key is: "
+                + fieldobj.sdbColKey;
         LOG.debug(err);
         return false;
       }*/
@@ -176,5 +185,12 @@ public class ColumnDefinition implements ParseNode {
   }
 
 
+  public SearchColumnKey getSearchColKey() {
+    return searchColKey;
+  }
+
+  public void setSearchColKey(SearchColumnKey searchColKey) {
+    this.searchColKey = searchColKey;
+  }
 }
 

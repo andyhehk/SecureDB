@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.junit.Before;
 
 /**
- * Unit test for simple App.
+ * Unit test for parser.
  */
 public class ParserTest
 {
@@ -56,5 +56,17 @@ public class ParserTest
       e.printStackTrace();
     }
   }
+
+  @Test
+  public void testStringSearch() {
+    String command = "SELECT a FROM test WHERE b like \"%hello%\"";
+    try {
+      ASTNode createStatement = parseDriver.parse(command);
+      System.out.println(TestUtility.visualize(createStatement));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
+
 
 }

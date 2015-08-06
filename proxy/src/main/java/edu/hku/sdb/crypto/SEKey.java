@@ -15,44 +15,35 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.parse;
+package edu.hku.sdb.crypto;
 
-public class InPredicate extends Predicate {
+import java.security.NoSuchAlgorithmException;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
-   * )
-   */
-  public void analyze(BasicSemanticAnalyzer analyzer) throws SemanticException {
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+public class SEKey {
+
+  public SecretKey skey; // stream cipher key
+  public byte[] iv; // stream cipher key
+
+  // initiate a key (but is not completed), pls use SE.initKey()
+  public SEKey() throws SEException {
     // TODO Auto-generated method stub
+    KeyGenerator kgen;
+    try {
+      kgen = KeyGenerator.getInstance("AES");
+    } catch (NoSuchAlgorithmException e) {
+      // TODO Auto-generated catch block
+      throw new SEException("AES algorithm not found.");
+    }
+    kgen.init(SearchEncrypt.DEAULTT_LENGTH);
 
+    skey = kgen.generateKey();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.parse.ParseNode#toSql()
-   */
-  public String toSql() {
-    // TODO Auto-generated method stub
-    return null;
+  public SEKey(byte[] key) throws SEException {
+    skey = new SecretKeySpec(key, "AES");
   }
-
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
-   */
-  @Override
-  public boolean involveEncrytedCol() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public EncryptionScheme getEncrytionScheme() {
-    return null;
-  }
-
 }

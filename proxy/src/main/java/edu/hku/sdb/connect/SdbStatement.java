@@ -17,10 +17,7 @@
 
 package edu.hku.sdb.connect;
 
-import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.catalog.DBMeta;
-import edu.hku.sdb.catalog.MetaStore;
-import edu.hku.sdb.catalog.Type;
+import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.exec.*;
 import edu.hku.sdb.optimize.Optimizer;
 import edu.hku.sdb.optimize.RuleBaseOptimizer;
@@ -259,17 +256,38 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     List<ColumnDesc> columnDescList = new ArrayList<ColumnDesc>();
     TableName tableName = null;
 
-    for (ColumnDefinition fieldLiteral : createStmt.getColumnDefinitions()) {
-      ColumnDesc columnDesc = null;
-      Type type = null;
-      tableName = fieldLiteral.getTableName();
-      String columnName = fieldLiteral.getName();
+    for (ColumnDefinition colDefinition : createStmt.getColumnDefinitions()) {
+      ColumnDesc columnDesc;
+      Type type;
+      tableName = colDefinition.getTableName();
+      String columnName = colDefinition.getName();
       String alias = "";
-      boolean isSen = fieldLiteral.isSDBEncrypted();
-      type = fieldLiteral.getOriginType();
-      ColumnKey columnKey = fieldLiteral.getColumnKey();
-      columnDesc = new ColumnDesc(columnName, alias, type, isSen, columnKey);
-
+      boolean isSen = colDefinition.isSDBEncrypted();
+      type = colDefinition.getOriginType();
+      SdbColumnKey sdbColumnKey = colDefinition.getSDBColumnKey();
+      SearchColumnKey searchColumnKey = colDefinition.getSearchColKey();
+      // Only support encryption for scalar type.
+      if(type instanceof ScalarType) {
+        switch (((ScalarType) type).getType()) {
+          case INT:
+          case TINYINT:
+          case BIGINT:
+          case SMALLINT:
+          case DECIMAL:
+            columnDesc = new ColumnDesc(columnName, alias, type, isSen, sdbColumnKey);
+            break;
+          case CHAR:
+          case VARCHAR:
+          case STRING:
+            columnDesc = new ColumnDesc(columnName, alias, type, isSen, searchColumnKey);
+            break;
+          default:
+            columnDesc = new ColumnDesc(columnName, alias, type, isSen, null);
+            break;
+        }
+      }
+      else
+        columnDesc = new ColumnDesc(columnName, alias, type, isSen, null);
       columnDescList.add(columnDesc);
     }
     localCreateRowDesc.setSignature(columnDescList);
