@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LocalCreate extends PlanNode<LocalCreateDesc> {
+public class LocalCreate extends LocalPlanNode<LocalCreateDesc> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LocalCreate.class);
 

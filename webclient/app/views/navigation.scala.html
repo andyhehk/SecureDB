@@ -33,6 +33,7 @@
                     </div>
                     <!-- /input-group -->
                 </li>
+
                 @for(a_database <- databases) {
                 <li>
                     <a href="#"><i class="fa fa-table fa-fw"></i> @a_database.getDatabaseName() Database <span
@@ -41,7 +42,9 @@
                         @navigation_per_table(a_database.getTables())
                     </ul>
                 </li>
+
                 }
+
             </ul>
         </div>
         <!-- /.sidebar-collapse -->

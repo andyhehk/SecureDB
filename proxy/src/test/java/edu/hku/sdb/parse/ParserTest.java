@@ -68,5 +68,36 @@ public class ParserTest
     }
   }
 
+  @Test
+  public void testShowDBsStmt() {
+    String command = "SHOW DATABASES";
+    try {
+      ASTNode createStatement = parseDriver.parse(command);
+      System.out.println(TestUtility.visualize(createStatement));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
 
+  @Test
+  public void testShowTBLsStmt() {
+    String command = "SHOW TABLES";
+    try {
+      ASTNode createStatement = parseDriver.parse(command);
+      System.out.println(TestUtility.visualize(createStatement));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void testDescribeTblStmt() {
+    String command = "DESCRIBE test";
+    try {
+      ASTNode createStatement = parseDriver.parse(command);
+      System.out.println(TestUtility.visualize(createStatement));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
 }

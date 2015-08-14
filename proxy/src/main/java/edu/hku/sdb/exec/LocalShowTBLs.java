@@ -17,43 +17,50 @@
 
 package edu.hku.sdb.exec;
 
-import edu.hku.sdb.plan.LocalGroupbyFilterDesc;
+import edu.hku.sdb.catalog.DBMeta;
+import edu.hku.sdb.catalog.TableMeta;
+import edu.hku.sdb.plan.LocalShowTBLsDesc;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class LocalGroupbyFilter extends LocalPlanNode<LocalGroupbyFilterDesc> {
+public class LocalShowTBLs  extends LocalPlanNode<LocalShowTBLsDesc>  {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#init()
-   */
+  private final DBMeta dbMeta;
+  private BasicTupleSlot tupleSlot;
+  private boolean initilized = false;
+
+  public LocalShowTBLs(DBMeta dbMeta, RowDesc rowDesc) {
+    this.dbMeta = dbMeta;
+
+    nodeDesc = new LocalShowTBLsDesc();
+    nodeDesc.setRowDesc(rowDesc);
+  }
+
   @Override
   public void init() {
-    // TODO Auto-generated method stub
+    tupleSlot = new TupleSlot();
+    List<TableMeta> tblMetas = dbMeta.getTbls();
 
+    for(TableMeta tblMeta : tblMetas) {
+      List<Object> row = new ArrayList<>();
+      String tblName = tblMeta.getTblName();
+      row.add(tblName);
+      tupleSlot.addRow(row);
+      initilized = true;
+    }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#nextTuple()
-   */
   @Override
   public List<Object> nextTuple() {
-    // TODO Auto-generated method stub
-    return null;
+    if(!initilized)
+      init();
+
+    return tupleSlot.nextTuple();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#close()
-   */
   @Override
   public void close() {
-    // TODO Auto-generated method stub
 
   }
-
 }

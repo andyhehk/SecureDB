@@ -11,9 +11,6 @@ import views.html.sql_edit;
 
 import static play.data.Form.form;
 
-/**
- * Created by Eric Haibin Lin on 20/3/15.
- */
 public class Query extends Controller {
 
   static Form<models.QueryModel> queryModelForm = form(QueryModel.class);

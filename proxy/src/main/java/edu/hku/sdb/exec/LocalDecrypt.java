@@ -30,7 +30,7 @@ import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.util.List;
 
-public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
+public class LocalDecrypt extends LocalPlanNode<LocalDecryptDesc> {
 
   private static final Logger LOG = LoggerFactory
           .getLogger(LocalDecrypt.class);
@@ -52,17 +52,6 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
     nodeDesc.setRowDesc(rowDesc);
   }
 
-  public SDBResultSetMetaData getResultSetMetaData() {
-    SDBResultSetMetaData sdbMetaData = null;
-    try {
-      sdbMetaData = new SDBResultSetMetaData();
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    }
-    sdbMetaData.setColumnList(nodeDesc.getRowDesc().getSignature());
-    //Remove row_id before init resultSetMetaData for localDecrypt
-    return sdbMetaData;
-  }
 
   /*
    * (non-Javadoc)

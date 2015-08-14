@@ -17,6 +17,7 @@
 
 package edu.hku.sdb.exec;
 
+import edu.hku.sdb.connect.SDBResultSetMetaData;
 import edu.hku.sdb.connect.SdbResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +32,8 @@ public class Executor {
   public void execute(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
 
     // Only support LocalDecrypt node
-    if ((plan instanceof LocalDecrypt)) {
-      executeLocalDecrypt(plan, eState, resultSet);
+    if ((plan instanceof LocalPlanNode)) {
+      executeLocalPlan(plan, eState, resultSet);
     } else if (plan instanceof CreateTbl) {
       plan.init();
     } else if (plan instanceof RemoteSQL) {
@@ -41,7 +42,8 @@ public class Executor {
 
   }
 
-  private void executeLocalDecrypt(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
+  private void executeLocalPlan(PlanNode plan, ExecutionState eState, SdbResultSet
+          resultSet) {
     List<Object[]> resultList = resultSet.getTuple();
     List<Object> tuple = plan.nextTuple();
     while (tuple != null) {
@@ -51,12 +53,30 @@ public class Executor {
 
     try {
       //set client & server SdbMetaData
+
       if (resultSet.getResultSetMetaData() == null) {
-        resultSet.setSdbResultSetMetaData(((LocalDecrypt) plan).getResultSetMetaData());
+        SDBResultSetMetaData sdbMetaData = null;
+        try {
+          sdbMetaData = new SDBResultSetMetaData();
+        } catch (RemoteException e) {
+          e.printStackTrace();
+        }
+
+        sdbMetaData.setColumnList(plan.getNodeDesc().getRowDesc()
+                .getSignature());
+        resultSet.setSdbResultSetMetaData(sdbMetaData);
+
       }
-      //set server execution time
-      resultSet.setServerTotalTime(((LocalDecrypt) plan).getServerExecutionTime());
-      resultSet.setRemoteSQLQuery(((LocalDecrypt) plan).getRemoteSQLQuery());
+        //set server execution time
+      if(plan instanceof LocalDecrypt) {
+        resultSet.setServerTotalTime(((LocalDecrypt) plan).getServerExecutionTime());
+        resultSet.setRemoteSQLQuery(((LocalDecrypt) plan).getRemoteSQLQuery());
+      }
+      else {
+        resultSet.setServerTotalTime(0);
+        resultSet.setRemoteSQLQuery("");
+      }
+
     } catch (RemoteException e) {
       e.printStackTrace();
     }

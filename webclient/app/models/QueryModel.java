@@ -68,7 +68,7 @@ public class QueryModel {
       List<String> resultMetaRow = new ArrayList<>();
       try {
         ResultSetMetaData resultSetMetaData = resultSet.getResultSetMetaData();
-        for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
+        for (int i = 0; i < resultSetMetaData.getColumnCount(); i++) {
           resultMetaRow.add(resultSetMetaData.getColumnName(i));
         }
       } catch (RemoteException e) {

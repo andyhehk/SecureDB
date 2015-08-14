@@ -15,45 +15,43 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.exec;
+package edu.hku.sdb.parse;
 
-import edu.hku.sdb.plan.LocalGroupbyFilterDesc;
+import edu.hku.sdb.catalog.MetaStore;
 
-import java.util.List;
+public class DescribeStmt extends StatementBase {
 
-public class LocalGroupbyFilter extends LocalPlanNode<LocalGroupbyFilterDesc> {
+  private String tblName;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#init()
-   */
-  @Override
-  public void init() {
-    // TODO Auto-generated method stub
+  public DescribeStmt() {}
 
+  public DescribeStmt(String tblName) {
+    this.tblName = tblName;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#nextTuple()
-   */
+
   @Override
-  public List<Object> nextTuple() {
-    // TODO Auto-generated method stub
-    return null;
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#close()
-   */
   @Override
-  public void close() {
-    // TODO Auto-generated method stub
-
+  public String toSql() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("DESCRIBE ");
+    sb.append(tblName);
+    return sb.toString();
   }
 
+  @Override
+  public boolean involveEncrytedCol() {
+    return false;
+  }
+
+  public String getTblName() {
+    return tblName;
+  }
+
+  public void setTblName(String tblName) {
+    this.tblName = tblName;
+  }
 }

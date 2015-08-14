@@ -3,12 +3,8 @@
 # ~~~~
 
 # Home page
-GET        /                     controllers.Application.index()
-GET        /index.html           controllers.Application.index()
-GET        /client.html          controllers.Client.index()
-GET        /setting.html         controllers.Client.setting()
-GET        /database.html        controllers.Client.database()
-GET        /table.html           controllers.Client.table()
+GET        /                     controllers.Client.index()
+GET        /index.html           controllers.Client.index()
 GET        /upload.html          controllers.Client.upload()
 GET        /upload/create        controllers.Upload.create()
 GET        /upload/data          controllers.Upload.create()

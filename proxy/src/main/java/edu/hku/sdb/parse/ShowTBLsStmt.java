@@ -15,45 +15,24 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.exec;
+package edu.hku.sdb.parse;
 
-import edu.hku.sdb.plan.LocalGroupbyFilterDesc;
+import edu.hku.sdb.catalog.MetaStore;
 
-import java.util.List;
+public class ShowTBLsStmt extends StatementBase {
 
-public class LocalGroupbyFilter extends LocalPlanNode<LocalGroupbyFilterDesc> {
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#init()
-   */
   @Override
-  public void init() {
-    // TODO Auto-generated method stub
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#nextTuple()
-   */
   @Override
-  public List<Object> nextTuple() {
-    // TODO Auto-generated method stub
+  public String toSql() {
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#close()
-   */
   @Override
-  public void close() {
-    // TODO Auto-generated method stub
-
+  public boolean involveEncrytedCol() {
+    return false;
   }
-
 }

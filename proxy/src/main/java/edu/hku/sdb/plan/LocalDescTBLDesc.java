@@ -15,45 +15,9 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.exec;
+package edu.hku.sdb.plan;
 
-import edu.hku.sdb.plan.LocalGroupbyFilterDesc;
 
-import java.util.List;
-
-public class LocalGroupbyFilter extends LocalPlanNode<LocalGroupbyFilterDesc> {
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#init()
-   */
-  @Override
-  public void init() {
-    // TODO Auto-generated method stub
-
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#nextTuple()
-   */
-  @Override
-  public List<Object> nextTuple() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.hku.sdb.exec.PlanNode#close()
-   */
-  @Override
-  public void close() {
-    // TODO Auto-generated method stub
-
-  }
+public class LocalDescTBLDesc extends PlanNodeDesc {
 
 }

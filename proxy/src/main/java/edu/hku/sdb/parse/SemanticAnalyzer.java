@@ -63,6 +63,15 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       case HiveParser.TOK_LOAD:
         parseTree = buildLoadStmt(tree);
         break;
+      case HiveParser.TOK_SHOWTABLES:
+        parseTree = new ShowTBLsStmt();
+        break;
+      case HiveParser.TOK_SHOWDATABASES:
+        parseTree = new ShowDBsStmt();
+        break;
+      case HiveParser.TOK_DESCTABLE:
+        parseTree = buildDescTBLStamt(tree);
+        break;
     }
 
     if (parseTree != null)
@@ -92,6 +101,23 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     }
     LoadStmt loadStmt = new LoadStmt(filePath, tableName);
     return loadStmt;
+  }
+
+  private ParseNode buildDescTBLStamt(ASTNode tree) {
+    String tblName = null;
+    for (int i = 0; i < tree.getChildCount(); i++) {
+      ASTNode child = (ASTNode) tree.getChild(i);
+      switch (child.getType()) {
+        case HiveParser.TOK_TABTYPE:
+          tblName = child.getChild(0).getText();
+          continue;
+        default:
+          continue;
+      }
+    }
+
+    DescribeStmt describeStmt = new DescribeStmt(tblName);
+    return describeStmt;
   }
 
   /**
