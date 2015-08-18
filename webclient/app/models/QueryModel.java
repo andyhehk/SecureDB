@@ -35,6 +35,9 @@ public class QueryModel {
       if (!query.toLowerCase().contains("create")) {
         hasResult = true;
       }
+      else {
+        Databases.setUpdated(false);
+      }
       profiler = statement.getProfiler();
     } catch (RemoteException e) {
       e.printStackTrace();

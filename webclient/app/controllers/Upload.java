@@ -1,8 +1,6 @@
 package controllers;
 
-import models.Database;
-import models.QueryModel;
-import models.UploadTableModel;
+import models.*;
 import play.data.Form;
 import play.libs.Scala;
 import play.mvc.Controller;
@@ -21,16 +19,16 @@ public class Upload extends Controller {
   static Form<UploadTableModel> uploadTableModelForm = form(UploadTableModel.class);
 
   public static Result edit() {
-    return ok(table_create.render("Create Table | SecureDB", "Create Table Editor", Database.getDefaultDatabases(), Scala.Option((UploadTableModel) null)));
+    return ok(table_create.render("Create Table | SecureDB", "Create Table Editor", Databases.getDatabases(), Scala.Option((UploadTableModel) null)));
   }
 
   public static Result create() {
-    return ok(table_upload.render("Choose Data Source | SecureDB", "Upload Data", Database.getDefaultDatabases(), Scala.Option((UploadTableModel) null)));
+    return ok(table_upload.render("Choose Data Source | SecureDB", "Upload Data", Databases.getDatabases(), Scala.Option((UploadTableModel) null)));
   }
 
   public static Result upload() {
     UploadTableModel uploadTableModel = uploadTableModelForm.bindFromRequest().get();
     uploadTableModel.init();
-    return ok(sql_edit.render("Edit Query | SecureDB", "SQL Editor", Database.getDefaultDatabases(), Scala.Option((QueryModel) null)));
+    return ok(sql_edit.render("Edit Query | SecureDB", "SQL Editor", Databases.getDatabases(), Scala.Option((QueryModel) null)));
   }
 }
