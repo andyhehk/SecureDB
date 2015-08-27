@@ -17,8 +17,12 @@
 
 package edu.hku.sdb.utility;
 
+
 public class ParserConstant {
 
   public static String FUNCTION_COUNT = "count";
   public static String FUNCTION_SUM = "sum";
+
+  public static String DEFAULT_FIELD_DELIMETER = ";";
+  public static String DEFAULT_COLLETION_DELIMETER = ",";
 }

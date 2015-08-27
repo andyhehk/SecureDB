@@ -21,7 +21,7 @@ import edu.hku.sdb.plan.LocalJoinDesc;
 
 import java.util.List;
 
-public class LocalJoin extends PlanNode<LocalJoinDesc> {
+public class LocalJoin extends LocalPlanNode<LocalJoinDesc> {
 
   /*
    * (non-Javadoc)

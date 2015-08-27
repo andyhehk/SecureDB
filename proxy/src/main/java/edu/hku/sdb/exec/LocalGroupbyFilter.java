@@ -21,7 +21,7 @@ import edu.hku.sdb.plan.LocalGroupbyFilterDesc;
 
 import java.util.List;
 
-public class LocalGroupbyFilter extends PlanNode<LocalGroupbyFilterDesc> {
+public class LocalGroupbyFilter extends LocalPlanNode<LocalGroupbyFilterDesc> {
 
   /*
    * (non-Javadoc)

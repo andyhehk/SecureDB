@@ -20,4 +20,9 @@ package edu.hku.sdb.parse;
 public abstract class Predicate extends Expr {
 
   protected boolean isEqJoinConjunct;
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
+  }
 }

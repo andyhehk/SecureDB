@@ -17,8 +17,8 @@
 
 package edu.hku.sdb.upload;
 
-import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.catalog.SdbColumnKey;
+import edu.hku.sdb.crypto.SDBEncrypt;
 
 import java.math.BigInteger;
 
@@ -36,7 +36,7 @@ public class IntegerPlaintext extends AbstractPlaintext {
   private BigInteger prime2;
   private BigInteger totient;
   private BigInteger rowId;
-  private ColumnKey columnKey;
+  private SdbColumnKey sdbColumnKey;
 
   public BigInteger getTotient() {
     return totient;
@@ -46,12 +46,12 @@ public class IntegerPlaintext extends AbstractPlaintext {
     this.totient = totient;
   }
 
-  public ColumnKey getColumnKey() {
-    return columnKey;
+  public SdbColumnKey getSdbColumnKey() {
+    return sdbColumnKey;
   }
 
-  public void setColumnKey(ColumnKey columnKey) {
-    this.columnKey = columnKey;
+  public void setSdbColumnKey(SdbColumnKey sdbColumnKey) {
+    this.sdbColumnKey = sdbColumnKey;
   }
 
   public BigInteger getRowId() {
@@ -107,9 +107,11 @@ public class IntegerPlaintext extends AbstractPlaintext {
     if (!isSensitive) {
       return plainText;
     }
-    BigInteger itemKey = Crypto.generateItemKeyOp2(columnKey.getM(), columnKey.getX(), rowId, g, n, totient, prime1, prime2);
-    BigInteger encryptedValue = Crypto.encrypt(new BigInteger(plainText), itemKey, n);
+    BigInteger itemKey = SDBEncrypt.generateItemKeyOp2(sdbColumnKey.getM(),
+            sdbColumnKey.getX(), rowId, g, n, totient, prime1, prime2);
+    BigInteger encryptedValue = SDBEncrypt.encrypt(new BigInteger(plainText),
+            itemKey, n);
 
-    return Crypto.getSecureString(encryptedValue);
+    return SDBEncrypt.getSecureString(encryptedValue);
   }
 }

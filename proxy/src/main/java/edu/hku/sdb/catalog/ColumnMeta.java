@@ -119,14 +119,15 @@ public class ColumnMeta {
   }
 
   public ColumnMeta(String dbName, String tblName, String colName,
-                    String typeName, boolean isSen, ColumnKey colKey) {
+                    String typeName, boolean isSen, String m, String x) {
     // names should be case insensitive
     this.setDbName(dbName.toLowerCase());
     this.setTblName(tblName.toLowerCase());
     this.setColName(colName.toLowerCase());
     this.typeName = typeName;
     this.isSensitive = isSen;
-    this.setColkey(colKey);
+    this.m = m;
+    this.x = x;
   }
 
   public TableMeta getTableMeta() {
@@ -194,6 +195,23 @@ public class ColumnMeta {
   }
 
 
+  public String getM() {
+    return m;
+  }
+
+  public String getX() {
+    return x;
+  }
+
+  public void setM(String m) {
+    this.m = m;
+  }
+
+  public void setX(String x) {
+    this.x = x;
+  }
+
+
   /**
    * @return the isSensitive
    */
@@ -208,25 +226,25 @@ public class ColumnMeta {
     this.isSensitive = isSensitive;
   }
 
-  /**
-   * @return the colkey
-   */
-  public ColumnKey getColkey() {
-    if (m != null && x != null)
-      return new ColumnKey(m, x);
-    return null;
-  }
-
-  /**
-   * @param colkey the colkey to set
-   */
-  public void setColkey(ColumnKey colkey) {
-    if(colkey != null) {
-      if(colkey.getM() != null && colkey.getX() != null) {
-        this.m = colkey.getM().toString();
-        this.x = colkey.getX().toString();
-      }
-    }
-  }
+//  /**
+//   * @return the colkey
+//   */
+//  public ColumnKey getColkey() {
+//    if (m != null && x != null)
+//      return new ColumnKey(m, x);
+//    return null;
+//  }
+//
+//  /**
+//   * @param colkey the colkey to set
+//   */
+//  public void setColkey(ColumnKey colkey) {
+//    if(colkey != null) {
+//      if(colkey.getM() != null && colkey.getX() != null) {
+//        this.m = colkey.getM().toString();
+//        this.x = colkey.getX().toString();
+//      }
+//    }
+//  }
 
 }

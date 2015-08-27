@@ -24,15 +24,15 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * Unit test for simple Crypto functions.
+ * Unit test for simple SDBEncrypt functions.
  */
-public class CryptoTest extends TestCase {
+public class SDBEncryptTest extends TestCase {
   /**
    * Create the test case
    *
    * @param testName name of the test case
    */
-  public CryptoTest(String testName) {
+  public SDBEncryptTest(String testName) {
     super(testName);
   }
 
@@ -40,58 +40,58 @@ public class CryptoTest extends TestCase {
    * @return the suite of tests being tested
    */
   public static Test suite() {
-    return new TestSuite(CryptoTest.class);
+    return new TestSuite(SDBEncryptTest.class);
   }
 
 
   public void testgeneratePositiveRandPrimeShouldNotEqual() {
-    BigInteger firstPrime = Crypto.generateRandPrime();
-    BigInteger secondPrime = Crypto.generateRandPrime();
+    BigInteger firstPrime = SDBEncrypt.generateRandPrime();
+    BigInteger secondPrime = SDBEncrypt.generateRandPrime();
     assertTrue(!firstPrime.equals(secondPrime));
   }
 
   public void testevaluateTotient1() {
-    BigInteger totient = Crypto.evaluateTotient(new BigInteger("5"),
+    BigInteger totient = SDBEncrypt.evaluateTotient(new BigInteger("5"),
             new BigInteger("7"));
     assertEquals(totient, new BigInteger("24"));
   }
 
   public void testevaluateTotient2() {
-    BigInteger totient = Crypto.evaluateTotient(new BigInteger("107"),
+    BigInteger totient = SDBEncrypt.evaluateTotient(new BigInteger("107"),
             new BigInteger("17"));
     assertEquals(totient, new BigInteger("1696"));
   }
 
   public void testevaluateTotient3() {
-    BigInteger totient = Crypto.evaluateTotient(new BigInteger(
+    BigInteger totient = SDBEncrypt.evaluateTotient(new BigInteger(
             "20686139707"), new BigInteger("25458163831"));
 
     assertEquals(totient, new BigInteger("526631133645616033980"));
   }
 
   public void testevaluateTotient4() {
-    BigInteger totient = Crypto.evaluateTotient(new BigInteger(
+    BigInteger totient = SDBEncrypt.evaluateTotient(new BigInteger(
             "-4294967296122"), new BigInteger("3949673333612"));
     assertEquals(totient, new BigInteger("-16963717798228352405890153"));
   }
 
   public void testgeneratePositiveRandShouldNotEqual() {
-    BigInteger p = Crypto.generateRandPrime();
-    BigInteger q = Crypto.generateRandPrime();
-    BigInteger firstRand = Crypto.generatePositiveRand(p, q);
-    BigInteger secondRand = Crypto.generatePositiveRand(p, q);
+    BigInteger p = SDBEncrypt.generateRandPrime();
+    BigInteger q = SDBEncrypt.generateRandPrime();
+    BigInteger firstRand = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger secondRand = SDBEncrypt.generatePositiveRand(p, q);
     assertTrue(!firstRand.equals(secondRand));
   }
 
   public void testEncrypt1() {
 
-    BigInteger cipherText = Crypto.encrypt(new BigInteger("4"),
+    BigInteger cipherText = SDBEncrypt.encrypt(new BigInteger("4"),
             new BigInteger("32"), new BigInteger("35"));
     assertEquals(new BigInteger("22"), cipherText);
   }
 
   public void testEncrypt3() {
-    BigInteger cipherText = Crypto
+    BigInteger cipherText = SDBEncrypt
             .encrypt(
                     new BigInteger("20686139707"),
                     new BigInteger(
@@ -105,14 +105,14 @@ public class CryptoTest extends TestCase {
   }
 
   public void testDecrypt1() {
-    BigInteger plainText = Crypto.decrypt(new BigInteger("22"),
+    BigInteger plainText = SDBEncrypt.decrypt(new BigInteger("22"),
             new BigInteger("32"), new BigInteger("35"));
 
     assertEquals(new BigInteger("4"), plainText);
   }
 
   public void testDecrypt4() {
-    BigInteger plainText = Crypto
+    BigInteger plainText = SDBEncrypt
             .decrypt(
                     new BigInteger(
                             "40870081171282830036419899383381257632049978678992607574997430529949742823087577192233511408144692015947301475184502467724150762868280683517282246740392304400281975465348931710599462200475793078032465916373673267276591714688255352812876413139242500075515787843517783389449586351104283866307778172508927390700"),
@@ -125,56 +125,57 @@ public class CryptoTest extends TestCase {
 
 
   public void testSDBEncryptDecrypt() {
-    BigInteger p = Crypto.generateRandPrime();
-    BigInteger q = Crypto.generateRandPrime();
+    BigInteger p = SDBEncrypt.generateRandPrime();
+    BigInteger q = SDBEncrypt.generateRandPrime();
     BigInteger n = p.multiply(q);
-    BigInteger r = Crypto.generatePositiveRand(p, q);
-    BigInteger g = Crypto.generatePositiveRand(p, q);
-    BigInteger totient = Crypto.evaluateTotient(p, q);
+    BigInteger r = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger g = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger totient = SDBEncrypt.evaluateTotient(p, q);
 
-    BigInteger ma = Crypto.generatePositiveRand(p, q);
-    BigInteger xa = Crypto.generatePositiveRand(p, q);
+    BigInteger ma = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger xa = SDBEncrypt.generatePositiveRand(p, q);
 
-    BigInteger plaintext = Crypto.generatePositiveRand(p, q);
-    BigInteger ak = Crypto.generateItemKeyOp2(ma, xa, r, g, n, totient, p, q);
-    BigInteger ae = Crypto.encrypt(plaintext, ak, n);
-    assertEquals(plaintext, Crypto.decrypt(ae, ak, n));
+    BigInteger plaintext = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger ak = SDBEncrypt.generateItemKeyOp2(ma, xa, r, g, n, totient, p, q);
+    BigInteger ae = SDBEncrypt.encrypt(plaintext, ak, n);
+    assertEquals(plaintext, SDBEncrypt.decrypt(ae, ak, n));
   }
 
   public void testSIESEncryptDecrypt() {
-    BigInteger p = Crypto.generateRandPrime();
-    BigInteger q = Crypto.generateRandPrime();
+    BigInteger p = SDBEncrypt.generateRandPrime();
+    BigInteger q = SDBEncrypt.generateRandPrime();
     BigInteger n = p.multiply(q);
 
-    BigInteger ma = Crypto.generatePositiveRand(p, q);
-    BigInteger xa = Crypto.generatePositiveRand(p, q);
+    BigInteger ma = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger xa = SDBEncrypt.generatePositiveRand(p, q);
 
-    BigInteger plaintext = Crypto.generatePositiveRandShort(p, q);
-    BigInteger ae = Crypto.SIESEncrypt(plaintext, ma, xa, n);
-    assertEquals(plaintext, Crypto.SIESDecrypt(ae, ma, xa, n));
+    BigInteger plaintext = SDBEncrypt.generatePositiveRandShort(p, q);
+    BigInteger ae = SDBEncrypt.SIESEncrypt(plaintext, ma, xa, n);
+    assertEquals(plaintext, SDBEncrypt.SIESDecrypt(ae, ma, xa, n));
   }
 
   public void testSIESAddtiveHomomorphic() {
-    BigInteger p = Crypto.generateRandPrime();
-    BigInteger q = Crypto.generateRandPrime();
+    BigInteger p = SDBEncrypt.generateRandPrime();
+    BigInteger q = SDBEncrypt.generateRandPrime();
     BigInteger n = p.multiply(q);
 
-    BigInteger ma = Crypto.generatePositiveRand(p, q);
-    BigInteger xa = Crypto.generatePositiveRand(p, q);
-    BigInteger xb = Crypto.generatePositiveRand(p, q);
-    BigInteger totient = Crypto.evaluateTotient(p, q);
+    BigInteger ma = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger xa = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger xb = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger totient = SDBEncrypt.evaluateTotient(p, q);
 
-    BigInteger plaintext1 = Crypto.generatePositiveRandShort(p, q);
-    BigInteger plaintext2 = Crypto.generatePositiveRandShort(p, q);
+    BigInteger plaintext1 = SDBEncrypt.generatePositiveRandShort(p, q);
+    BigInteger plaintext2 = SDBEncrypt.generatePositiveRandShort(p, q);
 
-    BigInteger ae1 = Crypto.SIESEncrypt(plaintext1, ma, xa, n);
-    BigInteger ae2 = Crypto.SIESEncrypt(plaintext2, ma, xb, n);
+    BigInteger ae1 = SDBEncrypt.SIESEncrypt(plaintext1, ma, xa, n);
+    BigInteger ae2 = SDBEncrypt.SIESEncrypt(plaintext2, ma, xb, n);
 
     System.out.println(plaintext1.add(plaintext2));
-    System.out.println(Crypto.SIESDecrypt(ae1.add(ae2).mod
+    System.out.println(SDBEncrypt.SIESDecrypt(ae1.add(ae2).mod
             (n), ma, xa.add(xb).mod(totient), n));
 
-    assertEquals(plaintext1.add(plaintext2), Crypto.SIESDecrypt(ae1.add(ae2).mod
+    assertEquals(plaintext1.add(plaintext2), SDBEncrypt.SIESDecrypt(ae1.add
+            (ae2).mod
             (n), ma, xa.add(xb), n));
   }
 
@@ -198,7 +199,7 @@ public class CryptoTest extends TestCase {
 
     //generate new p, q for column A's keyUpdate operation, target column key
     // is columnKey C
-    BigInteger pq_a[] = Crypto.keyUpdateClient(ma, mc, ms, xa, xc, xs, p, q);
+    BigInteger pq_a[] = SDBEncrypt.keyUpdateClient(ma, mc, ms, xa, xc, xs, p, q);
 
     //p = 5 * ( 4 - 2 ) | mod 24 = 5 * 2 | mod 24 = 10 mod 24 = 10
     //q = 2 * 4^10 * 6 | mod 35 = (2 mod 35) * (11) * (6 mod 35) | mod 35 =
@@ -209,28 +210,28 @@ public class CryptoTest extends TestCase {
 
   public void testKeyUpdateClientLarge() {
     //A prime number p
-    BigInteger p = Crypto.generateRandPrime();
+    BigInteger p = SDBEncrypt.generateRandPrime();
     //A prime number q
-    BigInteger q = Crypto.generateRandPrime();
+    BigInteger q = SDBEncrypt.generateRandPrime();
     //n = p * q
     BigInteger n = p.multiply(q);
-    BigInteger totient = Crypto.evaluateTotient(p, q);
+    BigInteger totient = SDBEncrypt.evaluateTotient(p, q);
 
     //column key for column A
-    BigInteger ma = Crypto.generatePositiveRand(p, q);
-    BigInteger xa = Crypto.generatePositiveRand(p, q);
+    BigInteger ma = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger xa = SDBEncrypt.generatePositiveRand(p, q);
 
     //column key for additional column S
-    BigInteger ms = Crypto.generatePositiveRand(p, q);
-    BigInteger xs = Crypto.generatePositiveRand(p, q);
+    BigInteger ms = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger xs = SDBEncrypt.generatePositiveRand(p, q);
 
     //new column key C for key update operation
-    BigInteger mc = Crypto.generatePositiveRand(p, q);
-    BigInteger xc = Crypto.generatePositiveRand(p, q);
+    BigInteger mc = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger xc = SDBEncrypt.generatePositiveRand(p, q);
 
     //generate new p, q for column A's keyUpdate operation, target column key
     // is columnKey C
-    BigInteger pq_a[] = Crypto.keyUpdateClient(ma, mc, ms, xa, xc, xs, p, q);
+    BigInteger pq_a[] = SDBEncrypt.keyUpdateClient(ma, mc, ms, xa, xc, xs, p, q);
 
     assertEquals(xs.modInverse(totient).multiply((xc.subtract(xa)).mod
             (totient)).mod(totient), pq_a[0]);

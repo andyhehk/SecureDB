@@ -40,7 +40,7 @@
         <!-- Build properties -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sdb.path.to.root>.</sdb.path.to.root>
-        <java.compile.version>1.7</java.compile.version>
+        <java.compile.version>1.8</java.compile.version>
         <output.lib.dir>${project.basedir}/${sdb.path.to.root}/lib/</output.lib.dir>
 
         <!-- Plugin and Plugin Dependency Versions -->

@@ -17,10 +17,7 @@
 
 package edu.hku.sdb.connect;
 
-import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.catalog.DBMeta;
-import edu.hku.sdb.catalog.MetaStore;
-import edu.hku.sdb.catalog.Type;
+import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.exec.*;
 import edu.hku.sdb.optimize.Optimizer;
 import edu.hku.sdb.optimize.RuleBaseOptimizer;
@@ -78,40 +75,25 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     // get execution start time
     long startTimeStamp = System.currentTimeMillis();
 
-    // Parse & analyse
+      // Parse & analyse
     ParseNode analyzedNode = getParseNode(query);
+
 
     if (analyzedNode instanceof LoadStmt) {
       // another programme encrypts & uploads the data
-      TableName tableName = ((LoadStmt) analyzedNode).getTableName();
-      UploadHandler uploadHandler = new UploadHandler(metaDB, tableName);
-      String sourceFilePath = ((LoadStmt) analyzedNode).getFilePath();
-      uploadHandler.setSourceFile(sourceFilePath);
+      sdbResultSet = executeLoadStmt((LoadStmt) analyzedNode);
 
-      //TODO should read from config file instead of hard code
-      String serverFilePath = "/user/andy/" + tableName.getName() + new Random().nextInt(60000) + ".txt";
-      String hdfsURL = "hdfs://localhost:9000";
-      uploadHandler.setHDFS_URL(hdfsURL);
-      uploadHandler.setHDFS_FILE_PATH(hdfsURL + serverFilePath);
-
-      LOG.info("Loading data from "  + sourceFilePath + " to server " + hdfsURL);
-
-      ProfileUtil profileUtil = new ProfileUtil();
-      uploadHandler.upload();
-      LOG.info("Upload time: " + profileUtil.getDuration());
-
-      ((LoadStmt) analyzedNode).setFilePath(hdfsURL + serverFilePath);
-      String loadQuery = analyzedNode.toSql();
-      LOG.info(loadQuery);
-      try {
-        java.sql.Statement statement = serverConnection.createStatement();
-        statement.executeUpdate(loadQuery);
-      } catch (SQLException e) {
-        e.printStackTrace();
-      }
-      return null;
-
-    } else {
+    }
+    else if (analyzedNode instanceof ShowTBLsStmt) {
+      sdbResultSet = executeShowTBLsStmt((ShowTBLsStmt) analyzedNode);
+    }
+    else if (analyzedNode instanceof DescribeStmt) {
+      sdbResultSet = executeDescribeStmt((DescribeStmt) analyzedNode);
+    }
+    else if (analyzedNode instanceof DropTblStmt) {
+      sdbResultSet = executeDropTblStmt((DropTblStmt) analyzedNode);
+    }
+    else {
 
       long rewriteStartTimestamp = System.currentTimeMillis();
       // Rewrite
@@ -140,8 +122,8 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
 
       LOG.info(sdbProfiler.toString());
 
-      return sdbResultSet;
     }
+    return sdbResultSet;
   }
 
   private void setExecutionTime(long startTimeStamp) {
@@ -201,7 +183,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     }
   }
 
-  private ParseNode getParseNode(String query) throws RemoteException {
+  private ParseNode getParseNode(String query) throws RemoteException  {
     LOG.info("Parsing " + query);
 
     long parseStartTimestamp = System.currentTimeMillis();
@@ -219,6 +201,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       sdbProfiler.setClientAnalyseTime(analyseEndTimestamp - parseEndTimestamp);
     } catch (ParseException e) {
       e.printStackTrace();
+      throw new RemoteException(e.getMessage());
     } catch (SemanticException e) {
       e.printStackTrace();
       throw new RemoteException(e.getMessage());
@@ -232,7 +215,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
 
   @Override
   public Profiler getProfiler() throws RemoteException {
-    return (Profiler) sdbResultSet;
+    return sdbResultSet;
   }
 
   public MetaStore getMetaDB() {
@@ -259,17 +242,38 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     List<ColumnDesc> columnDescList = new ArrayList<ColumnDesc>();
     TableName tableName = null;
 
-    for (ColumnDefinition fieldLiteral : createStmt.getColumnDefinitions()) {
-      ColumnDesc columnDesc = null;
-      Type type = null;
-      tableName = fieldLiteral.getTableName();
-      String columnName = fieldLiteral.getName();
+    for (ColumnDefinition colDefinition : createStmt.getColumnDefinitions()) {
+      ColumnDesc columnDesc;
+      Type type;
+      tableName = colDefinition.getTableName();
+      String columnName = colDefinition.getName();
       String alias = "";
-      boolean isSen = fieldLiteral.isSDBEncrypted();
-      type = fieldLiteral.getOriginType();
-      ColumnKey columnKey = fieldLiteral.getColumnKey();
-      columnDesc = new ColumnDesc(columnName, alias, type, isSen, columnKey);
-
+      boolean isSen = colDefinition.isSDBEncrypted();
+      type = colDefinition.getOriginType();
+      SdbColumnKey sdbColumnKey = colDefinition.getSDBColumnKey();
+      SearchColumnKey searchColumnKey = colDefinition.getSearchColKey();
+      // Only support encryption for scalar type.
+      if(type instanceof ScalarType) {
+        switch (((ScalarType) type).getType()) {
+          case INT:
+          case TINYINT:
+          case BIGINT:
+          case SMALLINT:
+          case DECIMAL:
+            columnDesc = new ColumnDesc(columnName, alias, type, isSen, sdbColumnKey);
+            break;
+          case CHAR:
+          case VARCHAR:
+          case STRING:
+            columnDesc = new ColumnDesc(columnName, alias, type, isSen, searchColumnKey);
+            break;
+          default:
+            columnDesc = new ColumnDesc(columnName, alias, type, isSen, null);
+            break;
+        }
+      }
+      else
+        columnDesc = new ColumnDesc(columnName, alias, type, isSen, null);
       columnDescList.add(columnDesc);
     }
     localCreateRowDesc.setSignature(columnDescList);
@@ -278,5 +282,82 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     LocalCreate localCreate = new LocalCreate(metaStore, tableName, localCreateRowDesc);
     CreateTbl createTbl = new CreateTbl(remoteUpdate, localCreate);
     return createTbl;
+  }
+
+  public SdbResultSet executeLoadStmt(LoadStmt loadStmt) throws RemoteException {
+    // another programme encrypts & uploads the data
+    TableName tableName = loadStmt.getTableName();
+    UploadHandler uploadHandler = new UploadHandler(metaDB, tableName);
+    String sourceFilePath = loadStmt.getFilePath();
+    uploadHandler.setSourceFile(sourceFilePath);
+
+    //TODO should read from config file instead of hard code
+    String serverFilePath = "/user/andy/" + tableName.getName() + new Random().nextInt(60000) + ".txt";
+    String hdfsURL = "hdfs://localhost:9000";
+    uploadHandler.setHDFS_URL(hdfsURL);
+    uploadHandler.setHDFS_FILE_PATH(hdfsURL + serverFilePath);
+
+    LOG.info("Loading data from "  + sourceFilePath + " to server " + hdfsURL);
+
+    ProfileUtil profileUtil = new ProfileUtil();
+    uploadHandler.upload();
+    LOG.info("Upload time: " + profileUtil.getDuration());
+
+    loadStmt.setFilePath(hdfsURL + serverFilePath);
+    String loadQuery = loadStmt.toSql();
+    LOG.info(loadQuery);
+    try {
+      java.sql.Statement statement = serverConnection.createStatement();
+      statement.executeUpdate(loadQuery);
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public SdbResultSet executeShowTBLsStmt(ShowTBLsStmt showTBLsStmt) throws RemoteException {
+    RowDesc rowDesc = new RowDesc();
+    List<ColumnDesc> columnDescs = new ArrayList<>();
+
+    ColumnDesc columnDesc = new ColumnDesc("Table Name", "", null, false, null);
+    columnDescs.add(columnDesc);
+    rowDesc.setSignature(columnDescs);
+
+    PlanNode localShowTBLs = new LocalShowTBLs(dbMeta, rowDesc);
+
+    return getSdbResultSet(localShowTBLs);
+  }
+
+  public SdbResultSet executeDescribeStmt(DescribeStmt describeStmt) throws RemoteException {
+    RowDesc rowDesc = new RowDesc();
+    List<ColumnDesc> columnDescs = new ArrayList<>();
+
+    ColumnDesc columnDesc = new ColumnDesc("Column Name", "", null, false, null);
+    columnDescs.add(columnDesc);
+    columnDesc = new ColumnDesc("Data Type", "", null, false, null);
+    columnDescs.add(columnDesc);
+    columnDesc = new ColumnDesc("Sensitive", "", null, false, null);
+    columnDescs.add(columnDesc);
+    rowDesc.setSignature(columnDescs);
+
+    String tblName = describeStmt.getTblName();
+
+    TableMeta tblMeta = metaDB.getTbl(dbMeta.getName(), tblName);
+
+    PlanNode localDescTBL = new LocalDescTBL(tblMeta, rowDesc);
+
+    return getSdbResultSet(localDescTBL);
+  }
+
+  public SdbResultSet executeDropTblStmt(DropTblStmt dropTblStmt) throws RemoteException {
+    String tblName = dropTblStmt.getTblName();
+
+    PlanNode localDropTBL = new LocalDropTBL(metaDB,dbMeta.getName(), tblName, null);
+
+    RemoteUpdate remoteUpdate = new RemoteUpdate(dropTblStmt.toSql(), serverConnection);
+
+    localDropTBL.addChild(remoteUpdate);
+
+    return getSdbResultSet(localDropTBL);
   }
 }

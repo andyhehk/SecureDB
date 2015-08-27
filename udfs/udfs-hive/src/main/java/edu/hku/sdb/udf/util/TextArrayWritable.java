@@ -15,9 +15,14 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.parse;
+package edu.hku.sdb.udf.util;
 
-public enum EncryptType {
-  SDB,
-  PILLIAR
+import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.Text;
+
+public class TextArrayWritable extends ArrayWritable{
+
+  public TextArrayWritable() {
+    super(Text.class);
+  }
 }

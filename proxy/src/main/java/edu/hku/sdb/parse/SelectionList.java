@@ -148,14 +148,19 @@ public class SelectionList implements ParseNode {
      * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
      */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
 
     for (SelectionItem item : itemList) {
-      if (item.involveSdbEncrytedCol())
+      if (item.involveEncrytedCol())
         return true;
     }
 
     return false;
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
 }

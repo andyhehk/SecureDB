@@ -17,11 +17,9 @@
 
 package edu.hku.sdb.exec;
 
-import edu.hku.sdb.catalog.ColumnKey;
-import edu.hku.sdb.catalog.PrimitiveType;
-import edu.hku.sdb.catalog.ScalarType;
+import edu.hku.sdb.catalog.*;
 import edu.hku.sdb.connect.SDBResultSetMetaData;
-import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.crypto.SDBEncrypt;
 import edu.hku.sdb.parse.ColumnDefinition;
 import edu.hku.sdb.plan.LocalDecryptDesc;
 import edu.hku.sdb.plan.RemoteSQLDesc;
@@ -32,7 +30,7 @@ import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.util.List;
 
-public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
+public class LocalDecrypt extends LocalPlanNode<LocalDecryptDesc> {
 
   private static final Logger LOG = LoggerFactory
           .getLogger(LocalDecrypt.class);
@@ -54,17 +52,6 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
     nodeDesc.setRowDesc(rowDesc);
   }
 
-  public SDBResultSetMetaData getResultSetMetaData() {
-    SDBResultSetMetaData sdbMetaData = null;
-    try {
-      sdbMetaData = new SDBResultSetMetaData();
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    }
-    sdbMetaData.setColumnList(nodeDesc.getRowDesc().getSignature());
-    //Remove row_id before init resultSetMetaData for localDecrypt
-    return sdbMetaData;
-  }
 
   /*
    * (non-Javadoc)
@@ -78,7 +65,7 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
     prime2 = nodeDesc.getPrime2();
     n = nodeDesc.getN();
     g = nodeDesc.getG();
-    totient = Crypto.evaluateTotient(prime1, prime2);
+    totient = SDBEncrypt.evaluateTotient(prime1, prime2);
     // Get the row signature of the RemoteSQL query
     childColDescList = child.nodeDesc.getRowDesc().getSignature();
     initialized = true;
@@ -111,33 +98,60 @@ public class LocalDecrypt extends PlanNode<LocalDecryptDesc> {
         for (int index = childColDescList.size() - 1; index >= 0; index--) {
           ColumnDesc columnDesc = childColDescList.get(index);
           if (columnDesc.getName().equals(ColumnDefinition.ROW_ID_COLUMN_NAME)) {
-            ColumnKey columnKey = columnDesc.getColKey();
-            BigInteger rowIdEncrypted = Crypto.getSecureBigInt((String) childTuple.get
-                    (index));
-            rowId = Crypto.SIESDecrypt(rowIdEncrypted, columnKey.getM(), columnKey
-                    .getX(), n);
+            SdbColumnKey sdbColumnKey = columnDesc.getSdbColKey();
+            BigInteger rowIdEncrypted = SDBEncrypt.getSecureBigInt((String)
+                    childTuple.get
+                            (index));
+            rowId = SDBEncrypt.SIESDecrypt(rowIdEncrypted, sdbColumnKey.getM(),
+                    sdbColumnKey.getX(), n);
           }
 
           // Decrypt with columnKey if sensitive
           else if (columnDesc.isSensitive()) {
-            ColumnKey columnKey = columnDesc.getColKey();
-            BigInteger itemKey = Crypto.generateItemKeyOp2(columnKey.getM(),
-                    columnKey.getX(), rowId, g, n, totient, prime1,
-                    prime2);
-            BigInteger cipherText = Crypto.getSecureBigInt((String) childTuple.get(index));
-            BigInteger plainText = Crypto.decrypt(cipherText, itemKey, n);
-            // Check if it is negative or positive
-            if (plainText.compareTo(n.subtract(BigInteger.ONE).divide(new BigInteger
-                    ("2"))) >= 0) {
-              plainText = plainText.subtract(n);
-            }
-            childTuple.set(index, plainText);
-            if(((ScalarType)columnDesc.getType()).getType() == PrimitiveType.DECIMAL) {
-              int scale = ((ScalarType)columnDesc.getType()).getScale();
-              long plainValue = plainText.longValue();
-              childTuple.set(index, plainValue / Math.pow(10, scale));
-            }
+            Type type = columnDesc.getType();
 
+            if(type instanceof ScalarType) {
+
+              switch (((ScalarType) type).getType()) {
+                case INT:
+                case TINYINT:
+                case SMALLINT:
+                case BIGINT:
+                case DECIMAL:
+                  SdbColumnKey sdbColumnKey = columnDesc.getSdbColKey();
+                  BigInteger itemKey = SDBEncrypt.generateItemKeyOp2(sdbColumnKey.getM(),
+                          sdbColumnKey.getX(), rowId, g, n, totient, prime1, prime2);
+                  BigInteger cipherText = SDBEncrypt.getSecureBigInt((String) childTuple.get(index));
+
+                  BigInteger plainText = SDBEncrypt.decrypt(cipherText, itemKey, n);
+                  // Check if it is negative or positive
+                  if (plainText.compareTo(n.subtract(BigInteger.ONE).divide(new
+                          BigInteger("2"))) >= 0) {
+                    plainText = plainText.subtract(n);
+                  }
+                  childTuple.set(index, plainText);
+                  if (((ScalarType) type).getType() == PrimitiveType.DECIMAL) {
+                    int scale = ((ScalarType) columnDesc.getType()).getScale();
+                    long plainValue = plainText.longValue();
+                    childTuple.set(index, plainValue / Math.pow(10, scale));
+                  }
+                  break;
+                case CHAR:
+                case VARCHAR:
+                case STRING:
+                  LOG.error("We cannot support decrypt string value at this moment!");
+//                  SearchColumnKey searchColumnKey = columnDesc.getSearchColKey();
+//
+//                  break;
+                default:
+                  break;
+              }
+
+
+            }
+            else {
+
+            }
           }
         }
         tupleSlot.addRow(childTuple);

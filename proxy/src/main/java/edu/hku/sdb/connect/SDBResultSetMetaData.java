@@ -50,7 +50,7 @@ public class SDBResultSetMetaData extends UnicastRemoteObject implements ResultS
    * @return
    */
   public String getColumnName(int columnIndex) throws RemoteException {
-    ColumnDesc columnDesc = columnList.get(columnIndex - 1);
+    ColumnDesc columnDesc = columnList.get(columnIndex);
     String alias = columnDesc.getAlias();
     String name = columnDesc.getName();
     return (alias.equals("") ? name : alias);

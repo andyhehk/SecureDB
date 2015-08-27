@@ -17,9 +17,19 @@
 
 package edu.hku.sdb.udf.util;
 
+import org.apache.commons.codec.binary.Base64;
+
+import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 public class UDFHandler {
+
+  private static final String SCHEME = "AES/ECB/PKCS5Padding";
+
   /**
    * Returns (ae * be) mod n according to SDB Multiplication (EE Mode) protocol
    *
@@ -123,6 +133,64 @@ public class UDFHandler {
       return false;
     else
       return true;
+  }
+
+  public static boolean match(ArrayList<String> text, String keyword, String publicKey) {
+
+    SecretKey prkey = new SecretKeySpec(Base64.decodeBase64(publicKey), "AES");
+
+    boolean match = false;
+    for(String t : text) {
+      if(search(Base64.decodeBase64(t), keyword, prkey))
+        match = true;
+    }
+
+    return match;
+  }
+
+  private static boolean search(byte[] encrypted, String keyword, SecretKey prkey) {
+    byte[] keywordbyte = keyword.getBytes();
+    if (keywordbyte.length != encrypted.length) {
+      return false;
+    }
+    byte[] diff1 = new byte[keywordbyte.length-1];
+    for (int i = 0;i < diff1.length;i++) {
+      diff1[i] = (byte) (encrypted[i]^keywordbyte[i]);
+    }
+    byte diff2 = (byte) (encrypted[diff1.length]^keywordbyte[diff1.length]);
+    // get diff = word xor encrypted
+    // if it is a match, first part of diff generates second part of diff using pseudo random function
+
+    try {
+      // pseudorandom cipher
+      Cipher prCipher = Cipher.getInstance(SCHEME);
+      prCipher.init(Cipher.ENCRYPT_MODE, prkey);
+
+      // si is chopped with the desired length
+
+      byte[] fksi = prCipher.doFinal(diff1);
+      // fksi is F_k(S_i) in the searchable encryption
+      // we use the same AES cipher for simplicity
+
+      return fksi[0] == diff2;
+    } catch (NoSuchAlgorithmException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (NoSuchPaddingException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (InvalidKeyException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (IllegalBlockSizeException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (BadPaddingException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
+    return false;
   }
 
 }

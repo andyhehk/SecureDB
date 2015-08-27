@@ -1,4 +1,6 @@
-@(title: String)(header: String)(databases: List[Database])
+@(title: String)(header: String)(body: Html)(databases: List[Database])
+
+<!DOCTYPE html>
 
 <!--
   ~  Licensed to the Apache Software Foundation (ASF) under one or more
@@ -17,4 +19,45 @@
   ~ limitations under the License.
   -->
 
-@base(title)(header)(system_info())(databases)
+<html>
+<head>
+  <title>@title</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" media="screen" href="@routes.Assets.at("bower_components/bootstrap/dist/css/bootstrap.min.css")">
+  <!-- MetisMenu CSS -->
+  <link rel="stylesheet" media="screen" href="@routes.Assets.at("bower_components/metisMenu/dist/metisMenu.min.css")">
+  <link rel="stylesheet" media="screen" href="@routes.Assets.at("bower_components/font-awesome/css/font-awesome.min.css")">
+  <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/sb-admin-2.css")">
+  <link rel="stylesheet" media="screen" href="@routes.Assets.at("bower_components/font-awesome/css/font-awesome.min.css")">
+  <link rel="stylesheet" media="screen" href="@routes.Assets.at("bower_components/font-awesome/css/font-awesome.min.css")">
+  <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+  <!-- jQuery -->
+  <script src="@routes.Assets.at("bower_components/jquery/dist/jquery.min.js")" type="text/javascript"></script>
+    </head>
+
+	<body>
+	    <div id="wrapper">
+			@navigation(databases)
+	        <div id="page-wrapper">
+	            <div class="row">
+	                <div class="col-lg-12">
+	                    <h1 class="page-header">@header</h1>
+	                </div>
+	            </div>
+				@action_menu(databases)
+				@body
+	        </div>
+	        <!-- /#page-wrapper -->
+
+	    </div>
+	    <!-- /#wrapper -->
+
+	    <!-- Bootstrap Core JavaScript -->
+		<script src="@routes.Assets.at("bower_components/bootstrap/dist/js/bootstrap.min.js")" type="text/javascript"></script>
+  <!-- Metis Menu Plugin JavaScript -->
+  <script src="@routes.Assets.at("bower_components/metisMenu/dist/metisMenu.min.js")" type="text/javascript"></script>
+	    <!-- Custom Theme JavaScript -->
+		<script src="@routes.Assets.at("javascripts/sb-admin-2.js")" type="text/javascript"></script>
+  </body>
+
+</html>

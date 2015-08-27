@@ -17,14 +17,14 @@ public class QueryModel {
   private List<Long> executionTimeList;
 
   public int getResultSize() {
-    return resultSize;
+    return resultSize ;
   }
 
   public void setResultSize(int resultSize) {
     this.resultSize = resultSize;
   }
 
-  public boolean init() {
+  public boolean init() throws RemoteException{
     if (query == null) {
       return false;
     }
@@ -32,13 +32,17 @@ public class QueryModel {
       Connection connection = ConnectionManager.getConnection(DB_URL, "", "");
       statement = connection.createStatement();
       resultSet = statement.executeQuery(query);
-      if (!query.toLowerCase().contains("create")) {
+      if(query.toLowerCase().contains("create") || query.toLowerCase().contains("drop")) {
+        hasResult = false;
+        Databases.setUpdated(false);
+      }
+      else  {
         hasResult = true;
       }
+
       profiler = statement.getProfiler();
     } catch (RemoteException e) {
-      e.printStackTrace();
-      return false;
+      throw  e;
     }
     return true;
   }
@@ -49,44 +53,42 @@ public class QueryModel {
 
   static final String DB_URL = "//localhost:2019/ConnectionService";
 
-  private List<String> nextRow(int columnCount) {
+  private List<String> nextRow(int columnCount) throws RemoteException{
     List<String> resultRow = new ArrayList<>();
-    try {
-      if (resultSet.next()) {
-        for (int i = 0; i < columnCount; i++) {
-          resultRow.add(resultSet.getString(i));
-        }
-      } else return null;
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    }
+
+    if (resultSet.next()) {
+      for (int i = 0; i < columnCount; i++) {
+        resultRow.add(resultSet.getString(i));
+      }
+    } else return null;
+
     return resultRow;
   }
 
-  public List<String> getResultMetaName() {
+  public List<String> getResultMetaName() throws  RemoteException{
     if (hasResult) {
       List<String> resultMetaRow = new ArrayList<>();
-      try {
-        ResultSetMetaData resultSetMetaData = resultSet.getResultSetMetaData();
-        for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
+
+      ResultSetMetaData resultSetMetaData = resultSet.getResultSetMetaData();
+      if(resultSetMetaData != null) {
+        for (int i = 0; i < resultSetMetaData.getColumnCount(); i++) {
           resultMetaRow.add(resultSetMetaData.getColumnName(i));
         }
-      } catch (RemoteException e) {
-        e.printStackTrace();
       }
+
       return resultMetaRow;
     } else return null;
   }
 
-  public List<List<String>> getResult() {
+  public List<List<String>> getResult() throws  RemoteException{
     if (hasResult) {
       List<List<String>> result = new ArrayList<>();
       int columnCount = 0;
-      try {
+
+      if(resultSet.getResultSetMetaData() != null) {
         columnCount = resultSet.getResultSetMetaData().getColumnCount();
-      } catch (RemoteException e) {
-        e.printStackTrace();
       }
+
       List<String> resultRow = nextRow(columnCount);
       resultSize = 1;
       while (resultRow != null) {

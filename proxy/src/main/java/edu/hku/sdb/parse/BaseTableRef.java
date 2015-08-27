@@ -104,11 +104,16 @@ public class BaseTableRef extends TableRef {
    * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     if (onClause == null) {
       return false;
     }
-    return onClause.involveSdbEncrytedCol();
+    return onClause.involveEncrytedCol();
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
 }

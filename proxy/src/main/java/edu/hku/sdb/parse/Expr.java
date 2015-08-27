@@ -21,8 +21,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.SdbColumnKey;
 import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.SearchColumnKey;
 import edu.hku.sdb.catalog.Type;
 
 public abstract class Expr extends TreeNode<Expr> implements ParseNode {
@@ -54,7 +55,7 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
   }
 
   /**
-   * Add a new field refers to this expr.
+   * Remove a field refers to this expr.
    *
    * @param field
    */
@@ -75,7 +76,9 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
   public void notifyAllFields() {
     for (FieldLiteral field : referredByList) {
       field.setReferedExpr(this);
-      field.updateColKey();
+      field.setSDBEncrypted(involveEncrytedCol());
+      field.setType(getType());
+      field.setSdbColKey(getSdbColKey());
     }
   }
 
@@ -100,16 +103,33 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
     }
   }
 
-  public ColumnKey getColKey() {
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
     return null;
   }
 
-  public void setColKey(ColumnKey colKey) {}
+  public SdbColumnKey getSdbColKey() {
+    return null;
+  }
 
+  public void setSdbColKey(SdbColumnKey colKey) {}
+
+  public SearchColumnKey getSearchColKey() {
+    return null;
+  }
+
+  public void setSearchColKey(SearchColumnKey searchColKey) {
+
+  }
 
   public Type getType() {
     return null;
   }
 
   public void setType(Type type) {}
+
+  public String getAlias(){
+    return null;
+  }
+  
 }

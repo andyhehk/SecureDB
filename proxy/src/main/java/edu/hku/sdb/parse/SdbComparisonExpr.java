@@ -67,7 +67,12 @@ public class SdbComparisonExpr extends Expr {
   }
 
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     return true;
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 }

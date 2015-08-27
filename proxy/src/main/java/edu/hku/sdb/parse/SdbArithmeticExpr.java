@@ -18,7 +18,7 @@
 package edu.hku.sdb.parse;
 
 import com.google.common.base.Joiner;
-import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.SdbColumnKey;
 import edu.hku.sdb.catalog.Type;
 
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class SdbArithmeticExpr extends Expr {
 
   public SdbArithmeticExpr(SdbArithmeticExpr another) {
     this.op = another.op;
-    this.columnKey = another.columnKey;
+    this.sdbColumnKey = another.sdbColumnKey;
     this.referredByList = another.referredByList;
     this.type = another.type;
     this.children = another.children;
@@ -69,7 +69,7 @@ public class SdbArithmeticExpr extends Expr {
 
   private SdbOperator op;
 
-  private ColumnKey columnKey;
+  private SdbColumnKey sdbColumnKey;
 
   private Type type;
 
@@ -86,12 +86,12 @@ public class SdbArithmeticExpr extends Expr {
 
 
   @Override
-  public ColumnKey getColKey() {
-    return columnKey;
+  public SdbColumnKey getSdbColKey() {
+    return sdbColumnKey;
   }
 
-  public void setColKey(ColumnKey columnKey) {
-    this.columnKey = columnKey;
+  public void setSdbColKey(SdbColumnKey sdbColumnKey) {
+    this.sdbColumnKey = sdbColumnKey;
   }
 
   public Type getType() {
@@ -143,8 +143,13 @@ public class SdbArithmeticExpr extends Expr {
    * @see edu.hku.sdb.parse.Expr#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     return true;
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
 }

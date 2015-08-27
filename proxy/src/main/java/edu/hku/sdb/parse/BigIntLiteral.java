@@ -42,7 +42,13 @@ public class BigIntLiteral extends LiteralExpr {
   }
 
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     return false;
   }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
+  }
+
 }

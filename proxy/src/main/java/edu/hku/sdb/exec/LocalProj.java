@@ -21,7 +21,7 @@ import edu.hku.sdb.plan.LocalProjDesc;
 
 import java.util.List;
 
-public class LocalProj extends PlanNode<LocalProjDesc> {
+public class LocalProj extends LocalPlanNode<LocalProjDesc> {
 
   /*
    * (non-Javadoc)

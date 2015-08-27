@@ -18,7 +18,7 @@
 package edu.hku.sdb.parse;
 
 import com.google.common.base.Joiner;
-import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.SdbColumnKey;
 import edu.hku.sdb.catalog.Type;
 
 import java.util.ArrayList;
@@ -27,9 +27,9 @@ import java.util.List;
 public class SdbCartesianExpr extends Expr {
 
   private final String op = "sdb_cartesian";
-  private String alia;
+  private String alias;
 
-  private ColumnKey columnKey;
+  private SdbColumnKey sdbColumnKey;
   private String tblName;
 
   private Type type;
@@ -44,12 +44,12 @@ public class SdbCartesianExpr extends Expr {
     this.type = type;
   }
 
-  public String getAlia() {
-    return alia;
+  public String getAlias() {
+    return alias;
   }
 
-  public void setAlia(String alia) {
-    this.alia = alia;
+  public void setAlias(String alias) {
+    this.alias = alias;
   }
 
   public String getTblName() {
@@ -61,12 +61,12 @@ public class SdbCartesianExpr extends Expr {
   }
 
   @Override
-  public ColumnKey getColKey() {
-    return columnKey;
+  public SdbColumnKey getSdbColKey() {
+    return sdbColumnKey;
   }
 
-  public void setColKey(ColumnKey columnKey) {
-    this.columnKey = columnKey;
+  public void setSdbColKey(SdbColumnKey sdbColumnKey) {
+    this.sdbColumnKey = sdbColumnKey;
   }
 
   /*
@@ -87,8 +87,13 @@ public class SdbCartesianExpr extends Expr {
    * @see edu.hku.sdb.parse.Expr#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     return true;
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
 }

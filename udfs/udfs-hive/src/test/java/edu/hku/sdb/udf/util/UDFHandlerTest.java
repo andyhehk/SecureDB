@@ -22,6 +22,8 @@ import java.math.BigInteger;
 import edu.hku.sdb.udf.util.UDFHandler;
 import junit.framework.TestCase;
 
+import static org.junit.Assert.assertTrue;
+
 
 public class UDFHandlerTest extends TestCase {
 
@@ -95,6 +97,8 @@ public class UDFHandlerTest extends TestCase {
     assertEquals(new BigInteger("496849390869414279802"), result);
   }
 
+  public void testSearchHandle() {
 
+  }
 
 }

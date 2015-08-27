@@ -18,14 +18,13 @@
 package edu.hku.sdb.parse;
 
 import com.google.common.base.Joiner;
-import edu.hku.sdb.catalog.ColumnKey;
+import edu.hku.sdb.catalog.SdbColumnKey;
 import edu.hku.sdb.catalog.Type;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SdbKeyUpdateExpr extends Expr {
-
 
   public enum SdbKeyUpOperator {
     SDB_KEYUP("sdb_keyUp", "sdb UDF for key update a sensitive column"),
@@ -52,9 +51,11 @@ public class SdbKeyUpdateExpr extends Expr {
 
   private SdbKeyUpOperator op;
 
-  private ColumnKey colKey;
+  private SdbColumnKey colKey;
 
   private Type type;
+
+  private String alias;
 
   public SdbKeyUpdateExpr(SdbKeyUpOperator op) {
     this.op = op;
@@ -104,16 +105,32 @@ public class SdbKeyUpdateExpr extends Expr {
    * @see edu.hku.sdb.parse.Expr#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     return true;
   }
 
-  public void setColKey(ColumnKey colKey) {
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
+  }
+
+  public void setSdbColKey(SdbColumnKey colKey) {
     this.colKey = colKey;
   }
 
   @Override
-  public ColumnKey getColKey() {
+  public SdbColumnKey getSdbColKey() {
     return colKey;
   }
+
+
+  @Override
+  public String getAlias() {
+    return alias;
+  }
+
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
+
 }

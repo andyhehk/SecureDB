@@ -17,7 +17,7 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.crypto.Crypto;
+import edu.hku.sdb.crypto.SDBEncrypt;
 
 import java.math.BigInteger;
 
@@ -71,14 +71,14 @@ public class SdbBinPredicate extends BinaryPredicate {
    * @see edu.hku.sdb.parse.ParseNode#toSql()
    */
   public String toSql() {
-    return sdbCompareUDF + "(" + keyUpExpr.toSql() + ", \"" + Crypto.getSecureString(threshold) + "\") " + op + " 0";
+    return sdbCompareUDF + "(" + keyUpExpr.toSql() + ", \"" + SDBEncrypt.getSecureString(threshold) + "\") " + op + " 0";
   }
 
   /* (non-Javadoc)
    * @see edu.hku.sdb.parse.Expr#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     return true;
   }
 

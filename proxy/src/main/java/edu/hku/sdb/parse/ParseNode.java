@@ -42,5 +42,7 @@ public interface ParseNode {
    */
   String toSql();
 
-  boolean involveSdbEncrytedCol();
+  boolean involveEncrytedCol();
+
+  EncryptionScheme getEncrytionScheme();
 }

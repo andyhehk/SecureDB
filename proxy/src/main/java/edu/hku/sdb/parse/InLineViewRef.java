@@ -22,8 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.hku.sdb.catalog.MetaStore;
 
-import static com.google.common.base.Preconditions.*;
-
 public class InLineViewRef extends TableRef {
 
   private static final Logger LOG = LoggerFactory
@@ -122,9 +120,14 @@ public class InLineViewRef extends TableRef {
    * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
-    return queryStmt.involveSdbEncrytedCol()
-            || onClause.involveSdbEncrytedCol();
+  public boolean involveEncrytedCol() {
+    return queryStmt.involveEncrytedCol()
+            || onClause.involveEncrytedCol();
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
 }

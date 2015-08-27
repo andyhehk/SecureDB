@@ -42,4 +42,12 @@ public abstract class PlanNode<T extends PlanNodeDesc> {
    */
   public abstract void close();
 
+
+  public T getNodeDesc() {
+    return nodeDesc;
+  }
+
+
+  public void addChild(PlanNode child) {}
+
 }

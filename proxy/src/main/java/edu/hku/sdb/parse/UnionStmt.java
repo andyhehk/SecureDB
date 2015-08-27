@@ -46,9 +46,14 @@ public class UnionStmt extends QueryStmt {
    * @see edu.hku.sdb.parse.ParseNode#involveSdbCol()
    */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public boolean involveEncrytedCol() {
     // TODO Auto-generated method stub
     return false;
+  }
+
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
   }
 
 }

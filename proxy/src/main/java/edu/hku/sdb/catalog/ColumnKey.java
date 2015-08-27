@@ -17,55 +17,5 @@
 
 package edu.hku.sdb.catalog;
 
-import java.math.BigInteger;
-
 public class ColumnKey {
-  // The m part of the column key
-  private final BigInteger m;
-  // The x part of the column key
-  private final BigInteger x;
-
-  public ColumnKey(String m, String x) {
-    this.m = new BigInteger(m);
-    this.x = new BigInteger(x);
-  }
-
-  public ColumnKey(BigInteger m, BigInteger x) {
-    this.m = m;
-    this.x = x;
-  }
-
-  public ColumnKey(ColumnKey colKey) {
-    this.m = colKey.m;
-    this.x = colKey.x;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof ColumnKey))
-      return false;
-
-    ColumnKey colkeyObj = (ColumnKey) obj;
-    return m.equals(colkeyObj.m) && x.equals(colkeyObj.x);
-  }
-
-  /**
-   * @return the m
-   */
-  public BigInteger getM() {
-    return m;
-  }
-
-  /**
-   * @return the x
-   */
-  public BigInteger getX() {
-    return x;
-  }
-
-
-  @Override
-  public String toString() {
-    return "m: " + m + "; x: " + x;
-  }
 }

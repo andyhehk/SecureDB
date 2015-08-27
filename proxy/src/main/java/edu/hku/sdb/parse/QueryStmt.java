@@ -46,4 +46,8 @@ public abstract class QueryStmt extends StatementBase {
     this.limitElement = limitElement;
   }
 
+  @Override
+  public EncryptionScheme getEncrytionScheme() {
+    return null;
+  }
 }

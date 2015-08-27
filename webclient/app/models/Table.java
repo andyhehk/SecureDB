@@ -1,5 +1,6 @@
 package models;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -9,11 +10,20 @@ public class Table {
   private String tableName;
   private boolean isSecure;
 
+  public Table(String tableName) {
+    this.tableName = tableName;
+    attributes = new ArrayList<Attribute>();
+  }
+
   public Table(List<Attribute> attributes, String tableName, boolean isSecure) {
     super();
     this.attributes = attributes;
     this.tableName = tableName;
     this.isSecure = isSecure;
+  }
+
+  public void addAtt(Attribute att) {
+    attributes.add(att);
   }
 
   public List<Attribute> getAttributes() {

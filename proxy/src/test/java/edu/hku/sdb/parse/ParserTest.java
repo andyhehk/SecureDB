@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.junit.Before;
 
 /**
- * Unit test for simple App.
+ * Unit test for parser.
  */
 public class ParserTest
 {
@@ -46,4 +46,69 @@ public class ParserTest
     }
   }
 
+  @Test
+  public void testNestedQuery() {
+    String command = "SELECT a FROM (SELECT a FROM test) test";
+    try {
+      ASTNode createStatement = parseDriver.parse(command);
+      System.out.println(TestUtility.visualize(createStatement));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void testStringSearch() {
+    String command = "SELECT a FROM test WHERE b like \"%hello%\"";
+    try {
+      ASTNode createStatement = parseDriver.parse(command);
+      System.out.println(TestUtility.visualize(createStatement));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void testShowDBsStmt() {
+    String command = "SHOW DATABASES";
+    try {
+      ASTNode createStatement = parseDriver.parse(command);
+      System.out.println(TestUtility.visualize(createStatement));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void testShowTBLsStmt() {
+    String command = "SHOW TABLES";
+    try {
+      ASTNode createStatement = parseDriver.parse(command);
+      System.out.println(TestUtility.visualize(createStatement));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void testDescribeTblStmt() {
+    String command = "DESCRIBE test";
+    try {
+      ASTNode createStatement = parseDriver.parse(command);
+      System.out.println(TestUtility.visualize(createStatement));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void testDropTblStmt() {
+    String command = "DROP TABLE test";
+    try {
+      ASTNode createStatement = parseDriver.parse(command);
+      System.out.println(TestUtility.visualize(createStatement));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
 }

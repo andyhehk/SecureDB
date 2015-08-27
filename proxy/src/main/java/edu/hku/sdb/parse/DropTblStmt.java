@@ -17,53 +17,41 @@
 
 package edu.hku.sdb.parse;
 
-public class AggregateExpr extends Expr {
+import edu.hku.sdb.catalog.MetaStore;
 
-  public AggregateExpr(Expr expr, AggregateType type) {
-    this.expr = expr;
-    this.type = type;
-  }
+public class DropTblStmt extends StatementBase {
 
-  private Expr expr;
-  private AggregateType type;
+  private String tblName;
 
-  public Expr getExpr() {
-    return expr;
-  }
+  public DropTblStmt() {}
 
-  public void setExpr(Expr expr) {
-    this.expr = expr;
+  public DropTblStmt(String tblName) {
+    this.tblName = tblName;
   }
 
 
-  public enum AggregateType {
-    COUNT("count"),
-    SUM("sum");
-
-    private final String description;
-
-    private AggregateType(String description) {
-      this.description = description;
-    }
-
-    @Override
-    public String toString() {
-      return description;
-    }
-  }
-
-
-  public String toSql() {
-    return type.toString() + "(" + expr.toSql() + ")";
-  }
-
-  /* (non-Javadoc)
-   * @see edu.hku.sdb.parse.Expr#involveSdbCol()
-   */
   @Override
-  public boolean involveSdbEncrytedCol() {
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
+  }
+
+  @Override
+  public String toSql() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("DROP TABLE ");
+    sb.append(tblName);
+    return sb.toString();
+  }
+
+  @Override
+  public boolean involveEncrytedCol() {
     return false;
   }
 
+  public String getTblName() {
+    return tblName;
+  }
 
+  public void setTblName(String tblName) {
+    this.tblName = tblName;
+  }
 }
