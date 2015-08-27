@@ -15,39 +15,43 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.exec;
+package edu.hku.sdb.parse;
 
-import edu.hku.sdb.plan.PlanNodeDesc;
+import edu.hku.sdb.catalog.MetaStore;
 
-import java.util.List;
+public class DropTblStmt extends StatementBase {
 
-public abstract class PlanNode<T extends PlanNodeDesc> {
+  private String tblName;
 
-  protected T nodeDesc;
+  public DropTblStmt() {}
 
-  /**
-   * Initialize resource needed.
-   */
-  public abstract void init();
-
-  /**
-   * Get next tuple
-   *
-   * @return
-   */
-  public abstract List<Object> nextTuple();
-
-  /**
-   * Close all resource.
-   */
-  public abstract void close();
-
-
-  public T getNodeDesc() {
-    return nodeDesc;
+  public DropTblStmt(String tblName) {
+    this.tblName = tblName;
   }
 
 
-  public void addChild(PlanNode child) {}
+  @Override
+  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
+  }
 
+  @Override
+  public String toSql() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("DROP TABLE ");
+    sb.append(tblName);
+    return sb.toString();
+  }
+
+  @Override
+  public boolean involveEncrytedCol() {
+    return false;
+  }
+
+  public String getTblName() {
+    return tblName;
+  }
+
+  public void setTblName(String tblName) {
+    this.tblName = tblName;
+  }
 }

@@ -100,4 +100,15 @@ public class ParserTest
       e.printStackTrace();
     }
   }
+
+  @Test
+  public void testDropTblStmt() {
+    String command = "DROP TABLE test";
+    try {
+      ASTNode createStatement = parseDriver.parse(command);
+      System.out.println(TestUtility.visualize(createStatement));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+  }
 }

@@ -1,6 +1,7 @@
 package models;
 
 import javax.xml.crypto.Data;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +9,7 @@ public class Databases {
   private static List<Database> databaseList;
   private static boolean isUpdated = false;
 
-  public static List<Database> getDatabases() {
+  public static List<Database> getDatabases() throws RemoteException {
     if(isUpdated)
       return databaseList;
 

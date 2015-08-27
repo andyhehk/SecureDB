@@ -17,37 +17,50 @@
 
 package edu.hku.sdb.exec;
 
-import edu.hku.sdb.plan.PlanNodeDesc;
+import edu.hku.sdb.plan.CreateTblDesc;
 
 import java.util.List;
 
-public abstract class PlanNode<T extends PlanNodeDesc> {
 
-  protected T nodeDesc;
+public class DropTbl extends PlanNode<CreateTblDesc> {
 
-  /**
-   * Initialize resource needed.
-   */
-  public abstract void init();
+  LocalCreate localCreate;
+  RemoteUpdate remoteUpdate;
 
-  /**
-   * Get next tuple
-   *
-   * @return
-   */
-  public abstract List<Object> nextTuple();
-
-  /**
-   * Close all resource.
-   */
-  public abstract void close();
-
-
-  public T getNodeDesc() {
-    return nodeDesc;
+  public DropTbl(RemoteUpdate remoteUpdate, LocalCreate localCreate) {
+    setLocalCreateNode(localCreate);
+    setRemoteSQL(remoteUpdate);
   }
 
+  public LocalCreate getLocalCreateNode() {
+    return localCreate;
+  }
 
-  public void addChild(PlanNode child) {}
+  public void setLocalCreateNode(LocalCreate localCreateNode) {
+    this.localCreate = localCreateNode;
+  }
 
+  public RemoteUpdate getRemoteSQL() {
+    return remoteUpdate;
+  }
+
+  public void setRemoteSQL(RemoteUpdate remoteSQL) {
+    this.remoteUpdate = remoteSQL;
+  }
+
+  @Override
+  public void init() {
+    remoteUpdate.init();
+    localCreate.init();
+  }
+
+  @Override
+  public List<Object> nextTuple() {
+    return null;
+  }
+
+  @Override
+  public void close() {
+
+  }
 }

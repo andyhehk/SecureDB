@@ -204,12 +204,16 @@ public class FieldLiteral extends LiteralExpr {
           case TINYINT:
           case SMALLINT:
           case DECIMAL:
-            sdbColKey = new SdbColumnKey(colMeta.getM(), colMeta.getX());
+            if(isSDBEncrypted) {
+              sdbColKey = new SdbColumnKey(colMeta.getM(), colMeta.getX());
+            }
             break;
           case CHAR:
           case VARCHAR:
           case STRING:
-            searchColKey = new SearchColumnKey(colMeta.getM(), colMeta.getX());
+            if(isSDBEncrypted) {
+              searchColKey = new SearchColumnKey(colMeta.getM(), colMeta.getX());
+            }
             break;
         }
       }

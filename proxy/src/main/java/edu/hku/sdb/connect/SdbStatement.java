@@ -75,8 +75,9 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     // get execution start time
     long startTimeStamp = System.currentTimeMillis();
 
-    // Parse & analyse
+      // Parse & analyse
     ParseNode analyzedNode = getParseNode(query);
+
 
     if (analyzedNode instanceof LoadStmt) {
       // another programme encrypts & uploads the data
@@ -88,6 +89,9 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     }
     else if (analyzedNode instanceof DescribeStmt) {
       sdbResultSet = executeDescribeStmt((DescribeStmt) analyzedNode);
+    }
+    else if (analyzedNode instanceof DropTblStmt) {
+      sdbResultSet = executeDropTblStmt((DropTblStmt) analyzedNode);
     }
     else {
 
@@ -179,7 +183,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     }
   }
 
-  private ParseNode getParseNode(String query) throws RemoteException {
+  private ParseNode getParseNode(String query) throws RemoteException  {
     LOG.info("Parsing " + query);
 
     long parseStartTimestamp = System.currentTimeMillis();
@@ -197,6 +201,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       sdbProfiler.setClientAnalyseTime(analyseEndTimestamp - parseEndTimestamp);
     } catch (ParseException e) {
       e.printStackTrace();
+      throw new RemoteException(e.getMessage());
     } catch (SemanticException e) {
       e.printStackTrace();
       throw new RemoteException(e.getMessage());
@@ -342,5 +347,17 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     PlanNode localDescTBL = new LocalDescTBL(tblMeta, rowDesc);
 
     return getSdbResultSet(localDescTBL);
+  }
+
+  public SdbResultSet executeDropTblStmt(DropTblStmt dropTblStmt) throws RemoteException {
+    String tblName = dropTblStmt.getTblName();
+
+    PlanNode localDropTBL = new LocalDropTBL(metaDB,dbMeta.getName(), tblName, null);
+
+    RemoteUpdate remoteUpdate = new RemoteUpdate(dropTblStmt.toSql(), serverConnection);
+
+    localDropTBL.addChild(remoteUpdate);
+
+    return getSdbResultSet(localDropTBL);
   }
 }

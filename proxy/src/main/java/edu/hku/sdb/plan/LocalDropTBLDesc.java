@@ -15,39 +15,29 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.exec;
-
-import edu.hku.sdb.plan.PlanNodeDesc;
-
-import java.util.List;
-
-public abstract class PlanNode<T extends PlanNodeDesc> {
-
-  protected T nodeDesc;
-
-  /**
-   * Initialize resource needed.
-   */
-  public abstract void init();
-
-  /**
-   * Get next tuple
-   *
-   * @return
-   */
-  public abstract List<Object> nextTuple();
-
-  /**
-   * Close all resource.
-   */
-  public abstract void close();
+package edu.hku.sdb.plan;
 
 
-  public T getNodeDesc() {
-    return nodeDesc;
+import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.parse.TableName;
+
+public class LocalDropTBLDesc extends PlanNodeDesc {
+  MetaStore metaStore;
+  TableName tableName;
+
+  public TableName getTableName() {
+    return tableName;
   }
 
+  public void setTableName(TableName tableName) {
+    this.tableName = tableName;
+  }
 
-  public void addChild(PlanNode child) {}
+  public MetaStore getMetaStore() {
+    return metaStore;
+  }
 
+  public void setMetaStore(MetaStore metaStore) {
+    this.metaStore = metaStore;
+  }
 }

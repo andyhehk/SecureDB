@@ -60,6 +60,9 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       case HiveParser.TOK_CREATETABLE:
         parseTree = buildCreateStmt(tree);
         break;
+      case HiveParser.TOK_DROPTABLE:
+        parseTree = buildDropTBLStmt(tree);
+        break;
       case HiveParser.TOK_LOAD:
         parseTree = buildLoadStmt(tree);
         break;
@@ -70,7 +73,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         parseTree = new ShowDBsStmt();
         break;
       case HiveParser.TOK_DESCTABLE:
-        parseTree = buildDescTBLStamt(tree);
+        parseTree = buildDescTBLStmt(tree);
         break;
     }
 
@@ -103,7 +106,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     return loadStmt;
   }
 
-  private ParseNode buildDescTBLStamt(ASTNode tree) {
+  private ParseNode buildDescTBLStmt(ASTNode tree) {
     String tblName = null;
     for (int i = 0; i < tree.getChildCount(); i++) {
       ASTNode child = (ASTNode) tree.getChild(i);
@@ -118,6 +121,23 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
 
     DescribeStmt describeStmt = new DescribeStmt(tblName);
     return describeStmt;
+  }
+
+  private ParseNode buildDropTBLStmt(ASTNode tree) {
+    String tblName = null;
+    for (int i = 0; i < tree.getChildCount(); i++) {
+      ASTNode child = (ASTNode) tree.getChild(i);
+      switch (child.getType()) {
+        case HiveParser.TOK_TABNAME:
+          tblName = child.getChild(0).getText();
+          continue;
+        default:
+          continue;
+      }
+    }
+
+    DropTblStmt dropTblbeStmt = new DropTblStmt(tblName);
+    return dropTblbeStmt;
   }
 
   /**

@@ -15,39 +15,19 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.exec;
+import play.*;
+import play.mvc.*;
+import play.mvc.Http.*;
+import play.libs.F.*;
 
-import edu.hku.sdb.plan.PlanNodeDesc;
+import static play.mvc.Results.*;
 
-import java.util.List;
+public class Global extends GlobalSettings {
 
-public abstract class PlanNode<T extends PlanNodeDesc> {
-
-  protected T nodeDesc;
-
-  /**
-   * Initialize resource needed.
-   */
-  public abstract void init();
-
-  /**
-   * Get next tuple
-   *
-   * @return
-   */
-  public abstract List<Object> nextTuple();
-
-  /**
-   * Close all resource.
-   */
-  public abstract void close();
-
-
-  public T getNodeDesc() {
-    return nodeDesc;
+  public Promise<Result> onError(RequestHeader request, Throwable t) {
+    return Promise.<Result>pure(internalServerError(
+            views.html.errorPage.render(t)
+    ));
   }
-
-
-  public void addChild(PlanNode child) {}
 
 }

@@ -36,7 +36,8 @@ public class Executor {
       executeLocalPlan(plan, eState, resultSet);
     } else if (plan instanceof CreateTbl) {
       plan.init();
-    } else if (plan instanceof RemoteSQL) {
+    }
+    else if (plan instanceof RemoteSQL) {
       executeRemoteQuery(plan, eState, resultSet);
     }
 
@@ -44,6 +45,12 @@ public class Executor {
 
   private void executeLocalPlan(PlanNode plan, ExecutionState eState, SdbResultSet
           resultSet) {
+
+    if(plan instanceof LocalDropTBL) {
+      plan.nextTuple();
+      return;
+    }
+
     List<Object[]> resultList = resultSet.getTuple();
     List<Object> tuple = plan.nextTuple();
     while (tuple != null) {

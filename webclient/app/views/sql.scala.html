@@ -31,7 +31,7 @@
                 </form>
                 @if(queryModel.get.isHasResult) {
                 <div class="text-right clear-both">
-                    <code> Running Time: @{
+                    <code style="color:DimGray"> Running Time: @{
                         queryModel.get.getTotalExecutionTime
                         } ms</code>
                 </div>
@@ -93,20 +93,22 @@
         <button type="button" class="btn btn-outline btn-primary btn-tab">Query Execution Analysis</button>
         <div class="panel panel-default">
 
-            <div class="panel-body text-center">
+            <div class="panel-body text-center" style="word-wrap:break-word">
                 <br>
-                <span>SQL Executed on remote cluster server:</span>
+                <span>Rewritten SQL query executed on remote cluster server:</span>
                 <br>
-                <code>
+                <code style="color:DimGray">
                     @{queryModel.get.getRemoteSQLQuery}
                 </code>
 
+                <!--
                 <br>
                 <span class="text-left">Total number of results: @{queryModel.get.getResultSize}</span>
+                -->
             </div>
 
 
-            <div class="panel-body" id="chart-panel">
+            <div class="panel-body text-center" id="chart-panel">
                 <canvas id="barChart"></canvas>
                 <canvas id="pieChart"></canvas>
                 <div id="chart-detail" class="text-center"></div>

@@ -84,6 +84,32 @@ public class MetaStore {
     }
   }
 
+
+  public void delTbl(String dbName, String tblName) {
+    TableMeta tblMeta = getTbl(dbName, tblName);
+
+    if(tblMeta == null)
+      return;
+
+    List<ColumnMeta> columnMetas = tblMeta.getCols();
+
+    Transaction tx = pm.currentTransaction();
+    try {
+      tx.begin();
+      for(ColumnMeta columnMeta : columnMetas) {
+        pm.deletePersistent(columnMeta);
+      }
+
+      pm.deletePersistent(tblMeta);
+      tx.commit();
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+    }
+
+  }
+
   /**
    * Add column meta.
    *
@@ -119,6 +145,7 @@ public class MetaStore {
       }
     }
   }
+
 
   /**
    * Get db meta.
