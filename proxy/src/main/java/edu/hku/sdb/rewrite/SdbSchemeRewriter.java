@@ -53,6 +53,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   BigInteger prime2;
   BigInteger n;
   BigInteger g;
+  BigInteger K;
   BigInteger totient;
 
   // TODO: we assume the names for all tables and inlineView are unique.
@@ -69,6 +70,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     prime2 = new BigInteger(dbMeta.getPrime2());
     n = new BigInteger(dbMeta.getN());
     g = new BigInteger(dbMeta.getG());
+    K = new BigInteger(dbMeta.getK());
     totient = SDBEncrypt.evaluateTotient(prime1, prime2);
   }
 
@@ -225,7 +227,13 @@ public class SdbSchemeRewriter extends AbstractRewriter {
                                                 BigInteger p,
                                                 BigInteger q) {
     Type type = ScalarType.createVarcharType(SDBEncrypt.defaultRandLength);
-    BigInteger m = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger m;
+    if (fieldName.equals(ColumnDefinition.ROW_ID_COLUMN_NAME)){
+      m = K;
+    }
+    else {
+      m = SDBEncrypt.generatePositiveRand(p, q);
+    }
     BigInteger x = SDBEncrypt.generatePositiveRand(p, q);
     SdbColumnKey sdbColumnKey = new SdbColumnKey(m, x);
     ColumnDefinition fieldLiteral = new ColumnDefinition(fieldName, Type.INT,
@@ -418,7 +426,14 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         BigInteger targetX = BigInteger.ZERO;
 
         // Perform Key updates on the join columns
-        rewriteJoinPred(onClause, leftS, rightS, targetM, targetX);
+        if(onClause != null) {
+          rewriteJoinPred(onClause, leftS, rightS, targetM, targetX);
+        }
+        else {
+          RewriteException e = new UnSupportedException("Join clause has no onClause");
+          LOG.error("There is unsupported join clause!", e);
+          throw e;
+        }
 
         // Do transform for all sensitive columns in the selection list
         for (SelectionItem selItem : selList.getItemList()) {
@@ -435,7 +450,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
               else {
                 RewriteException e = new UnSupportedException("Only column can be " +
                         "without alias in the selection list");
-                LOG.error("There is unsupport seletcion item!", e);
+                LOG.error("There is unsupported selection item!", e);
                 throw e;
               }
             }

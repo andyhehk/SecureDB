@@ -291,9 +291,20 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     String sourceFilePath = loadStmt.getFilePath();
     uploadHandler.setSourceFile(sourceFilePath);
 
-    //TODO should read from config file instead of hard code
-    String serverFilePath = "/user/andy/" + tableName.getName() + new Random().nextInt(60000) + ".txt";
-    String hdfsURL = "hdfs://localhost:9000";
+    final String hdfsURL = System.getenv("HDFS_URL");
+    final String userDIR = System.getenv("HDFS_USER_DIR");
+
+    if(hdfsURL == null) {
+      LOG.error("Please specify the HDFS URL!");
+      System.exit(1);
+    }
+
+    if(userDIR == null) {
+      LOG.error("Please specify the user directory in HDFS!");
+      System.exit(1);
+    }
+
+    String serverFilePath = userDIR + "/" + tableName.getName() + new Random().nextInt(60000) + ".txt";
     uploadHandler.setHDFS_URL(hdfsURL);
     uploadHandler.setHDFS_FILE_PATH(hdfsURL + serverFilePath);
 
@@ -303,7 +314,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     uploadHandler.upload();
     LOG.info("Upload time: " + profileUtil.getDuration());
 
-    loadStmt.setFilePath(hdfsURL + serverFilePath);
+    loadStmt.setFilePath(serverFilePath);
     String loadQuery = loadStmt.toSql();
     LOG.info(loadQuery);
     try {

@@ -67,10 +67,12 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
       BigInteger prime2 = SDBEncrypt.generateRandPrime();
       BigInteger n = prime1.multiply(prime2);
       BigInteger g = SDBEncrypt.generatePositiveRand(prime1, prime2);
+      BigInteger K = SDBEncrypt.generatePositiveRand(prime1, prime2);
       dbMeta.setN(n.toString());
       dbMeta.setPrime1(prime1.toString());
       dbMeta.setPrime2(prime2.toString());
       dbMeta.setG(g.toString());
+      dbMeta.setK(K.toString());
       metaStore.addDB(dbMeta);
     }
 
@@ -135,7 +137,27 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
       // register UDFs
       // failed in Spark 1.1.0
       // successful in Hive 0.12
-      stmt.execute("add jar /home/andy/git/SecureDB/udfs/udfs-hive/target/sdb-udfs-hive-0.1.1-SNAPSHOT.jar");
+      final String hiveUDFJAR = System.getenv("UDFS_HIVE_JAR");
+
+      final String hdfsURL = System.getenv("HDFS_URL");
+      final String userDIR = System.getenv("HDFS_USER_DIR");
+
+      if(hdfsURL == null) {
+        LOG.error("Please specify the HDFS URL!");
+        System.exit(1);
+      }
+
+      if(userDIR == null) {
+        LOG.error("Please specify the user directory in HDFS!");
+        System.exit(1);
+      }
+
+      if(hiveUDFJAR == null) {
+        LOG.error("Cannot find the Hive UDF!");
+        System.exit(1);
+      }
+
+      stmt.execute("add jar /home/andy/sdb-udfs-hive-0.2-SNAPSHOT.jar");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.hive.SdbIntAddUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_add AS 'edu.hku.sdb.udf.hive.SdbAddUDF'");
       stmt.execute("CREATE TEMPORARY FUNCTION sdb_mul AS 'edu.hku.sdb.udf.hive.SdbMultiUDF'");

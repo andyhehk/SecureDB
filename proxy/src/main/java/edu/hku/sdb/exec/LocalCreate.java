@@ -50,7 +50,7 @@ public class LocalCreate extends LocalPlanNode<LocalCreateDesc> {
 
     for (ColumnDesc columnDesc : nodeDesc.getRowDesc().getSignature()) {
       ColumnMeta columnMeta = null;
-      // TODO: need to set the daName according to the connection
+      // TODO: need to set the dbName according to the connection
       String dbName = DBMeta.defaultDbName;
       String tableName = nodeDesc.getTableName().getName();
       String colName = columnDesc.getName();

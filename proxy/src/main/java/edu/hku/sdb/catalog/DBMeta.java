@@ -56,6 +56,18 @@ public class DBMeta {
   @Column(length = 2048)
   private String seed = null;
 
+  // The  row ids
+  @Column(length = 2048)
+  private String K = null;
+
+  public String getK() {
+    return K;
+  }
+
+  public void setK(String k) {
+    K = k;
+  }
+
   public static class DBPK extends Key {
 
     private static final long serialVersionUID = 1L;

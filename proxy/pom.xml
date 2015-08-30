@@ -22,12 +22,12 @@
     <parent>
         <groupId>edu.hku.sdb</groupId>
         <artifactId>sdb</artifactId>
-        <version>0.1.1-SNAPSHOT</version>
+        <version>0.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>sdb-proxy</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>SecureDB Proxy</name>
 

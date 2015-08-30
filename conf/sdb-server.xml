@@ -61,7 +61,13 @@
 
     <property>
         <name>edu.hku.sdb.conf.jdbc.url</name>
-        <value>jdbc:hive2://localhost:10000</value>
+        <value>jdbc:hive2://andy-server:10000</value>
     </property>
+
+    <property>
+        <name>edu.hku.sdb.conf.hdfs.url</name>
+        <value>jdbc:hive2://andy-server:10000</value>
+    </property>
+    >
 
 </configuration>
