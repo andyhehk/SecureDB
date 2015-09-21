@@ -68,6 +68,5 @@
         <name>edu.hku.sdb.conf.hdfs.url</name>
         <value>jdbc:hive2://andy-server:10000</value>
     </property>
-    >
 
 </configuration>
