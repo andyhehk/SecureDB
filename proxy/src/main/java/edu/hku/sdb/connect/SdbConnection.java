@@ -19,9 +19,7 @@ package edu.hku.sdb.connect;
 
 import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.MetaStore;
-import edu.hku.sdb.conf.ConnectionConf;
-import edu.hku.sdb.conf.DbConf;
-import edu.hku.sdb.conf.SdbConf;
+import edu.hku.sdb.conf.*;
 import edu.hku.sdb.crypto.SDBEncrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +55,16 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
 
     this.metaStore = metaStore;
 
-    String serverDBName = sdbConf.getServerdbConf().getDatabaseName();
+    String serverDBName = "";
+
+    if(sdbConf.getServerConf().getType() == ServerType.HIVE) {
+     serverDBName = ((HiveServerConf)sdbConf.getServerConf()).getDatabaseName();
+    }
+    else {
+      LOG.error("Unsupported server type: " + sdbConf.getServerConf().getType());
+      System.exit(0);
+    }
+
     dbMeta = metaStore.getDB(serverDBName);
     //create database if empty at the first place
     if (dbMeta == null) {
@@ -77,7 +84,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
     }
 
     LOG.info("Connecting to server DB");
-    serverConnection = getServerConnection(sdbConf.getServerdbConf());
+    serverConnection = getServerConnection(sdbConf.getServerConf());
   }
 
   public SdbConf getSdbConf() {
@@ -115,70 +122,77 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
 
 
 
-  private java.sql.Connection getServerConnection(DbConf dbConf) {
-    String hiveDriverName = dbConf.getJdbcDriverName();
-    String connectionURL = dbConf.getJdbcUrl() + "/" + dbConf.getDatabaseName();
+  private java.sql.Connection getServerConnection(ServerConf serverConf) {
+    if(serverConf.getType() == ServerType.HIVE) {
+      HiveServerConf hiveServerConf = (HiveServerConf) serverConf;
 
-    LOG.info("Connecting to server: " + connectionURL);
+      String hiveDriverName = hiveServerConf.getJdbcDriverName();
+      String connectionURL = hiveServerConf.getJdbcUrl() + "/" + hiveServerConf.getDatabaseName();
 
-    String username = dbConf.getUsername();
-    String password = dbConf.getPassword();
-    try {
-      Class.forName(hiveDriverName);
-    } catch (ClassNotFoundException e) {
-      e.printStackTrace();
-      System.exit(1);
+      LOG.info("Connecting to server: " + connectionURL);
+
+      String username = hiveServerConf.getUsername();
+      String password = hiveServerConf.getPassword();
+      try {
+        Class.forName(hiveDriverName);
+      } catch (ClassNotFoundException e) {
+        e.printStackTrace();
+        System.exit(1);
+      }
+      java.sql.Connection con = null;
+      try {
+        con = DriverManager.getConnection(connectionURL, username, password);
+        java.sql.Statement stmt = con.createStatement();
+
+        // register UDFs
+        // failed in Spark 1.1.0
+        // successful in Hive 0.12
+        final String hiveUDFJAR = System.getenv("UDFS_HIVE_JAR");
+
+        final String hdfsURL = System.getenv("HDFS_URL");
+        final String userDIR = System.getenv("HDFS_USER_DIR");
+
+        if (hdfsURL == null) {
+          LOG.error("Please specify the HDFS URL!");
+          System.exit(1);
+        }
+
+        if (userDIR == null) {
+          LOG.error("Please specify the user directory in HDFS!");
+          System.exit(1);
+        }
+
+        if (hiveUDFJAR == null) {
+          LOG.error("Cannot find the Hive UDF!");
+          System.exit(1);
+        }
+
+        stmt.execute("add jar /home/andy/sdb-udfs-hive-0.2-SNAPSHOT.jar");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.hive.SdbIntAddUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_add AS 'edu.hku.sdb.udf.hive.SdbAddUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_mul AS 'edu.hku.sdb.udf.hive.SdbMultiUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_sum AS 'edu.hku.sdb.udf.hive.SdbSumUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_first AS 'edu.hku.sdb.udf.hive.SdbFirstUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_keyUp AS 'edu.hku.sdb.udf.hive.SdbKeyUpdateUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_keyUpPlain AS 'edu.hku.sdb.udf.hive.SdbKeyUpdatePlainUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_cartesian AS 'edu.hku.sdb.udf.hive.SdbCartProdUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_lt AS 'edu.hku.sdb.udf.hive.SdbLtUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_gt AS 'edu.hku.sdb.udf.hive.SdbGtUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_le AS 'edu.hku.sdb.udf.hive.SdbLeUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_ge AS 'edu.hku.sdb.udf.hive.SdbGeUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_eq AS 'edu.hku.sdb.udf.hive.SdbEqUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_ne AS 'edu.hku.sdb.udf.hive.SdbNeUDF'");
+        stmt.execute("CREATE TEMPORARY FUNCTION sdb_search AS 'edu.hku.sdb.udf.hive.SdbSearchUDF'");
+        stmt.execute("set hive.auto.convert.join=false");
+
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+      return con;
     }
-    java.sql.Connection con = null;
-    try {
-      con = DriverManager.getConnection(connectionURL, username, password);
-      java.sql.Statement stmt = con.createStatement();
-
-      // register UDFs
-      // failed in Spark 1.1.0
-      // successful in Hive 0.12
-      final String hiveUDFJAR = System.getenv("UDFS_HIVE_JAR");
-
-      final String hdfsURL = System.getenv("HDFS_URL");
-      final String userDIR = System.getenv("HDFS_USER_DIR");
-
-      if(hdfsURL == null) {
-        LOG.error("Please specify the HDFS URL!");
-        System.exit(1);
-      }
-
-      if(userDIR == null) {
-        LOG.error("Please specify the user directory in HDFS!");
-        System.exit(1);
-      }
-
-      if(hiveUDFJAR == null) {
-        LOG.error("Cannot find the Hive UDF!");
-        System.exit(1);
-      }
-
-      stmt.execute("add jar /home/andy/sdb-udfs-hive-0.2-SNAPSHOT.jar");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.hive.SdbIntAddUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_add AS 'edu.hku.sdb.udf.hive.SdbAddUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_mul AS 'edu.hku.sdb.udf.hive.SdbMultiUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_sum AS 'edu.hku.sdb.udf.hive.SdbSumUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_first AS 'edu.hku.sdb.udf.hive.SdbFirstUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_keyUp AS 'edu.hku.sdb.udf.hive.SdbKeyUpdateUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_keyUpPlain AS 'edu.hku.sdb.udf.hive.SdbKeyUpdatePlainUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_cartesian AS 'edu.hku.sdb.udf.hive.SdbCartProdUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_lt AS 'edu.hku.sdb.udf.hive.SdbLtUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_gt AS 'edu.hku.sdb.udf.hive.SdbGtUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_le AS 'edu.hku.sdb.udf.hive.SdbLeUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_ge AS 'edu.hku.sdb.udf.hive.SdbGeUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_eq AS 'edu.hku.sdb.udf.hive.SdbEqUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_ne AS 'edu.hku.sdb.udf.hive.SdbNeUDF'");
-      stmt.execute("CREATE TEMPORARY FUNCTION sdb_search AS 'edu.hku.sdb.udf.hive.SdbSearchUDF'");
-      stmt.execute("set hive.auto.convert.join=false");
-
-    } catch (SQLException e) {
-      e.printStackTrace();
+    else {
+      return null;
     }
-    return con;
   }
 
 }

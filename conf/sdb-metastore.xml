@@ -32,7 +32,7 @@
 <configuration>
 
     <property>
-        <name>edu.hku.sdb.conf.driver.type</name>
+        <name>sdb.metastore.type</name>
         <value>mysql</value>
         <description>
             The type of underlying database.
@@ -40,27 +40,27 @@
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.database.username</name>
+        <name>sdb.metastore.username</name>
         <value></value>
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.database.password</name>
+        <name>sdb.metastore.password</name>
         <value></value>
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.database.name</name>
+        <name>sdb.metastore.database.name</name>
         <value>metastore_db</value>
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.jdbc.drivername</name>
+        <name>sdb.metastore.jdbc.drivername</name>
         <value>org.apache.derby.jdbc.EmbeddedDriver</value>
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.jdbc.url</name>
+        <name>sdb.metastore.jdbc.url</name>
         <value>jdbc:derby:metastore_db;create=true</value>
     </property>
 

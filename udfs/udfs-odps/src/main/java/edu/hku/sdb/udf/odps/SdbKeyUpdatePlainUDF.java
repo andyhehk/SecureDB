@@ -15,22 +15,27 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.conf;
+package edu.hku.sdb.udf.odps;
 
-import junit.framework.TestCase;
+import edu.hku.sdb.udf.util.TypeCast;
+import edu.hku.sdb.udf.util.UDFHandler;
+import com.aliyun.odps.udf.UDF;
 
-public class SdbConfTest extends TestCase {
-  SdbConf sdbConf;
+import java.math.BigInteger;
 
+public class SdbKeyUpdatePlainUDF extends UDF {
 
-  public void setUp() throws Exception {
-    super.setUp();
-    sdbConf = new SdbConf("src/test/resources/conf");
+  // a is a column with Integer/Long type
+  public String evaluate(Long a, String s, String p, String q, String n) {
+    if (a == null || s == null || p == null || q == null || n == null) {
+      return null;
+    }
+
+    BigInteger result = UDFHandler.keyUpdate(BigInteger.valueOf(a),
+            TypeCast.stringToBigInt(s), TypeCast.stringToBigInt(p),
+            TypeCast.stringToBigInt(q), TypeCast.stringToBigInt(n));
+
+    return TypeCast.bigIntToString(result);
   }
 
-  public void testConnectionInit() throws Exception {
-    ConnectionConf connectionConf = sdbConf.getConnectionConf();
-    assertEquals(connectionConf.getSdbAddress(), "//localhost");
-    assertEquals(connectionConf.getSdbPort(), new Integer(2019));
-  }
 }

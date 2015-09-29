@@ -32,7 +32,7 @@
 <configuration>
 
     <property>
-        <name>edu.hku.sdb.conf.driver.type</name>
+        <name>sdb.server.type</name>
         <value>spark</value>
         <description>
             The type of underlying database.
@@ -40,32 +40,32 @@
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.database.username</name>
+        <name>sdb.server.username</name>
         <value>andy</value>
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.database.password</name>
+        <name>sdb.server.password</name>
         <value></value>
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.database.name</name>
+        <name>sdb.server.database.name</name>
         <value>default</value>
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.jdbc.drivername</name>
+        <name>sdb.server.jdbc.drivername</name>
         <value>org.apache.hive.jdbc.HiveDriver</value>
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.jdbc.url</name>
+        <name>sdb.server.jdbc.url</name>
         <value>jdbc:hive2://andy-server:10000</value>
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.hdfs.url</name>
+        <name>sdb.server.hdfs.url</name>
         <value>jdbc:hive2://andy-server:10000</value>
     </property>
 

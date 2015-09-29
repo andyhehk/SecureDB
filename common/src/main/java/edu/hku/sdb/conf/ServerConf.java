@@ -17,15 +17,24 @@
 
 package edu.hku.sdb.conf;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class SparksqlDbConf extends DbConf {
-  private static final Logger LOG = LoggerFactory
-          .getLogger(SparksqlDbConf.class);
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
-  public SparksqlDbConf() {
-    super();
+public abstract class ServerConf extends Configuration {
+
+  protected ServerType type;
+
+  public static String CONF_FILE = "sdb_server.xml";
+
+  public ServerType getType() {
+    return type;
   }
+
+  public void setType(ServerType type) {
+    this.type = type;
+  }
+
 
 }

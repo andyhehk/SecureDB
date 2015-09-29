@@ -17,14 +17,31 @@
 
 package edu.hku.sdb.conf;
 
+import java.util.Map;
+
 public class ConnectionConf extends Configuration {
   private String sdbAddress;
   private Integer sdbPort;
-  private Integer maxConnectionNumber;
+  private Integer maxConnection;
+
+  // Proxy related
+  public static String SDB_PROXY_CONNECTION_MAX = "sdb.proxy.connection.max";
+  public static String SDB_PROXY_CONNECTION_PORT = "sdb.proxy.connection.port";
+  public static String SDB_PROXY_CONNECTION_ADDRESS = "sdb.proxy.connection.address";
+
+  public static String CONF_FILE = "sdb_connection.xml";
+
+  public ConnectionConf(Map<String, String> prop) {
+    sdbAddress = prop.get(SDB_PROXY_CONNECTION_ADDRESS);
+    sdbPort = Integer.valueOf(prop.get(SDB_PROXY_CONNECTION_PORT));
+    maxConnection = Integer.valueOf(prop.get(SDB_PROXY_CONNECTION_MAX));
+  }
 
   public String getSdbAddress() {
     return sdbAddress;
   }
+
+
 
   public void setSdbAddress(String sdbAddress) {
     this.sdbAddress = sdbAddress;
@@ -38,18 +55,18 @@ public class ConnectionConf extends Configuration {
     this.sdbPort = sdbPort;
   }
 
-  public Integer getMaxConnectionNumber() {
-    return maxConnectionNumber;
+  public Integer getMaxConnection() {
+    return maxConnection;
   }
 
-  public void setMaxConnectionNumber(Integer maxConnectionNumber) {
-    this.maxConnectionNumber = maxConnectionNumber;
+  public void setMaxConnection(Integer maxConnection) {
+    this.maxConnection = maxConnection;
   }
 
   public void printConfig() {
     String config = "Sdb address: " + sdbAddress + "\n" + "Sdb port: "
             + sdbPort + "\n" + "Maximum number of connection: "
-            + maxConnectionNumber + "\n";
+            + maxConnection + "\n";
     System.out.println(config);
   }
 

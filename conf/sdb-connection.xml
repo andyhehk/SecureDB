@@ -32,17 +32,17 @@
 <configuration>
 
     <property>
-        <name>edu.hku.sdb.conf.connection.maxconnumber</name>
+        <name>sdb.proxy.connection.max</name>
         <value>100</value>
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.connection.port</name>
+        <name>sdb.proxy.connection.port</name>
         <value>2019</value>
     </property>
 
     <property>
-        <name>edu.hku.sdb.conf.connection.address</name>
+        <name>sdb.proxy.connection.address</name>
         <value>//localhost</value>
     </property>
 

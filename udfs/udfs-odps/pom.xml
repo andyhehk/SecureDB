@@ -21,24 +21,39 @@
 
     <parent>
         <groupId>edu.hku.sdb</groupId>
-        <artifactId>sdb</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <artifactId>sdb-udfs</artifactId>
+		    <version>0.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <artifactId>sdb-udfs-odps</artifactId>
+    <packaging>jar</packaging>
+    <name>SecureDB ODPS UDFS</name>
+
     <properties>
         <!-- Build properties -->
+        <!-- The java version should be compatible with the server -->
+        <java.compile.version>1.6</java.compile.version>
     </properties>
 
-    <artifactId>sdb-udfs</artifactId>
-    <packaging>pom</packaging>
-    <name>SecureDB UDFS</name>
+    <dependencies>
+        <dependency>
+            <groupId>edu.hku.sdb</groupId>
+            <artifactId>sdb-udfs-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+			<groupId>com.aliyun.odps</groupId>
+			<artifactId>odps-sdk-udf</artifactId>
+			<version>0.18.3-public</version>
+		</dependency>
+        
+    </dependencies>
 
-    <modules>
-        <module>udfs-common</module>
-        <module>udfs-hive</module>
-        <module>udfs-odps</module>
-    </modules>
+    <build>
+        <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+        <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+    </build>
 
 </project>
 

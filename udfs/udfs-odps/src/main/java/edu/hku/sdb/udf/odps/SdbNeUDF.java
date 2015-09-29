@@ -15,12 +15,18 @@
  * limitations under the License.
  */
 
-package edu.hku.sdb.conf;
+package edu.hku.sdb.udf.odps;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import edu.hku.sdb.udf.util.TypeCast;
+import edu.hku.sdb.udf.util.UDFHandler;
+import com.aliyun.odps.udf.UDF;
 
-public class MysqlDbConf extends DbConf {
-  private static final Logger LOG = LoggerFactory.getLogger(MysqlDbConf.class);
+public class SdbNeUDF extends UDF {
 
+  public Boolean evaluate(String value) {
+    if (value == null) {
+      return false;
+    }
+    return !UDFHandler.equal(TypeCast.stringToBigInt(value));
+  }
 }
