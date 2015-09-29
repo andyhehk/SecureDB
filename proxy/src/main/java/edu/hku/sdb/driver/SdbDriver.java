@@ -170,11 +170,12 @@ public class SdbDriver {
   public static void main(String[] args) {
     CommandLine line = parseAndValidateInput(args);
 
+    String confDir = line.getOptionValue(CONF);
     Properties properties = line.getOptionProperties("D");
 
-    File sdbConnectionConfigFile = new File(properties.getProperty(CONF) + "/" + ConnectionConf.CONF_FILE);
-    File sdbServerConfigFile = new File(properties.getProperty(CONF) + "/"  + ServerConf.CONF_FILE);
-    File sdbMetadbConfigFile = new File(properties.getProperty(CONF) + "/" + MetadbConf.CONF_FILE);
+    File sdbConnectionConfigFile = new File(confDir + "/" + ConnectionConf.CONF_FILE);
+    File sdbServerConfigFile = new File(confDir + "/"  + ServerConf.CONF_FILE);
+    File sdbMetadbConfigFile = new File(confDir + "/" + MetadbConf.CONF_FILE);
 
     XMLPropParser propParser = new XMLPropParser();
     // Parse all the sdb connection config
@@ -193,7 +194,7 @@ public class SdbDriver {
     }
 
     // Cet log4j config
-    PropertyConfigurator.configure(properties.getProperty(CONF) + "/" + "log4j.properties");
+    PropertyConfigurator.configure(confDir + "/" + "log4j.properties");
 
     ServerConf serverConf = ServerConfFactory.createServerConf(prop);
     MetadbConf metadbConf = MetadbConfFactory.createMetadbConf(prop);

@@ -103,7 +103,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
 
         //create sdbStatement
         LOG.info("Creating sdb statement");
-        SdbStatement sdbStatement = new SdbStatement(metaStore, serverConnection, dbMeta);
+        SdbStatement sdbStatement = new SdbStatement(metaStore, serverConnection, dbMeta, sdbConf.getServerConf());
         serviceUrl = connectionConf.getSdbAddress() + ":"
                 + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
         Naming.rebind(serviceUrl, sdbStatement);
@@ -147,27 +147,15 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
         // register UDFs
         // failed in Spark 1.1.0
         // successful in Hive 0.12
-        final String hiveUDFJAR = System.getenv("UDFS_HIVE_JAR");
+        final String serverUDFPATH = System.getenv("SDB_SERVER_UDF_PATH");
 
-        final String hdfsURL = System.getenv("HDFS_URL");
-        final String userDIR = System.getenv("HDFS_USER_DIR");
-
-        if (hdfsURL == null) {
-          LOG.error("Please specify the HDFS URL!");
+        if (serverUDFPATH == null) {
+          LOG.error("Please specify the path that the UDF jar store on server!");
           System.exit(1);
         }
 
-        if (userDIR == null) {
-          LOG.error("Please specify the user directory in HDFS!");
-          System.exit(1);
-        }
 
-        if (hiveUDFJAR == null) {
-          LOG.error("Cannot find the Hive UDF!");
-          System.exit(1);
-        }
-
-        stmt.execute("add jar /home/andy/sdb-udfs-hive-0.2-SNAPSHOT.jar");
+        stmt.execute("add jar " + serverUDFPATH);
         stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.hive.SdbIntAddUDF'");
         stmt.execute("CREATE TEMPORARY FUNCTION sdb_add AS 'edu.hku.sdb.udf.hive.SdbAddUDF'");
         stmt.execute("CREATE TEMPORARY FUNCTION sdb_mul AS 'edu.hku.sdb.udf.hive.SdbMultiUDF'");

@@ -18,6 +18,8 @@
 package edu.hku.sdb.upload;
 
 import edu.hku.sdb.catalog.*;
+import edu.hku.sdb.conf.HiveServerConf;
+import edu.hku.sdb.conf.ServerConf;
 import edu.hku.sdb.crypto.SDBEncrypt;
 import edu.hku.sdb.crypto.SearchEncrypt;
 import edu.hku.sdb.parse.ColumnDefinition;
@@ -54,6 +56,7 @@ public class UploadHandler {
   private boolean localMode;
   private FileSystem hdfs;
   private MetaStore metaStore;
+  private ServerConf serverConf;
   private List<ColumnMeta> colMetas;
   private TableName tableName;
 
@@ -76,9 +79,10 @@ public class UploadHandler {
   //List<ColumnMeta> allCols;
 
 
-  public UploadHandler(MetaStore metaStore, TableName tableName) {
-    setMetaStore(metaStore);
-    setTableName(tableName);
+  public UploadHandler(MetaStore metaStore, TableName tableName, ServerConf serverConf) {
+    this.metaStore = metaStore;
+    this.tableName = tableName;
+    this.serverConf = serverConf;
     searchEncrypt = SearchEncrypt.getInstance();
   }
 
@@ -133,35 +137,42 @@ public class UploadHandler {
 
 
   public void upload() {
-    BufferedWriter bufferedWriter = getBufferedWriter();
-    BufferedReader bufferedReader = null;
 
-    DBMeta dbMeta = metaStore.getDB(dbName);
-    n = new BigInteger(dbMeta.getN());
-    prime1 = new BigInteger(dbMeta.getPrime1());
-    prime2 = new BigInteger(dbMeta.getPrime2());
-    g = new BigInteger(dbMeta.getG());
-    totient = SDBEncrypt.evaluateTotient(prime1, prime2);
-    nPlusOne = n.add(BigInteger.ONE);
-    nSquared = n.multiply(n);
+    switch (serverConf.getType()) {
+      case HIVE:
+        // We assume the default store engine for hive is hdfs
+        BufferedWriter bufferedWriter = getHDFSBufferedWriter();
+        BufferedReader bufferedReader = null;
 
-    colMetas = metaStore.getTbl(dbName, tableName.getName()).getCols();
+        DBMeta dbMeta = metaStore.getDB(dbName);
+        n = new BigInteger(dbMeta.getN());
+        prime1 = new BigInteger(dbMeta.getPrime1());
+        prime2 = new BigInteger(dbMeta.getPrime2());
+        g = new BigInteger(dbMeta.getG());
+        totient = SDBEncrypt.evaluateTotient(prime1, prime2);
+        nPlusOne = n.add(BigInteger.ONE);
+        nSquared = n.multiply(n);
 
-    try {
-      bufferedReader = new BufferedReader(new FileReader(sourceFile), 32768);
-      String line;
-      //Read and process plaintext line by line
-      while ((line = bufferedReader.readLine()) != null) {
-        String newLine = processLine(line);
-        bufferedWriter.write(newLine);
-      }
+        colMetas = metaStore.getTbl(dbName, tableName.getName()).getCols();
 
-      //close resources
-      bufferedReader.close();
-      bufferedWriter.close();
-      hdfs.close();
-    } catch (IOException e) {
-      e.printStackTrace();
+        try {
+          bufferedReader = new BufferedReader(new FileReader(sourceFile), 32768);
+          String line;
+          //Read and process plaintext line by line
+          while ((line = bufferedReader.readLine()) != null) {
+            String newLine = processLine(line);
+            bufferedWriter.write(newLine);
+          }
+
+          //close resources
+          bufferedReader.close();
+          bufferedWriter.close();
+          hdfs.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      default:
+          break;
     }
 
   }
@@ -169,10 +180,13 @@ public class UploadHandler {
   /**
    * @return a buffered writer for target file in HDFS
    */
-  private BufferedWriter getBufferedWriter() {
+  private BufferedWriter getHDFSBufferedWriter() {
     BufferedWriter bufferedWriter = null;
     Configuration configuration = new Configuration();
-    System.setProperty("HADOOP_USER_NAME", "andy");
+
+    HiveServerConf hiveServerConf = (HiveServerConf) serverConf;
+
+    System.setProperty("HADOOP_USER_NAME", hiveServerConf.getHadoopUName());
     //configuration.
     if (localMode) {
       configuration.set("mapred.job.tracker", "local");

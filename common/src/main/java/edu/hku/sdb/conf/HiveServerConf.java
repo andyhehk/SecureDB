@@ -21,11 +21,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HiveServerConf extends JDBCServerConf {
+  private String hadoopUName;
+
   private static final Logger LOG = LoggerFactory
           .getLogger(HiveServerConf.class);
 
   public HiveServerConf() {
     super();
+  }
+
+  public void setHadoopUName(String hadoopUName) {
+    this.hadoopUName = hadoopUName;
+  }
+
+  public String getHadoopUName() {
+    return hadoopUName;
   }
 
 }

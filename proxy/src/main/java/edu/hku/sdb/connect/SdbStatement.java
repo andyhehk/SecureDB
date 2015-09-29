@@ -18,6 +18,7 @@
 package edu.hku.sdb.connect;
 
 import edu.hku.sdb.catalog.*;
+import edu.hku.sdb.conf.ServerConf;
 import edu.hku.sdb.exec.*;
 import edu.hku.sdb.optimize.Optimizer;
 import edu.hku.sdb.optimize.RuleBaseOptimizer;
@@ -57,10 +58,12 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   private MetaStore metaDB;
   private Connection serverConnection;
   private DBMeta dbMeta;
+  private ServerConf serverConf;
 
-  public SdbStatement(MetaStore metaDB, Connection serverConnection, DBMeta dbMeta) throws RemoteException {
+  public SdbStatement(MetaStore metaDB, Connection serverConnection, DBMeta dbMeta, ServerConf serverConf) throws RemoteException {
     super();
     this.dbMeta = dbMeta;
+    this.serverConf = serverConf;
     setMetaDB(metaDB);
     setServerConnection(serverConnection);
   }
@@ -287,7 +290,7 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   public SdbResultSet executeLoadStmt(LoadStmt loadStmt) throws RemoteException {
     // another programme encrypts & uploads the data
     TableName tableName = loadStmt.getTableName();
-    UploadHandler uploadHandler = new UploadHandler(metaDB, tableName);
+    UploadHandler uploadHandler = new UploadHandler(metaDB, tableName, serverConf);
     String sourceFilePath = loadStmt.getFilePath();
     uploadHandler.setSourceFile(sourceFilePath);
 

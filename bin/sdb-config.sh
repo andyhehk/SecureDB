@@ -38,8 +38,9 @@ export SDB_CONF_DIR="$SDB_HOME/conf"
 
 export SDB_PROXY_LIB="$SDB_HOME/proxy/lib"
 export SDB_UDFS_HIVE_DIR="$SDB_HOME/udfs/udfs-hive"
-export HDFS_URL="hdfs://andy-server:9000"
-export HDFS_USER_DIR="/user/andy"
+
+# Pull all user define parameters
+. "$SDB_CONF_DIR/sdb-env.sh" 
 
 for jar in ${SDB_PROXY_LIB}/hive-jdbc/*.jar; do
     SDB_HIVE_JDBC_JAR+=:$jar;

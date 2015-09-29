@@ -33,7 +33,7 @@
 
     <property>
         <name>sdb.server.type</name>
-        <value>spark</value>
+        <value>hive</value>
         <description>
             The type of underlying database.
         </description>
@@ -41,7 +41,7 @@
 
     <property>
         <name>sdb.server.username</name>
-        <value>andy</value>
+        <value>andyhe</value>
     </property>
 
     <property>
@@ -67,6 +67,11 @@
     <property>
         <name>sdb.server.hdfs.url</name>
         <value>jdbc:hive2://andy-server:10000</value>
+    </property>
+
+    <property>
+        <name>sdb.server.hadoop.username</name>
+        <value>andyhe</value>
     </property>
 
 </configuration>

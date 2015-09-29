@@ -5,6 +5,6 @@ package edu.hku.sdb.conf;
  */
 public class MetadbConf extends  JDBCServerConf {
 
-  public static String CONF_FILE = "sdb_metastore.xml";
+  public static String CONF_FILE = "sdb-metastore.xml";
 
 }

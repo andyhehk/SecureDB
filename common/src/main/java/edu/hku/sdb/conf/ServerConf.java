@@ -26,7 +26,7 @@ public abstract class ServerConf extends Configuration {
 
   protected ServerType type;
 
-  public static String CONF_FILE = "sdb_server.xml";
+  public static String CONF_FILE = "sdb-server.xml";
 
   public ServerType getType() {
     return type;

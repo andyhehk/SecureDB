@@ -50,7 +50,12 @@ public class XMLPropParser extends XMLBaseParser<Map<String, String>> {
 	private static String getValue(String tag, Element element) {
 		NodeList nodes = element.getElementsByTagName(tag).item(0).getChildNodes();
 		Node node = nodes.item(0);
-		return node.getNodeValue();
+
+		if(node != null)
+			return node.getNodeValue();
+
+		else
+			return "";
 	}
 
 

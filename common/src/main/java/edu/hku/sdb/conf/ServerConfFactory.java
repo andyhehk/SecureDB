@@ -19,16 +19,7 @@ package edu.hku.sdb.conf;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
-import java.io.IOException;
 import java.util.Map;
 
 public class ServerConfFactory {
@@ -43,11 +34,12 @@ public class ServerConfFactory {
   public static String SDB_SERVER_DATABASE_NAME = "sdb.server.database.name";
   public static String SDB_SERVER_JDBC_DRIVERNAME = "sdb.server.jdbc.drivername";
   public static String SDB_SERVER_JDBC_URL = "sdb.server.jdbc.url";
+  public static String SDB_SERVER_HADOOP_USERNAME = "sdb.server.hadoop.username";
 
   static public ServerConf createServerConf(Map<String, String> prop) {
 
-    if(prop.get(SDB_SERVER_TYPE).equals(ServerType.HIVE)) {
-      JDBCServerConf hiveServerConf = new HiveServerConf();
+    if(prop.get(SDB_SERVER_TYPE).equals(ServerType.HIVE.toString())) {
+      HiveServerConf hiveServerConf = new HiveServerConf();
 
       hiveServerConf.setDatabaseName(prop.get(SDB_SERVER_DATABASE_NAME));
       hiveServerConf.setJdbcDriverName(prop.get(SDB_SERVER_JDBC_DRIVERNAME));
@@ -55,16 +47,24 @@ public class ServerConfFactory {
       hiveServerConf.setPassword(prop.get(SDB_SERVER_PASSWORD));
       hiveServerConf.setUsername(prop.get(SDB_SERVER_USERNAME));
       hiveServerConf.setType(ServerType.HIVE);
+      hiveServerConf.setHadoopUName(prop.get(SDB_SERVER_HADOOP_USERNAME));
       return hiveServerConf;
     }
 
-    else if(prop.get(SDB_SERVER_TYPE).equals(ServerType.ODPS)) {
+    else if(prop.get(SDB_SERVER_TYPE).equals(ServerType.ODPS.toString())) {
       ODPSServerConf odpsServerConf = new ODPSServerConf();
       odpsServerConf.setType(ServerType.ODPS);
       return odpsServerConf;
     }
 
-    return null;
+    else {
+
+      LOG.error("Unsupported server type: " + prop.get(SDB_SERVER_TYPE));
+      System.exit(1);
+      return null;
+    }
+
+
   }
 
 

@@ -29,7 +29,7 @@ public class ConnectionConf extends Configuration {
   public static String SDB_PROXY_CONNECTION_PORT = "sdb.proxy.connection.port";
   public static String SDB_PROXY_CONNECTION_ADDRESS = "sdb.proxy.connection.address";
 
-  public static String CONF_FILE = "sdb_connection.xml";
+  public static String CONF_FILE = "sdb-connection.xml";
 
   public ConnectionConf(Map<String, String> prop) {
     sdbAddress = prop.get(SDB_PROXY_CONNECTION_ADDRESS);
