@@ -123,22 +123,9 @@ public class TableMeta {
    * @param tblName the tblName to set
    */
   public void setTblName(String tblName) {
-    this.tblName = tblName;
+    this.tblName = tblName.toLowerCase();
   }
 
-  /**
-   * @return the name
-   */
-  public String getName() {
-    return getTblName();
-  }
-
-  /**
-   * @param tblName the name to set
-   */
-  public void setName(String tblName) {
-    this.setTblName(tblName.toLowerCase());
-  }
 
   /**
    * Remove a column by name
@@ -165,6 +152,14 @@ public class TableMeta {
    */
   public List<ColumnMeta> getCols() {
     return cols;
+  }
+
+  public ColumnMeta getCol(String colName) {
+    for(ColumnMeta columnMeta : cols) {
+      if(columnMeta.getColName().equals(colName))
+        return columnMeta;
+    }
+    return null;
   }
 
   /**

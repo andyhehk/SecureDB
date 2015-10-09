@@ -18,7 +18,6 @@
 package edu.hku.sdb.parse;
 
 import com.google.common.base.Joiner;
-import edu.hku.sdb.catalog.SdbColumnKey;
 import edu.hku.sdb.catalog.SearchColumnKey;
 import edu.hku.sdb.catalog.Type;
 

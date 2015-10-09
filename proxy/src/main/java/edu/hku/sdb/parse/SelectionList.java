@@ -20,10 +20,9 @@ package edu.hku.sdb.parse;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.hku.sdb.catalog.DBMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.hku.sdb.catalog.MetaStore;
 
 import com.google.common.base.Joiner;
 
@@ -100,10 +99,10 @@ public class SelectionList implements ParseNode {
    * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.catalog.DBMeta)
    */
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+  public void analyze(DBMeta dbMeta, ParseNode... fieldSources)
           throws SemanticException {
     for (SelectionItem item : itemList)
-      item.analyze(metaDB, fieldSources);
+      item.analyze(dbMeta, fieldSources);
   }
 
   /*

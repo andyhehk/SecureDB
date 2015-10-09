@@ -32,8 +32,8 @@
                 @if(queryModel.get.isHasResult) {
                 <div class="text-right clear-both">
                     <code style="color:DimGray"> Running Time: @{
-                        queryModel.get.getTotalExecutionTime
-                        } ms</code>
+                        queryModel.get.getTotalExecutionTime/1000.0
+                        } s</code>
                 </div>
                 }else{
                 <div class="text-right clear-both">

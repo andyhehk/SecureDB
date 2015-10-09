@@ -59,6 +59,11 @@ public class SdbSumUDF extends UDAF {
      * @throws HiveException
      */
     public boolean iterate(Text value, Text n) throws HiveException {
+      if(value == null) {
+        sumItem.n = n;
+        return true;
+      }
+
       sumItem.n = n;
       sumItem.sum = TypeCast.bigIntToText(TypeCast.textToBigInt(sumItem.sum).
               add(TypeCast.textToBigInt(value)).mod(TypeCast.textToBigInt(sumItem.n)));
@@ -91,12 +96,13 @@ public class SdbSumUDF extends UDAF {
      * @return
      */
     public boolean merge(Sum another){
-      if(another == null) return true;
+      if(another == null)
+        return true;
 
       BigInteger n;
-      if(sumItem.n != null)
+      if (sumItem.n != null)
         n = TypeCast.textToBigInt(sumItem.n);
-      else if(another.n != null)
+      else if (another.n != null)
         n = TypeCast.textToBigInt(another.n);
       else {
         LOG.error("The public key is null!");
@@ -106,6 +112,7 @@ public class SdbSumUDF extends UDAF {
       sumItem.sum = TypeCast.bigIntToText(TypeCast.textToBigInt(sumItem.sum).
               add(TypeCast.textToBigInt(another.sum)).mod(n));
       return true;
+
     }
   }
 

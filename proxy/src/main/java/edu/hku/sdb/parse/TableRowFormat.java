@@ -18,7 +18,7 @@
 package edu.hku.sdb.parse;
 
 
-import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.DBMeta;
 
 public class TableRowFormat implements ParseNode {
 
@@ -34,7 +34,7 @@ public class TableRowFormat implements ParseNode {
   }
 
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
+  public void analyze(DBMeta dbMeta, ParseNode... fieldSources) throws SemanticException {
 
   }
 

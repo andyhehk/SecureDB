@@ -38,7 +38,7 @@ import javax.crypto.SecretKey;
 /**
  * The rewrite class performs all query rewriting based on SDB's encryption scheme.
  */
-public class SdbSchemeRewriter extends AbstractRewriter {
+public class SdbSchemeRewriter extends SchemeDecorator {
 
   public enum SecurityLevel {
     HIGH, MEDIUM
@@ -53,6 +53,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   BigInteger prime2;
   BigInteger n;
   BigInteger g;
+  BigInteger K;
   BigInteger totient;
 
   // TODO: we assume the names for all tables and inlineView are unique.
@@ -62,13 +63,14 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   /**
    * @param dbMeta
    */
-  public SdbSchemeRewriter(DBMeta dbMeta) {
-    super(dbMeta);
+  public SdbSchemeRewriter(DBMeta dbMeta, AbstractRewriter rewriter) {
+    super(dbMeta, rewriter);
 
     prime1 = new BigInteger(dbMeta.getPrime1());
     prime2 = new BigInteger(dbMeta.getPrime2());
     n = new BigInteger(dbMeta.getN());
     g = new BigInteger(dbMeta.getG());
+    K = new BigInteger(dbMeta.getK());
     totient = SDBEncrypt.evaluateTotient(prime1, prime2);
   }
 
@@ -76,11 +78,34 @@ public class SdbSchemeRewriter extends AbstractRewriter {
   public void rewrite(ParseNode parseTree) throws RewriteException {
     LOG.info("Begin the rewrite process");
     rewriteInternal(parseTree);
+    if(rewriter != null)
+      rewriter.rewrite(parseTree);
     LOG.info("End the rewrite process");
   }
 
+  /**
+   * Internal rewrite function. All rewriting should be involved by this
+   * function.
+   *
+   * @param parseTree
+   * @return
+   */
+  protected void rewriteInternal(ParseNode parseTree)
+          throws RewriteException {
 
-  @Override
+    if (parseTree instanceof SelectStmt) {
+      rewriteSelStmt((SelectStmt) parseTree);
+      // No need to get the auxiliary columns at the final step.
+      ((SelectStmt) parseTree).getSelectList().setAuxiliaryR(null);
+      ((SelectStmt) parseTree).getSelectList().setAuxiliaryS(null);
+    } else if (parseTree instanceof CreateStmt) {
+      rewriteCreateStmt((CreateStmt) parseTree);
+    } else if (parseTree instanceof LoadStmt) {
+      ;
+    } else throw new UnSupportedException(" this kind of query statement!");
+  }
+
+
   protected void rewriteSelStmt(SelectStmt selStmt) throws
           RewriteException {
 
@@ -139,26 +164,12 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     return needJoinFirst;
   }
 
-  @Override
   protected void rewriteCreateStmt(CreateStmt createStmt) throws
           RewriteException {
     rewriteCreateFieldLists(createStmt.getColumnDefinitions());
-    rewriteCreateRowFormat(createStmt);
-  }
-
-  private void rewriteCreateRowFormat(CreateStmt createStmt) {
-    TableRowFormat tableRowFormat = createStmt.getTableRowFormat();
-    //TODO get default separator ";" from config file
-    if (tableRowFormat == null) {
-      tableRowFormat = new TableRowFormat();
-      tableRowFormat.setFieldDelimiter(ParserConstant.DEFAULT_FIELD_DELIMETER);
-      tableRowFormat.setColletionDelimiter(ParserConstant.DEFAULT_COLLETION_DELIMETER);
-      createStmt.setTableRowFormat(tableRowFormat);
-    }
   }
 
   private void rewriteCreateFieldLists(List<ColumnDefinition> fieldList) throws UnSupportedException {
-    TableName tableName = fieldList.get(0).getTableName();
 
     for (ColumnDefinition colDefinition : fieldList) {
       if (colDefinition.involveEncrytedCol()) {
@@ -166,30 +177,25 @@ public class SdbSchemeRewriter extends AbstractRewriter {
 
         if(originType instanceof ScalarType) {
           int index = fieldList.indexOf(colDefinition);
-          Type type;
           switch ( ((ScalarType) originType).getType()) {
             case INT:
             case BIGINT:
             case TINYINT:
             case DECIMAL:
-              type = ScalarType.createVarcharType(SDBEncrypt.defaultRandLength);
               BigInteger m = SDBEncrypt.generatePositiveRand(prime1, prime2);
               BigInteger x = SDBEncrypt.generatePositiveRand(prime1, prime2);
               SdbColumnKey colKey = new SdbColumnKey(m, x);
               colDefinition.setSDBEncrypted(true);
-              colDefinition.setRewrittenType(type);
               colDefinition.setSDBColumnKey(colKey);
               break;
             case CHAR:
             case VARCHAR:
             case STRING:
-              type = new ArrayType(ScalarType.createVarcharType(SearchEncrypt.DEAULTT_LENGTH));
               SearchEncrypt searchEncrypt = SearchEncrypt.getInstance();
               try {
                 SEKey key = searchEncrypt.keyGen();
                 SearchColumnKey searchColKey = new SearchColumnKey(key, searchEncrypt.prkey);
                 colDefinition.setSDBEncrypted(true);
-                colDefinition.setRewrittenType(type);
                 colDefinition.setSearchColKey(searchColKey);
               } catch (SEException e) {
                 e.printStackTrace();
@@ -208,28 +214,32 @@ public class SdbSchemeRewriter extends AbstractRewriter {
     }
 
     ColumnDefinition rowIdField = buildAuxiliaryColumn
-            (ColumnDefinition.ROW_ID_COLUMN_NAME, tableName, prime1, prime2);
+            (ColumnDefinition.ROW_ID_COLUMN_NAME, prime1, prime2);
     fieldList.add(rowIdField);
 
     ColumnDefinition rField = buildAuxiliaryColumn(ColumnDefinition
-            .R_COLUMN_NAME, tableName, prime1, prime2);
+            .R_COLUMN_NAME, prime1, prime2);
     fieldList.add(rField);
 
     ColumnDefinition sField = buildAuxiliaryColumn(ColumnDefinition
-            .S_COLUMN_NAME, tableName, prime1, prime2);
+            .S_COLUMN_NAME, prime1, prime2);
     fieldList.add(sField);
   }
 
   private ColumnDefinition buildAuxiliaryColumn(String fieldName,
-                                                TableName tableName,
                                                 BigInteger p,
                                                 BigInteger q) {
     Type type = ScalarType.createVarcharType(SDBEncrypt.defaultRandLength);
-    BigInteger m = SDBEncrypt.generatePositiveRand(p, q);
+    BigInteger m;
+    if (fieldName.equals(ColumnDefinition.ROW_ID_COLUMN_NAME)){
+      m = K;
+    }
+    else {
+      m = SDBEncrypt.generatePositiveRand(p, q);
+    }
     BigInteger x = SDBEncrypt.generatePositiveRand(p, q);
     SdbColumnKey sdbColumnKey = new SdbColumnKey(m, x);
-    ColumnDefinition fieldLiteral = new ColumnDefinition(fieldName, Type.INT,
-            tableName, true, sdbColumnKey);
+    ColumnDefinition fieldLiteral = new ColumnDefinition(fieldName, Type.INT, true, sdbColumnKey);
     fieldLiteral.setRewrittenType(type);
     return fieldLiteral;
   }
@@ -418,7 +428,14 @@ public class SdbSchemeRewriter extends AbstractRewriter {
         BigInteger targetX = BigInteger.ZERO;
 
         // Perform Key updates on the join columns
-        rewriteJoinPred(onClause, leftS, rightS, targetM, targetX);
+        if(onClause != null) {
+          rewriteJoinPred(onClause, leftS, rightS, targetM, targetX);
+        }
+        else {
+          RewriteException e = new UnSupportedException("Join clause has no onClause");
+          LOG.error("There is unsupported join clause!", e);
+          throw e;
+        }
 
         // Do transform for all sensitive columns in the selection list
         for (SelectionItem selItem : selList.getItemList()) {
@@ -435,7 +452,7 @@ public class SdbSchemeRewriter extends AbstractRewriter {
               else {
                 RewriteException e = new UnSupportedException("Only column can be " +
                         "without alias in the selection list");
-                LOG.error("There is unsupport seletcion item!", e);
+                LOG.error("There is unsupported selection item!", e);
                 throw e;
               }
             }

@@ -18,6 +18,7 @@
 package edu.hku.sdb.exec;
 
 import edu.hku.sdb.connect.SDBResultSetMetaData;
+import edu.hku.sdb.connect.ServerConnection;
 import edu.hku.sdb.plan.RemoteSQLDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,7 @@ public abstract class RemoteSQL extends PlanNode<RemoteSQLDesc> {
           .getLogger(RemoteSQL.class);
   private long serverExecutionTime;
 
-  public RemoteSQL(String query, Connection connection) {
+  public RemoteSQL(String query, ServerConnection connection) {
     nodeDesc = new RemoteSQLDesc();
     nodeDesc.setQuery(query);
     nodeDesc.setConnection(connection);
@@ -54,11 +55,7 @@ public abstract class RemoteSQL extends PlanNode<RemoteSQLDesc> {
    */
   @Override
   public void close() {
-    try {
-      nodeDesc.getConnection().close();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
+
   }
 
   @Override

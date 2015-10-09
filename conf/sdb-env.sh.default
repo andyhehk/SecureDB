@@ -1,0 +1,4 @@
+export SDB_SERVER_UDF_PATH=/path/to/sdb-udfs-hive-0.2-SNAPSHOT.jar
+
+export HDFS_URL=""
+export HDFS_USER_DIR=""

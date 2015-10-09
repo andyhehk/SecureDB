@@ -18,7 +18,6 @@
 package edu.hku.sdb.exec;
 
 import edu.hku.sdb.catalog.*;
-import edu.hku.sdb.parse.TableName;
 import edu.hku.sdb.plan.LocalCreateDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +29,11 @@ public class LocalCreate extends LocalPlanNode<LocalCreateDesc> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LocalCreate.class);
 
-  public LocalCreate(MetaStore metaStore, TableName tableName, RowDesc localCreateRowDesc) {
+  private PlanNode child;
+
+  public LocalCreate(MetaStore metaStore, String dbName, String tableName, RowDesc localCreateRowDesc) {
     nodeDesc = new LocalCreateDesc();
+    nodeDesc.setDbName(dbName);
     nodeDesc.setMetaStore(metaStore);
     nodeDesc.setTableName(tableName);
     nodeDesc.setRowDesc(localCreateRowDesc);
@@ -41,18 +43,18 @@ public class LocalCreate extends LocalPlanNode<LocalCreateDesc> {
   public void init() {
     MetaStore metaStore = nodeDesc.getMetaStore();
     // TODO: Get the database name of the connection
-    DBMeta dbMeta = metaStore.getAllDBs().get(0);
+    DBMeta dbMeta = metaStore.getDB(nodeDesc.getDbName());
 
-    TableMeta tableMeta = new TableMeta(dbMeta.getName(), nodeDesc.getTableName().getName());
+    TableMeta tableMeta = new TableMeta(dbMeta.getName(), nodeDesc.getTableName());
     tableMeta.setDbMeta(dbMeta);
 
     List<ColumnMeta> columnMetaList = new ArrayList<>();
 
     for (ColumnDesc columnDesc : nodeDesc.getRowDesc().getSignature()) {
       ColumnMeta columnMeta = null;
-      // TODO: need to set the daName according to the connection
-      String dbName = DBMeta.defaultDbName;
-      String tableName = nodeDesc.getTableName().getName();
+      // TODO: need to set the dbName according to the connection
+      String dbName = dbMeta.getName();
+      String tableName = nodeDesc.getTableName();
       String colName = columnDesc.getName();
 
       Type type = columnDesc.getType();
@@ -103,11 +105,20 @@ public class LocalCreate extends LocalPlanNode<LocalCreateDesc> {
 
   @Override
   public List<Object> nextTuple() {
+    init();
+
+    child.nextTuple();
+
     return null;
   }
 
   @Override
   public void close() {
 
+  }
+
+  @Override
+  public void addChild(PlanNode child) {
+    this.child = child;
   }
 }

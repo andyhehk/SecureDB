@@ -17,12 +17,11 @@
 
 package edu.hku.sdb.exec;
 
+import edu.hku.sdb.connect.ServerConnection;
+import edu.hku.sdb.connect.ServerResultSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +32,7 @@ public class RemoteQuery extends RemoteSQL {
   private BasicTupleSlot tupleSlot;
   boolean initialized = false;
 
-  public RemoteQuery(String query, Connection connection, RowDesc rowDesc) {
+  public RemoteQuery(String query, ServerConnection connection, RowDesc rowDesc) {
     super(query, connection);
     nodeDesc.setConnection(connection);
     nodeDesc.setRowDesc(rowDesc);
@@ -63,34 +62,29 @@ public class RemoteQuery extends RemoteSQL {
 
     long startTimeStamp = System.currentTimeMillis();
     tupleSlot = new TupleSlot();
-    try {
-      String query = nodeDesc.getQuery();
-      java.sql.Statement statement = nodeDesc.getConnection().createStatement();
-      LOG.debug("Initialize RemoteSQLDesc with sql " + query);
-      ResultSet resultSet = statement.executeQuery(query);
-      List<ColumnDesc> columnDescList = nodeDesc.getRowDesc().getSignature();
 
-      // profile server query execution time
-      long endTimeStamp = System.currentTimeMillis();
-      setServerExecutionTime(endTimeStamp - startTimeStamp);
+    String query = nodeDesc.getQuery();
+    LOG.debug("Initialize RemoteSQLDesc with sql " + query);
+    ServerResultSet resultSet = nodeDesc.getConnection().executeQuery(query);
+    List<ColumnDesc> columnDescList = nodeDesc.getRowDesc().getSignature();
 
-      //buffer all results in resultList
-      while (resultSet.next()) {
-        List<Object> row = new ArrayList<Object>();
+    // profile server query execution time
+    long endTimeStamp = System.currentTimeMillis();
+    setServerExecutionTime(endTimeStamp - startTimeStamp);
 
-        for (int i = 1; i <= columnDescList.size(); i++) {
-          row.add(resultSet.getObject(i));
-        }
-        if (row.size() > 0) {
-          tupleSlot.addRow(row);
-        }
+    //buffer all results in resultList
+    while (resultSet.next()) {
+      List<Object> row = new ArrayList<Object>();
+
+      for (int i = 1; i <= columnDescList.size(); i++) {
+        row.add(resultSet.getObject(i));
       }
-      resultSet.close();
-      statement.close();
-
-    } catch (SQLException e) {
-      e.printStackTrace();
+      if (row.size() > 0) {
+        tupleSlot.addRow(row);
+      }
     }
+
+
     initialized = true;
   }
 

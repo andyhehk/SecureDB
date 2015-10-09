@@ -48,7 +48,7 @@ done
 
 CLASSPATH+=$SDB_HIVE_JDBC_JAR
 
-SDB_OPTS="${SDB_OPTS} start --sdbconf ${SDB_CONF_DIR}"
+SDB_OPTS="${SDB_OPTS} -start -conf ${SDB_CONF_DIR}"
 
 java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -cp "$CLASSPATH" edu.hku.sdb.driver.SdbDriver $SDB_OPTS "$@" 
 

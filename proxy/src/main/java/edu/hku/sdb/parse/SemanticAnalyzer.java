@@ -26,10 +26,10 @@ import edu.hku.sdb.parse.NormalArithmeticExpr.Operator;
 
 public class SemanticAnalyzer extends BasicSemanticAnalyzer {
 
-  private final MetaStore metaDB;
+  private final DBMeta dbMeta;
 
-  public SemanticAnalyzer(MetaStore metaDB) {
-    this.metaDB = metaDB;
+  public SemanticAnalyzer(DBMeta metaDB) {
+    this.dbMeta = metaDB;
   }
 
   /**
@@ -78,7 +78,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
     }
 
     if (parseTree != null)
-      parseTree.analyze(metaDB, (ParseNode) null);
+      parseTree.analyze(dbMeta, (ParseNode) null);
 
     return parseTree;
   }
@@ -92,14 +92,14 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
   private ParseNode buildLoadStmt(ASTNode tree) throws SemanticException {
 
     String filePath = tree.getChild(0).getText().replace("'", "");
-    TableName tableName = new TableName();
+    String tableName = "";
 
     //Get table name from AST
     ASTNode secondChild = (ASTNode) tree.getChild(1);
     if (secondChild.getType() == HiveParser.TOK_TAB) {
       ASTNode secondLevelChild = (ASTNode) secondChild.getChild(0);
       if (secondLevelChild.getType() == HiveParser.TOK_TABNAME) {
-        tableName.setName(secondLevelChild.getChild(0).getText());
+        tableName = secondLevelChild.getChild(0).getText();
       }
     }
     LoadStmt loadStmt = new LoadStmt(filePath, tableName);
@@ -248,7 +248,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
    */
   private CreateStmt buildCreateStmt(ASTNode tree) throws SemanticException {
     CreateStmt createStmt = new CreateStmt();
-    TableName tableName = null;
+    String tableName = null;
     List<ColumnDefinition> colDefinitions = null;
     TableRowFormat tableRowFormat = null;
 
@@ -256,8 +256,7 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
       ASTNode child = (ASTNode) tree.getChild(i);
       switch (child.getType()) {
         case HiveParser.TOK_TABNAME:
-          tableName = new TableName();
-          tableName.setName(child.getChild(0).getText());
+          tableName = child.getChild(0).getText();
           continue;
         case HiveParser.TOK_TABCOLLIST:
           colDefinitions = buildColDefinitions(child);
@@ -365,6 +364,12 @@ public class SemanticAnalyzer extends BasicSemanticAnalyzer {
         break;
       case HiveParser.TOK_INT:
         type = Type.INT;
+        break;
+      case HiveParser.TOK_STRING:
+        type = Type.STRING;
+        break;
+      case HiveParser.TOK_BIGINT:
+        type = Type.BIGINT;
         break;
       case HiveParser.TOK_DECIMAL:
         precision = Integer.valueOf(secondChild.getChild(0).getText());

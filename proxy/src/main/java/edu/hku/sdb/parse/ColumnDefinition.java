@@ -17,10 +17,7 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.SdbColumnKey;
-import edu.hku.sdb.catalog.MetaStore;
-import edu.hku.sdb.catalog.SearchColumnKey;
-import edu.hku.sdb.catalog.Type;
+import edu.hku.sdb.catalog.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +28,6 @@ public class ColumnDefinition implements ParseNode {
   public static final String S_COLUMN_NAME = "s";
   public static final String R_COLUMN_NAME = "r";
 
-  private TableName tableName;
   // The original data type
   private final Type originType;
   // Type after being rewritten
@@ -51,13 +47,7 @@ public class ColumnDefinition implements ParseNode {
     this.sdbColKey = sdbColKey;
   }
 
-  public TableName getTableName() {
-    return tableName;
-  }
 
-  public void setTableName(TableName tableName) {
-    this.tableName = tableName;
-  }
 
   public String getName() {
     return name;
@@ -89,33 +79,23 @@ public class ColumnDefinition implements ParseNode {
     this.isSDBEncrypted = isSen;
   }
 
+
   public ColumnDefinition(String name, Type type) {
     this.name = name;
     this.rewrittenType = this.originType = type;
   }
 
-  public ColumnDefinition(String name, Type type, TableName tableName) {
-    this.name = name;
-    this.rewrittenType = this.originType = type;
-    this.tableName = tableName;
-  }
-
-  public ColumnDefinition(String name, Type type, TableName tableName, boolean isSen,
+  public ColumnDefinition(String name, Type type, boolean isSen,
                           SdbColumnKey sdbColumnKey) {
     this.name = name;
     this.rewrittenType = this.originType = type;
     this.isSDBEncrypted = isSen;
-    this.tableName = tableName;
     this.sdbColKey = sdbColumnKey;
   }
 
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
-    for (ParseNode fieldSource : fieldSources) {
-      if (fieldSource instanceof TableName) {
-        setTableName((TableName) fieldSource);
-      }
-    }
+  public void analyze(DBMeta dbMeta, ParseNode... fieldSources) throws SemanticException {
+
   }
 
   @Override
@@ -155,11 +135,6 @@ public class ColumnDefinition implements ParseNode {
 
     if (!name.equals(fieldobj.getName())) {
       LOG.debug("name of right ColumnDefinition " + fieldobj.getName() + " is not equal to " + name + "!");
-      return false;
-    }
-
-    if (!tableName.equals(fieldobj.getTableName())) {
-      LOG.debug("tableName of right ColumnDefinition " + fieldobj.getTableName() + " is not equal to " + tableName + "!");
       return false;
     }
 

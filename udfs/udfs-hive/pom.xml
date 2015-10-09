@@ -22,7 +22,7 @@
     <parent>
         <groupId>edu.hku.sdb</groupId>
         <artifactId>sdb-udfs</artifactId>
-		    <version>0.1.1-SNAPSHOT</version>
+		    <version>0.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -56,6 +56,11 @@
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-exec</artifactId>
             <version>0.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.hku.sdb</groupId>
+            <artifactId>sdb-udfs-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

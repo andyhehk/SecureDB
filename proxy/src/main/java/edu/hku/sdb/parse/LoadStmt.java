@@ -17,12 +17,12 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.DBMeta;
 
 public class LoadStmt implements ParseNode {
 
   String filePath;
-  TableName tableName;
+  String tableName;
   boolean overWrite = true;
 
   public String getFilePath() {
@@ -33,28 +33,28 @@ public class LoadStmt implements ParseNode {
     this.filePath = filePath;
   }
 
-  public TableName getTableName() {
+  public String getTableName() {
     return tableName;
   }
 
-  public void setTableName(TableName tableName) {
+  public void setTableName(String tableName) {
     this.tableName = tableName;
   }
 
-  public LoadStmt(String filePath, TableName tableName) {
+  public LoadStmt(String filePath, String tableName) {
     super();
     setFilePath(filePath);
     setTableName(tableName);
   }
 
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
+  public void analyze(DBMeta dbMeta, ParseNode... fieldSources) throws SemanticException {
 
   }
 
   @Override
   public String toSql() {
-    return "LOAD DATA" + " INPATH '" + filePath + "' " + (overWrite ? "OVERWRITE" : "") + " INTO TABLE " + tableName.getName();
+    return "LOAD DATA" + " INPATH '" + filePath + "' " + (overWrite ? "OVERWRITE" : "") + " INTO TABLE " + tableName;
   }
 
   @Override

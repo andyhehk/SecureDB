@@ -16,7 +16,7 @@
  */
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.DBMeta;
 
 public interface ParseNode {
 
@@ -30,11 +30,11 @@ public interface ParseNode {
    * <p/>
    * 2. Set the column keys of all sensitive columns.
    *
-   * @param metaDB
+   * @param dbMeta
    * @param fieldSources
    * @throws SemanticException
    */
-  void analyze(MetaStore metaDB, ParseNode... fieldSources)
+  void analyze(DBMeta dbMeta, ParseNode... fieldSources)
           throws SemanticException;
 
   /**

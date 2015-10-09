@@ -80,8 +80,8 @@ public class SdbSchemeRewriterTest {
   @Before
   public void prepare() {
     MetaStore metadb = prepareTestDB();
-    testObj = new SdbSchemeRewriter(metadb.getDB(TestQuery.dbName));
-    analyzer = new SemanticAnalyzer(metadb);
+    testObj = new SdbSchemeRewriter(metadb.getDB(TestQuery.dbName), null);
+    analyzer = new SemanticAnalyzer(metadb.getDB(DBMeta.defaultDbName));
     parser = new ParseDriver();
   }
 

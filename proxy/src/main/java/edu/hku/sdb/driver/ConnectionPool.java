@@ -19,7 +19,7 @@ package edu.hku.sdb.driver;
 
 import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.conf.ConnectionConf;
-import edu.hku.sdb.conf.DbConf;
+import edu.hku.sdb.conf.MetadbConf;
 import edu.hku.sdb.conf.SdbConf;
 import edu.hku.sdb.connect.Connection;
 import edu.hku.sdb.connect.ConnectionService;
@@ -66,7 +66,7 @@ public class ConnectionPool extends UnicastRemoteObject implements
     super(0);
     setSDBConf(sdbConf);
     setAvailableConnectionNumber(sdbConf.getConnectionConf()
-            .getMaxConnectionNumber());
+            .getMaxConnection());
 
     LOG.info("Connecting to metastore DB");
     metaStore = new MetaStore(getPersistManager(sdbConf.getMetadbConf()));
@@ -129,7 +129,7 @@ public class ConnectionPool extends UnicastRemoteObject implements
     return availableConnectionNumber;
   }
 
-  public void setAvailableConnectionNumber(Integer availableConnectionNumber) {
+  private void setAvailableConnectionNumber(Integer availableConnectionNumber) {
     this.availableConnectionNumber = availableConnectionNumber;
   }
 
@@ -141,9 +141,9 @@ public class ConnectionPool extends UnicastRemoteObject implements
     this.sdbConf = sdbConf;
   }
 
-  private PersistenceManager getPersistManager(DbConf dbConf) {
+  private PersistenceManager getPersistManager(MetadbConf metadbConf) {
     //TODO: get params from dbConf
-    String driver = dbConf.getJdbcDriverName();
+    String driver = metadbConf.getJdbcDriverName();
 
     LOG.info("Connecting to Metastore with driver: " + driver);
 

@@ -23,10 +23,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import edu.hku.sdb.catalog.DBMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.hku.sdb.catalog.MetaStore;
 
 import com.google.common.base.Joiner;
 
@@ -93,7 +92,7 @@ public class SelectStmt extends QueryStmt {
    * @see edu.hku.sdb.parse.ParseNode#analyze()
    */
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+  public void analyze(DBMeta dbMeta, ParseNode... fieldSources)
           throws SemanticException {
 
     Set<String> tblNames = new HashSet<>();
@@ -136,16 +135,16 @@ public class SelectStmt extends QueryStmt {
     // Resolve the nested queries and join clauses first if any.
 
     for (TableRef tblRef : tableRefs) {
-      tblRef.analyze(metaDB, tableRefs.toArray(new ParseNode[tableRefs.size()]));
+      tblRef.analyze(dbMeta, tableRefs.toArray(new ParseNode[tableRefs.size()]));
     }
 
     // Resolve the table names of the selection items.
-    selectList.analyze(metaDB,
+    selectList.analyze(dbMeta,
             tableRefs.toArray(new ParseNode[tableRefs.size()]));
 
     // Resolve the table names of the fields in the where clause
     if (whereClause != null)
-      whereClause.analyze(metaDB,
+      whereClause.analyze(dbMeta,
               tableRefs.toArray(new ParseNode[tableRefs.size()]));
 
     // Resolve the table names of the grouping fields
@@ -153,7 +152,7 @@ public class SelectStmt extends QueryStmt {
     if (groupingExprs != null)
       for (Expr expr : groupingExprs) {
         try {
-          expr.analyze(metaDB,
+          expr.analyze(dbMeta,
                   selectList.itemList.toArray(new ParseNode[selectList.itemList
                           .size()]));
 
@@ -167,7 +166,7 @@ public class SelectStmt extends QueryStmt {
     // It must be called after selection items resolved their table names.
     if (havingExpr != null)
       try {
-        havingExpr.analyze(metaDB,
+        havingExpr.analyze(dbMeta,
                 selectList.itemList.toArray(new ParseNode[selectList.itemList.size
                         ()]));
 
@@ -179,7 +178,7 @@ public class SelectStmt extends QueryStmt {
     if (orderByElements != null) {
       for (OrderByElement element : orderByElements) {
         try {
-          element.getExpr().analyze(metaDB, selectList.itemList.toArray(new
+          element.getExpr().analyze(dbMeta, selectList.itemList.toArray(new
                   ParseNode[selectList.itemList.size()]));
         } catch (UnableResolveException e) {
           LOG.error("There is no selection item that order by element: " + element

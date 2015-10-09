@@ -17,7 +17,7 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.DBMeta;
 
 public class LikePredicate extends Predicate {
 
@@ -36,9 +36,9 @@ public class LikePredicate extends Predicate {
    * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
    * )
    */
-  public void analyze(MetaStore metaDB, ParseNode... fieldParent) throws
+  public void analyze(DBMeta dbMeta, ParseNode... fieldParent) throws
           SemanticException {
-    getColumn().analyze(metaDB, fieldParent);
+    getColumn().analyze(dbMeta, fieldParent);
 
     if (involveEncrytedCol()) {
       Expr pattern = getPattern();

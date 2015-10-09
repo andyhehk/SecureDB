@@ -22,7 +22,7 @@ public class Databases {
 
       List<List<String>> tables = queryModel.getResult();
 
-      Database database = new Database("default");
+      Database database = new Database("andy_securedb");
       for(List<String> tbl : tables) {
         String tblName = tbl.get(0);
 

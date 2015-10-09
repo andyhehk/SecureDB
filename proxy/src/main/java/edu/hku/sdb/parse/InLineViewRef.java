@@ -17,10 +17,9 @@
 
 package edu.hku.sdb.parse;
 
+import edu.hku.sdb.catalog.DBMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.hku.sdb.catalog.MetaStore;
 
 public class InLineViewRef extends TableRef {
 
@@ -67,9 +66,9 @@ public class InLineViewRef extends TableRef {
    * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
    *)
    */
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+  public void analyze(DBMeta dbMeta, ParseNode... fieldSources)
           throws SemanticException {
-    queryStmt.analyze(metaDB, fieldSources);
+    queryStmt.analyze(dbMeta, fieldSources);
   }
 
   /*

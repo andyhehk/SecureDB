@@ -19,17 +19,17 @@ package edu.hku.sdb.plan;
 
 
 import edu.hku.sdb.catalog.MetaStore;
-import edu.hku.sdb.parse.TableName;
 
 public class LocalDropTBLDesc extends PlanNodeDesc {
-  MetaStore metaStore;
-  TableName tableName;
+  private MetaStore metaStore;
+  private String dbName;
+  private String tableName;
 
-  public TableName getTableName() {
+  public String getTableName() {
     return tableName;
   }
 
-  public void setTableName(TableName tableName) {
+  public void setTableName(String tableName) {
     this.tableName = tableName;
   }
 
@@ -39,5 +39,13 @@ public class LocalDropTBLDesc extends PlanNodeDesc {
 
   public void setMetaStore(MetaStore metaStore) {
     this.metaStore = metaStore;
+  }
+
+  public String getDbName() {
+    return dbName;
+  }
+
+  public void setDbName(String dbName) {
+    this.dbName = dbName;
   }
 }

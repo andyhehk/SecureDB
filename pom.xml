@@ -21,7 +21,7 @@
 
     <groupId>edu.hku.sdb</groupId>
     <artifactId>sdb</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>SDB</name>
@@ -60,8 +60,8 @@
         <datanucleus.rdbms.version>4.0.0-release</datanucleus.rdbms.version>
         <derby.version>10.11.1.1</derby.version>
         <guava.version>18.0</guava.version>
-        <hadoop.common.version>2.4.1</hadoop.common.version>
-        <hadoop.hdfs.version>2.4.1</hadoop.hdfs.version>
+        <hadoop.common.version>2.6.1</hadoop.common.version>
+        <hadoop.hdfs.version>2.6.1</hadoop.hdfs.version>
         <jdo.api.version>3.0.1</jdo.api.version>
         <junit.version>4.12</junit.version>
         <log4j.version>1.7.10</log4j.version>

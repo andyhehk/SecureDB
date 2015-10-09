@@ -20,6 +20,7 @@ package edu.hku.sdb.optimize;
 import edu.hku.sdb.catalog.SdbColumnKey;
 import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.Type;
+import edu.hku.sdb.connect.ServerConnection;
 import edu.hku.sdb.exec.*;
 import edu.hku.sdb.parse.*;
 import edu.hku.sdb.rewrite.UnSupportedException;
@@ -27,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,18 +54,18 @@ public class RuleBaseOptimizer extends Optimizer {
    * 
    * @see edu.hku.sdb.optimize.Optimizer#optimize(edu.hku.sdb.parse.ParseNode)
    */
-  public PlanNode optimize(ParseNode parseTree, Connection connection, DBMeta
+  public PlanNode optimize(ParseNode parseTree, ServerConnection connection, DBMeta
           dbMeta) throws UnSupportedException {
     return optimizeInternal(parseTree, connection, dbMeta);
   }
 
   @Override
-  protected PlanNode optimizeSelStmt(SelectStmt selStmt, Connection connection,
+  protected PlanNode optimizeSelStmt(SelectStmt selStmt, ServerConnection connection,
                                      DBMeta dbMeta) throws UnSupportedException {
     return  generatePlan(selStmt, connection, dbMeta);
   }
 
-  private PlanNode generatePlan(SelectStmt selStmt, Connection connection,  DBMeta dbMeta) {
+  private PlanNode generatePlan(SelectStmt selStmt, ServerConnection connection,  DBMeta dbMeta) {
     String query = selStmt.toSql();
     RowDesc remoteRowDesc = new RowDesc();
     RowDesc localDecryptRowDesc = new RowDesc();

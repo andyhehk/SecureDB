@@ -18,26 +18,23 @@
 package edu.hku.sdb.connect;
 
 import edu.hku.sdb.catalog.*;
+import edu.hku.sdb.conf.ServerConf;
+import edu.hku.sdb.conf.ServerType;
 import edu.hku.sdb.exec.*;
 import edu.hku.sdb.optimize.Optimizer;
 import edu.hku.sdb.optimize.RuleBaseOptimizer;
 import edu.hku.sdb.parse.*;
-import edu.hku.sdb.rewrite.RewriteException;
-import edu.hku.sdb.rewrite.SdbSchemeRewriter;
-import edu.hku.sdb.rewrite.UnSupportedException;
-import edu.hku.sdb.upload.UploadHandler;
-import edu.hku.sdb.utility.ProfileUtil;
+import edu.hku.sdb.rewrite.*;
+import edu.hku.sdb.upload.Uploader;
+import edu.hku.sdb.upload.UploaderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.sql.*;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class SdbStatement extends UnicastRemoteObject implements Statement,
         Serializable {
@@ -48,19 +45,24 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
 
   private SemanticAnalyzer semanticAnalyzer;
   private ParseDriver parser;
-  private SdbSchemeRewriter sdbSchemeRewriter;
+  private AbstractRewriter rewriter;
   private Optimizer optimizer;
   private Executor executor;
   private SdbResultSet sdbResultSet;
   private SDBProfiler sdbProfiler;
 
   private MetaStore metaDB;
-  private Connection serverConnection;
+  private ServerConnection serverConnection;
   private DBMeta dbMeta;
+  private ServerConf serverConf;
+  private String serverDBName;
 
-  public SdbStatement(MetaStore metaDB, Connection serverConnection, DBMeta dbMeta) throws RemoteException {
+  public SdbStatement(MetaStore metaDB, ServerConnection serverConnection, String
+          serverDBName, ServerConf serverConf) throws RemoteException {
     super();
-    this.dbMeta = dbMeta;
+    this.serverDBName = serverDBName;
+    this.dbMeta = metaDB.getDB(serverDBName);
+    this.serverConf = serverConf;
     setMetaDB(metaDB);
     setServerConnection(serverConnection);
   }
@@ -75,25 +77,23 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     // get execution start time
     long startTimeStamp = System.currentTimeMillis();
 
-      // Parse & analyse
+    // Parse & analyse
     ParseNode analyzedNode = getParseNode(query);
 
 
     if (analyzedNode instanceof LoadStmt) {
       // another programme encrypts & uploads the data
-      sdbResultSet = executeLoadStmt((LoadStmt) analyzedNode);
+      sdbResultSet = getSdbResultSet(getLoadPlanNode((LoadStmt) analyzedNode));
 
-    }
-    else if (analyzedNode instanceof ShowTBLsStmt) {
-      sdbResultSet = executeShowTBLsStmt((ShowTBLsStmt) analyzedNode);
-    }
-    else if (analyzedNode instanceof DescribeStmt) {
-      sdbResultSet = executeDescribeStmt((DescribeStmt) analyzedNode);
-    }
-    else if (analyzedNode instanceof DropTblStmt) {
-      sdbResultSet = executeDropTblStmt((DropTblStmt) analyzedNode);
-    }
-    else {
+    } else if (analyzedNode instanceof ShowTBLsStmt) {
+      sdbResultSet = getSdbResultSet(getShowTblsPlanNode((ShowTBLsStmt)
+              analyzedNode));
+    } else if (analyzedNode instanceof DescribeStmt) {
+      sdbResultSet = getSdbResultSet(getDescribeTblPlanNode((DescribeStmt)
+              analyzedNode));
+    } else if (analyzedNode instanceof DropTblStmt) {
+      sdbResultSet = getSdbResultSet(getDropTblPlanNode((DropTblStmt) analyzedNode));
+    } else {
 
       long rewriteStartTimestamp = System.currentTimeMillis();
       // Rewrite
@@ -104,11 +104,10 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       PlanNode planNode;
 
       // No need to optimize a create stmt
-      if(analyzedNode instanceof CreateStmt) {
-        planNode = getCreateStmtPlanNode((CreateStmt) analyzedNode,
+      if (analyzedNode instanceof CreateStmt) {
+        planNode = getCreateTblPlanNode((CreateStmt) analyzedNode,
                 serverConnection, metaDB);
-      }
-      else {
+      } else {
         // Optimize
         planNode = getPlanNode(analyzedNode);
 
@@ -134,7 +133,8 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       long serverTotalTime = sdbResultSet.getServerTotalTime();
       sdbProfiler.setServerTotalTime(serverTotalTime);
       sdbProfiler.setClientTotalTime(totalTime - serverTotalTime);
-      sdbProfiler.setClientExecuteTime(sdbProfiler.getExecuteTime() - sdbResultSet.getServerTotalTime());
+      sdbProfiler.setClientExecuteTime(sdbProfiler.getExecuteTime() - sdbResultSet
+              .getServerTotalTime());
       sdbResultSet.setSdbProfiler(sdbProfiler);
     } catch (RemoteException e) {
       e.printStackTrace();
@@ -171,9 +171,16 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
   private void rewriteNode(ParseNode analyzedNode) throws RemoteException {
 
     LOG.info("Rewriting query: " + analyzedNode.toSql());
-    sdbSchemeRewriter = new SdbSchemeRewriter(dbMeta);
+    if (serverConf.getType() == ServerType.HIVE)
+      rewriter = new SdbSchemeRewriter(dbMeta, new HiveRewriter(dbMeta));
+    else if (serverConf.getType() == ServerType.ODPS)
+      rewriter = new SdbSchemeRewriter(dbMeta, new ODPSRewriter(dbMeta));
+    else {
+      LOG.error("Unsupported server type: " + serverConf.getType());
+      System.exit(-1);
+    }
     try {
-      sdbSchemeRewriter.rewrite(analyzedNode);
+      rewriter.rewrite(analyzedNode);
       LOG.info("The finial rewritten query: " + analyzedNode.toSql());
     } catch (UnSupportedException e) {
       e.printStackTrace();
@@ -183,13 +190,13 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     }
   }
 
-  private ParseNode getParseNode(String query) throws RemoteException  {
+  private ParseNode getParseNode(String query) throws RemoteException {
     LOG.info("Parsing " + query);
 
     long parseStartTimestamp = System.currentTimeMillis();
 
     parser = new ParseDriver();
-    semanticAnalyzer = new SemanticAnalyzer(metaDB);
+    semanticAnalyzer = new SemanticAnalyzer(metaDB.getDB(serverDBName));
     ASTNode parsedNode = null;
     ParseNode analyzedNode = null;
     try {
@@ -226,26 +233,24 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
     this.metaDB = metaDB;
   }
 
-  public Connection getServerConnection() {
+  public ServerConnection getServerConnection() {
     return serverConnection;
   }
 
-  public void setServerConnection(Connection serverConnection) {
+  public void setServerConnection(ServerConnection serverConnection) {
     this.serverConnection = serverConnection;
   }
 
-  protected PlanNode getCreateStmtPlanNode(CreateStmt createStmt, Connection
+  private PlanNode getCreateTblPlanNode(CreateStmt createStmt, ServerConnection
           connection, MetaStore metaStore) {
 
     String query = createStmt.toSql();
     RowDesc localCreateRowDesc = new RowDesc();
     List<ColumnDesc> columnDescList = new ArrayList<ColumnDesc>();
-    TableName tableName = null;
 
     for (ColumnDefinition colDefinition : createStmt.getColumnDefinitions()) {
       ColumnDesc columnDesc;
       Type type;
-      tableName = colDefinition.getTableName();
       String columnName = colDefinition.getName();
       String alias = "";
       boolean isSen = colDefinition.isSDBEncrypted();
@@ -253,69 +258,66 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
       SdbColumnKey sdbColumnKey = colDefinition.getSDBColumnKey();
       SearchColumnKey searchColumnKey = colDefinition.getSearchColKey();
       // Only support encryption for scalar type.
-      if(type instanceof ScalarType) {
+      if (type instanceof ScalarType) {
         switch (((ScalarType) type).getType()) {
           case INT:
           case TINYINT:
           case BIGINT:
           case SMALLINT:
           case DECIMAL:
-            columnDesc = new ColumnDesc(columnName, alias, type, isSen, sdbColumnKey);
+            columnDesc = new ColumnDesc(columnName, alias, type, isSen,
+                    sdbColumnKey);
             break;
           case CHAR:
           case VARCHAR:
           case STRING:
-            columnDesc = new ColumnDesc(columnName, alias, type, isSen, searchColumnKey);
+            columnDesc = new ColumnDesc(columnName, alias, type, isSen,
+                    searchColumnKey);
             break;
           default:
             columnDesc = new ColumnDesc(columnName, alias, type, isSen, null);
             break;
         }
-      }
-      else
+      } else
         columnDesc = new ColumnDesc(columnName, alias, type, isSen, null);
       columnDescList.add(columnDesc);
     }
     localCreateRowDesc.setSignature(columnDescList);
 
     RemoteUpdate remoteUpdate = new RemoteUpdate(query, connection);
-    LocalCreate localCreate = new LocalCreate(metaStore, tableName, localCreateRowDesc);
-    CreateTbl createTbl = new CreateTbl(remoteUpdate, localCreate);
-    return createTbl;
+    LocalCreate localCreate = new LocalCreate(metaStore, serverDBName, createStmt
+            .getTableName(),
+            localCreateRowDesc);
+    localCreate.addChild(remoteUpdate);
+    return localCreate;
   }
 
-  public SdbResultSet executeLoadStmt(LoadStmt loadStmt) throws RemoteException {
+  private PlanNode getLoadPlanNode(LoadStmt loadStmt) throws RemoteException {
     // another programme encrypts & uploads the data
-    TableName tableName = loadStmt.getTableName();
-    UploadHandler uploadHandler = new UploadHandler(metaDB, tableName);
+    String tableName = loadStmt.getTableName();
+    Uploader uploader = UploaderFactory.getUploader(metaDB, tableName, serverConf);
     String sourceFilePath = loadStmt.getFilePath();
-    uploadHandler.setSourceFile(sourceFilePath);
+    uploader.setSourceFilePath(sourceFilePath);
+    uploader.upload();
 
-    //TODO should read from config file instead of hard code
-    String serverFilePath = "/user/andy/" + tableName.getName() + new Random().nextInt(60000) + ".txt";
-    String hdfsURL = "hdfs://localhost:9000";
-    uploadHandler.setHDFS_URL(hdfsURL);
-    uploadHandler.setHDFS_FILE_PATH(hdfsURL + serverFilePath);
-
-    LOG.info("Loading data from "  + sourceFilePath + " to server " + hdfsURL);
-
-    ProfileUtil profileUtil = new ProfileUtil();
-    uploadHandler.upload();
-    LOG.info("Upload time: " + profileUtil.getDuration());
-
-    loadStmt.setFilePath(hdfsURL + serverFilePath);
-    String loadQuery = loadStmt.toSql();
-    LOG.info(loadQuery);
-    try {
-      java.sql.Statement statement = serverConnection.createStatement();
-      statement.executeUpdate(loadQuery);
-    } catch (SQLException e) {
-      e.printStackTrace();
+    // Point it to the file created by uploader.
+    String loadQuery = null;
+    String serverFilePath = uploader.getServerFilePath();
+    if(serverFilePath != null) {
+      loadStmt.setFilePath(uploader.getServerFilePath());
+      loadQuery = loadStmt.toSql();
+      LOG.info(loadQuery);
+    } else {
+      LOG.info("No load statement executed on Server");
     }
-    return null;
+
+    RemoteUpdate remoteUpdate = new RemoteUpdate(loadQuery, serverConnection);
+
+    return remoteUpdate;
   }
 
-  public SdbResultSet executeShowTBLsStmt(ShowTBLsStmt showTBLsStmt) throws RemoteException {
+  private PlanNode getShowTblsPlanNode(ShowTBLsStmt showTBLsStmt) throws
+          RemoteException {
     RowDesc rowDesc = new RowDesc();
     List<ColumnDesc> columnDescs = new ArrayList<>();
 
@@ -325,10 +327,11 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
 
     PlanNode localShowTBLs = new LocalShowTBLs(dbMeta, rowDesc);
 
-    return getSdbResultSet(localShowTBLs);
+    return localShowTBLs;
   }
 
-  public SdbResultSet executeDescribeStmt(DescribeStmt describeStmt) throws RemoteException {
+  private PlanNode getDescribeTblPlanNode(DescribeStmt describeStmt) throws
+          RemoteException {
     RowDesc rowDesc = new RowDesc();
     List<ColumnDesc> columnDescs = new ArrayList<>();
 
@@ -346,18 +349,21 @@ public class SdbStatement extends UnicastRemoteObject implements Statement,
 
     PlanNode localDescTBL = new LocalDescTBL(tblMeta, rowDesc);
 
-    return getSdbResultSet(localDescTBL);
+    return localDescTBL;
   }
 
-  public SdbResultSet executeDropTblStmt(DropTblStmt dropTblStmt) throws RemoteException {
+  private PlanNode getDropTblPlanNode(DropTblStmt dropTblStmt) throws
+          RemoteException {
     String tblName = dropTblStmt.getTblName();
 
-    PlanNode localDropTBL = new LocalDropTBL(metaDB,dbMeta.getName(), tblName, null);
+    PlanNode localDropTBL = new LocalDropTBL(metaDB, dbMeta.getName(), tblName,
+            null);
 
-    RemoteUpdate remoteUpdate = new RemoteUpdate(dropTblStmt.toSql(), serverConnection);
+    RemoteUpdate remoteUpdate = new RemoteUpdate(dropTblStmt.toSql(),
+            serverConnection);
 
     localDropTBL.addChild(remoteUpdate);
 
-    return getSdbResultSet(localDropTBL);
+    return localDropTBL;
   }
 }

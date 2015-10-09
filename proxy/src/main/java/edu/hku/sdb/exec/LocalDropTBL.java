@@ -27,8 +27,7 @@ public class LocalDropTBL extends LocalPlanNode<LocalDropTBLDesc> {
   private final MetaStore metaStore;
   private final String dbName;
   private final String tblName;
-  private BasicTupleSlot tupleSlot;
-  private boolean initilized = false;
+  private boolean initialized = false;
   private PlanNode child;
 
   public LocalDropTBL(MetaStore metaStore, String dbName, String tblName, RowDesc rowDesc) {
@@ -44,12 +43,12 @@ public class LocalDropTBL extends LocalPlanNode<LocalDropTBLDesc> {
   public void init() {
 
     metaStore.delTbl(dbName, tblName);
-    initilized = true;
+    initialized = true;
   }
 
   @Override
   public List<Object> nextTuple() {
-    if(!initilized)
+    if(!initialized)
       init();
 
     child.nextTuple();
