@@ -119,6 +119,15 @@ public class DBMeta {
     return tbls;
   }
 
+  public TableMeta getTbl(String tblName) {
+    for(TableMeta tableMeta : tbls) {
+      if(tableMeta.getTblName().equals(tblName))
+        return tableMeta;
+    }
+
+    return null;
+  }
+
   /**
    * @param tbls the tbls to set
    */

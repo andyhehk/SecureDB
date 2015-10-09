@@ -84,7 +84,7 @@ public class FieldLiteral extends LiteralExpr {
    * column key if it is a sensitive column.
    */
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+  public void analyze(DBMeta dbMeta, ParseNode... fieldSources)
           throws SemanticException {
     // The analyze function has been called unless it is field from base table.
     if (referExpr != null)
@@ -123,7 +123,7 @@ public class FieldLiteral extends LiteralExpr {
 
     if (tblName.equals("")) {
       for (BaseTableRef tbl : baseTbls) {
-        count += resolve(metaDB, tbl.tblName, tbl.alias);
+        count += resolve(dbMeta, tbl.tblName, tbl.alias);
 
         if (count > 1) {
           AmbiguousException e = new AmbiguousException(name);
@@ -150,12 +150,12 @@ public class FieldLiteral extends LiteralExpr {
         // No alias for this table
         if (tbl.alias.equals("")) {
           if (tblName.equals(tbl.tblName))
-            count += resolve(metaDB, tbl.tblName, tbl.alias);
+            count += resolve(dbMeta, tbl.tblName, tbl.alias);
         }
         // If there is alias, the field should refer to the alias.
         else {
           if (tblName.equals(tbl.alias))
-            count += resolve(metaDB, tbl.tblName, tbl.alias);
+            count += resolve(dbMeta, tbl.tblName, tbl.alias);
         }
       }
 
@@ -178,46 +178,49 @@ public class FieldLiteral extends LiteralExpr {
   /**
    * It is a field from base table.
    *
-   * @param metaDB
+   * @param dbMeta
    * @param tblName
    * @return
    */
-  private int resolve(MetaStore metaDB, String tblName, String alias) {
+  private int resolve(DBMeta dbMeta, String tblName, String alias) {
     int count = 0;
 
-    ColumnMeta colMeta = metaDB.getCol(tblName, name);
+    TableMeta tblMeta = dbMeta.getTbl(tblName);
 
-    if (colMeta != null) {
-      this.tblName = tblName;
-      // if these is alias, the output table name should be the alias.
-      // We also record the true table name this field refers to.
-      if (!alias.equals("")) {
-        this.tblName = alias;
-      }
-      type = colMeta.getType();
-      isSDBEncrypted = colMeta.isSensitive();
-      if(type instanceof ScalarType) {
-
-        switch(((ScalarType) type).getType()) {
-          case INT:
-          case BIGINT:
-          case TINYINT:
-          case SMALLINT:
-          case DECIMAL:
-            if(isSDBEncrypted) {
-              sdbColKey = new SdbColumnKey(colMeta.getM(), colMeta.getX());
-            }
-            break;
-          case CHAR:
-          case VARCHAR:
-          case STRING:
-            if(isSDBEncrypted) {
-              searchColKey = new SearchColumnKey(colMeta.getM(), colMeta.getX());
-            }
-            break;
+    if(tblMeta != null) {
+      ColumnMeta colMeta = tblMeta.getCol(name);
+      if (colMeta != null) {
+        this.tblName = tblName;
+        // if these is alias, the output table name should be the alias.
+        // We also record the true table name this field refers to.
+        if (!alias.equals("")) {
+          this.tblName = alias;
         }
+        type = colMeta.getType();
+        isSDBEncrypted = colMeta.isSensitive();
+        if (type instanceof ScalarType) {
+
+          switch (((ScalarType) type).getType()) {
+            case INT:
+            case BIGINT:
+            case TINYINT:
+            case SMALLINT:
+            case DECIMAL:
+              if (isSDBEncrypted) {
+                sdbColKey = new SdbColumnKey(colMeta.getM(), colMeta.getX());
+              }
+              break;
+            case CHAR:
+            case VARCHAR:
+            case STRING:
+              if (isSDBEncrypted) {
+                searchColKey = new SearchColumnKey(colMeta.getM(), colMeta.getX());
+              }
+              break;
+          }
+        }
+        count++;
       }
-      count++;
     }
 
     return count;

@@ -31,28 +31,16 @@ public class Executor {
 
   public void execute(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
 
-    // Only support LocalDecrypt node
-    if ((plan instanceof LocalPlanNode)) {
-      executeLocalPlan(plan, eState, resultSet);
-    } else if (plan instanceof CreateTbl) {
-      plan.init();
-    }
-    else if (plan instanceof RemoteSQL) {
-      executeRemoteQuery(plan, eState, resultSet);
-    }
-
-  }
-
-  private void executeLocalPlan(PlanNode plan, ExecutionState eState, SdbResultSet
-          resultSet) {
-
-    if(plan instanceof LocalDropTBL) {
+    // These plannode return no answer
+    if (plan instanceof LocalCreate || plan instanceof LocalDropTBL || plan
+            instanceof RemoteUpdate) {
       plan.nextTuple();
       return;
     }
 
     List<Object[]> resultList = resultSet.getTuple();
     List<Object> tuple = plan.nextTuple();
+
     while (tuple != null) {
       resultList.add(tuple.toArray());
       tuple = plan.nextTuple();
@@ -74,12 +62,11 @@ public class Executor {
         resultSet.setSdbResultSetMetaData(sdbMetaData);
 
       }
-        //set server execution time
-      if(plan instanceof LocalDecrypt) {
+      //set server execution time
+      if (plan instanceof LocalDecrypt) {
         resultSet.setServerTotalTime(((LocalDecrypt) plan).getServerExecutionTime());
         resultSet.setRemoteSQLQuery(((LocalDecrypt) plan).getRemoteSQLQuery());
-      }
-      else {
+      } else {
         resultSet.setServerTotalTime(0);
         resultSet.setRemoteSQLQuery("");
       }
@@ -97,33 +84,4 @@ public class Executor {
     LOG.debug(resultList.size() + " records computed, saved in resultSet");
   }
 
-  private void executeRemoteQuery(PlanNode plan, ExecutionState eState, SdbResultSet resultSet) {
-    List<Object[]> resultList = resultSet.getTuple();
-    List<Object> tuple = plan.nextTuple();
-    while (tuple != null) {
-      resultList.add(tuple.toArray());
-      tuple = plan.nextTuple();
-    }
-
-    try {
-      //set client & server SdbMetaData
-      //TODO set metaData
-      if (resultSet.getResultSetMetaData() == null) {
-        resultSet.setSdbResultSetMetaData(((RemoteSQL) plan).getResultSetMetaData());
-      }
-      //set server execution time
-      resultSet.setServerTotalTime(((RemoteSQL) plan).getServerExecutionTime());
-
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    }
-
-    //TODO find a better way to handle batch fetch
-    resultSet.setTuple(resultList);
-    resultSet.seteState(eState);
-    resultSet.setPlanNode(plan);
-    resultSet.setExecutor(this);
-
-    LOG.debug(resultList.size() + " records computed, saved in resultSet");
-  }
 }

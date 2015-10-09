@@ -35,9 +35,21 @@
     <properties>
         <!-- Build properties -->
         <sdb.path.to.root>..</sdb.path.to.root>
+        <odps.sdk.version>0.18.3-public</odps.sdk.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.aliyun.odps</groupId>
+            <artifactId>odps-sdk-core</artifactId>
+            <version>${odps.sdk.version}</version>
+    <exclusions>
+        <exclusion>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+        </exclusion>
+    </exclusions>
+        </dependency>
         <dependency>
             <groupId>edu.hku.sdb</groupId>
             <artifactId>sdb-common</artifactId>

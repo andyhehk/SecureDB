@@ -19,8 +19,8 @@ package edu.hku.sdb.parse;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Joiner;
+import edu.hku.sdb.catalog.DBMeta;
 import edu.hku.sdb.catalog.SdbColumnKey;
-import edu.hku.sdb.catalog.MetaStore;
 import edu.hku.sdb.catalog.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,12 +88,12 @@ public class FunctionCallExpr extends Expr {
   }
 
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+  public void analyze(DBMeta dbMeta, ParseNode... fieldSources)
           throws SemanticException {
     // Analyze each child
     if(!functionParams.isStar())
       for (Expr expr : functionParams.getExprs()) {
-        expr.analyze(metaDB, fieldSources);
+        expr.analyze(dbMeta, fieldSources);
       }
   }
 

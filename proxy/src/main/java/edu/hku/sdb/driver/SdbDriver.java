@@ -25,8 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -196,8 +194,8 @@ public class SdbDriver {
     // Cet log4j config
     PropertyConfigurator.configure(confDir + "/" + "log4j.properties");
 
-    ServerConf serverConf = ServerConfFactory.createServerConf(prop);
-    MetadbConf metadbConf = MetadbConfFactory.createMetadbConf(prop);
+    ServerConf serverConf = ServerConfFactory.getServerConf(prop);
+    MetadbConf metadbConf = MetadbConfFactory.getMetadbConf(prop);
     ConnectionConf connectionConf = new ConnectionConf(prop);
 
     SdbConf sdbConf = new SdbConf(connectionConf, serverConf, metadbConf);

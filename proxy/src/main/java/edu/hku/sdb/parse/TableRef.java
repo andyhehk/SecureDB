@@ -26,6 +26,8 @@ public abstract class TableRef implements ParseNode {
   protected JoinOperator joinOp;
   protected Expr onClause;
 
+  protected String as = " ";
+
   // the ref to the left of this table, if it is part of a JOIN clause
   protected TableRef leftTblRef;
 

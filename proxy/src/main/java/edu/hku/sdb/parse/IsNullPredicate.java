@@ -17,7 +17,7 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.DBMeta;
 
 public class IsNullPredicate extends Predicate {
 
@@ -28,7 +28,7 @@ public class IsNullPredicate extends Predicate {
    * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
    * )
    */
-  public void analyze(MetaStore metaDB, ParseNode... fieldParent) throws SemanticException {
+  public void analyze(DBMeta dbMeta, ParseNode... fieldParent) throws SemanticException {
     // TODO Auto-generated method stub
 
   }

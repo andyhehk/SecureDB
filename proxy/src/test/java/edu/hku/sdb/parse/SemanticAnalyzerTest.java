@@ -72,7 +72,7 @@ public class SemanticAnalyzerTest {
   @Before
   public void prepare() {
     MetaStore metadb = prepareTestDB();
-    testObj = new SemanticAnalyzer(metadb);
+    testObj = new SemanticAnalyzer(metadb.getDB(DBMeta.defaultDbName));
     parser = new ParseDriver();
   }
 

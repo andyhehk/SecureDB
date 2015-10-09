@@ -18,8 +18,6 @@
 package edu.hku.sdb.udf.util;
 
 import org.apache.commons.codec.binary.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
@@ -32,10 +30,6 @@ public class UDFHandler {
 
   private static final String SCHEME = "AES/ECB/PKCS5Padding";
 
-  private static final Logger LOG = LoggerFactory
-          .getLogger(UDFHandler.class);
-
-
   /**
    * Returns (ae * be) mod n according to SDB Multiplication (EE Mode) protocol
    *
@@ -46,14 +40,7 @@ public class UDFHandler {
    */
   public static BigInteger multi(BigInteger multiplicand,
                                  BigInteger multiplier, BigInteger n) {
-    LOG.info("The multiplicand is " + multiplicand);
-    LOG.info("The multiplier is " + multiplier);
-    LOG.info("The public key is " + n);
-
     BigInteger result = (multiplicand.multiply(multiplier)).mod(n);
-
-    LOG.info("The result is " + result);
-
     return result;
   }
 

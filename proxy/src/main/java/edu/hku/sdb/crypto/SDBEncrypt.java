@@ -337,10 +337,10 @@ public class SDBEncrypt {
   }
 
   public static BigInteger getSecureBigInt(String cipherString) {
-    if(cipherString != null)
-      return new BigInteger(cipherString, Character.MAX_RADIX);
-    else
+    if(cipherString == null || cipherString.equals(""))
       return null;
+    else
+      return new BigInteger(cipherString, Character.MAX_RADIX);
   }
 
 

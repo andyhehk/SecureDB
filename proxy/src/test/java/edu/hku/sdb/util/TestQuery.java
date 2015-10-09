@@ -734,8 +734,7 @@ public class TestQuery {
     CreateStmt createStmt = new CreateStmt();
 
     //set table name
-    TableName tableName = new TableName();
-    tableName.setName("employee");
+    String tableName = "employee";
     createStmt.setTableName(tableName);
 
     //set basic field literals
@@ -744,13 +743,9 @@ public class TestQuery {
     Type columnType = ScalarType.createVarcharType(20);
 
     ColumnDefinition nameField = new ColumnDefinition("name", columnType);
-    ColumnDefinition salaryField = new ColumnDefinition("salary",Type.INT, tableName, true, null);
+    ColumnDefinition salaryField = new ColumnDefinition("salary",Type.INT, true, null);
     ColumnDefinition ageField = new ColumnDefinition("age", Type.INT);
 
-    idField.setTableName(tableName);
-    nameField.setTableName(tableName);
-    salaryField.setTableName(tableName);
-    ageField.setTableName(tableName);
 
     literalList.add(idField);
     literalList.add(nameField);
@@ -766,8 +761,7 @@ public class TestQuery {
     CreateStmt createStmt = new CreateStmt();
 
     //set table name
-    TableName tableName = new TableName();
-    tableName.setName("employee");
+    String tableName = "employee";
     createStmt.setTableName(tableName);
 
     //prepare column types
@@ -779,22 +773,17 @@ public class TestQuery {
     ColumnDefinition idField = new ColumnDefinition("id", Type.INT);
     ColumnDefinition nameField = new ColumnDefinition("name", nameColumnType);
     ColumnDefinition salaryField = new ColumnDefinition("salary",
-            sensitiveColumnType, tableName, true, new SdbColumnKey("1", "1"));
+            sensitiveColumnType, true, new SdbColumnKey("1", "1"));
     ColumnDefinition ageField = new ColumnDefinition("age", Type.INT);
     ColumnDefinition rowIdField = new ColumnDefinition(ColumnDefinition
-            .ROW_ID_COLUMN_NAME, sensitiveColumnType, tableName, true, new
+            .ROW_ID_COLUMN_NAME, sensitiveColumnType, true, new
             SdbColumnKey("1", "1"));
     ColumnDefinition rField = new ColumnDefinition(ColumnDefinition
-            .R_COLUMN_NAME, sensitiveColumnType, tableName, true, new
+            .R_COLUMN_NAME, sensitiveColumnType, true, new
             SdbColumnKey("1", "1"));
     ColumnDefinition sField = new ColumnDefinition(ColumnDefinition
-            .S_COLUMN_NAME, sensitiveColumnType, tableName, true, new
+            .S_COLUMN_NAME, sensitiveColumnType, true, new
             SdbColumnKey("1", "1"));
-
-    idField.setTableName(tableName);
-    nameField.setTableName(tableName);
-    salaryField.setTableName(tableName);
-    ageField.setTableName(tableName);
 
     literalList.add(idField);
     literalList.add(nameField);

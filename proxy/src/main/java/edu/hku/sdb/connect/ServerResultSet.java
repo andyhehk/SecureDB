@@ -1,23 +1,25 @@
 package edu.hku.sdb.connect;
 
+import java.util.List;
+
 /**
  * Created by andy on 9/23/15.
  */
-public abstract class ServerResultSet {
+public interface ServerResultSet {
 
   /**
    * Move to the next tuple.
    *
    * @return
    */
-  public abstract boolean next();
+  boolean next();
 
   /**
    * Get a column according to the current tuple.
-   * Index starts from 0.
+   * Index starts from 1 according to the JDBC convention.
    *
-   * @param i
    * @return
+   * @param i
    */
-  public abstract Object getObject(int i);
+  Object getObject(int i);
 }

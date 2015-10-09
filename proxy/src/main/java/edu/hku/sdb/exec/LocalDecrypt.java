@@ -35,17 +35,17 @@ public class LocalDecrypt extends LocalPlanNode<LocalDecryptDesc> {
   private static final Logger LOG = LoggerFactory
           .getLogger(LocalDecrypt.class);
 
-  PlanNode child;
-  boolean initialized = false;
+  private PlanNode child;
+  private boolean initialized = false;
   private BasicTupleSlot tupleSlot;
-  List<ColumnDesc> childColDescList;
-  int bufferSize = 100;
+  private List<ColumnDesc> childColDescList;
+  private int bufferSize = 100;
 
-  BigInteger prime1;
-  BigInteger prime2;
-  BigInteger n;
-  BigInteger g;
-  BigInteger totient;
+  private BigInteger prime1;
+  private BigInteger prime2;
+  private BigInteger n;
+  private BigInteger g;
+  private BigInteger totient;
 
   public LocalDecrypt(RowDesc rowDesc) {
     nodeDesc = new LocalDecryptDesc();
@@ -94,7 +94,7 @@ public class LocalDecrypt extends LocalPlanNode<LocalDecryptDesc> {
       while (childTuple != null && rowCount <= bufferSize) {
         BigInteger rowId = null;
 
-        // RowID is always at index 0
+        // RowID is at the last
         for (int index = childColDescList.size() - 1; index >= 0; index--) {
           ColumnDesc columnDesc = childColDescList.get(index);
           if (columnDesc.getName().equals(ColumnDefinition.ROW_ID_COLUMN_NAME)) {

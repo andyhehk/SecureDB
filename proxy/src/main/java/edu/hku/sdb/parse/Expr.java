@@ -21,10 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.hku.sdb.catalog.SdbColumnKey;
-import edu.hku.sdb.catalog.MetaStore;
-import edu.hku.sdb.catalog.SearchColumnKey;
-import edu.hku.sdb.catalog.Type;
+import edu.hku.sdb.catalog.*;
 
 public abstract class Expr extends TreeNode<Expr> implements ParseNode {
 
@@ -95,11 +92,11 @@ public abstract class Expr extends TreeNode<Expr> implements ParseNode {
    *
    */
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+  public void analyze(DBMeta dbMeta, ParseNode... fieldSources)
           throws SemanticException {
     // Analyze each child
     for (Expr child : getChildren()) {
-      child.analyze(metaDB, fieldSources);
+      child.analyze(dbMeta, fieldSources);
     }
   }
 

@@ -17,10 +17,9 @@
 
 package edu.hku.sdb.parse;
 
+import edu.hku.sdb.catalog.DBMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.hku.sdb.catalog.MetaStore;
 
 import static com.google.common.base.Preconditions.*;
 
@@ -98,9 +97,9 @@ public class SelectionItem implements ParseNode {
    * @see edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.catalog.DBMeta)
    */
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources)
+  public void analyze(DBMeta dbMeta, ParseNode... fieldSources)
           throws SemanticException {
-    expr.analyze(metaDB, fieldSources);
+    expr.analyze(dbMeta, fieldSources);
   }
 
   /*

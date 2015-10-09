@@ -17,11 +17,10 @@
 
 package edu.hku.sdb.exec;
 
+import edu.hku.sdb.connect.ServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 
 public class RemoteUpdate extends RemoteSQL {
@@ -31,7 +30,7 @@ public class RemoteUpdate extends RemoteSQL {
   private static final Logger LOG = LoggerFactory
           .getLogger(RemoteUpdate.class);
 
-  public RemoteUpdate(String query, Connection connection) {
+  public RemoteUpdate(String query, ServerConnection connection) {
     super(query, connection);
   }
 
@@ -41,20 +40,14 @@ public class RemoteUpdate extends RemoteSQL {
       return;
 
     long startTimeStamp = System.currentTimeMillis();
+    String query = nodeDesc.getQuery();
 
-    try {
-      String query = nodeDesc.getQuery();
-      java.sql.Statement statement = nodeDesc.getConnection().createStatement();
-      statement.executeUpdate(query);
-      statement.close();
+    if(query != null)
+      nodeDesc.getConnection().executeUpdate(query);
 
-      // profile server query execution time
-      long endTimeStamp = System.currentTimeMillis();
-      setServerExecutionTime(endTimeStamp - startTimeStamp);
-
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
+    // profile server query execution time
+    long endTimeStamp = System.currentTimeMillis();
+    setServerExecutionTime(endTimeStamp - startTimeStamp);
 
     initialized = true;
   }

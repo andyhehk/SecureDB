@@ -5,7 +5,11 @@ package edu.hku.sdb.connect;
  */
 public abstract class ServerConnection {
 
+  public abstract void execute(String command);
+
   public abstract ServerResultSet executeQuery(String query);
 
-  public abstract boolean executeUpdate(String query);
+  public abstract int executeUpdate(String query);
+
+  public abstract void close();
 }

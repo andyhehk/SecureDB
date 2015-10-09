@@ -16,7 +16,7 @@ public class MetadbConfFactory {
   public static String SDB_METASTORE_JDBC_URL = "sdb.metastore.jdbc.url";
 
 
-  public static MetadbConf createMetadbConf(Map<String, String> prop) {
+  public static MetadbConf getMetadbConf(Map<String, String> prop) {
 
     MetadbConf metadbConf = new MetadbConf();
     metadbConf.setDatabaseName(prop.get(SDB_METASTORE_DATABASE_NAME));

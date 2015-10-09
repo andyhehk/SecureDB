@@ -129,7 +129,7 @@ public class ConnectionPool extends UnicastRemoteObject implements
     return availableConnectionNumber;
   }
 
-  public void setAvailableConnectionNumber(Integer availableConnectionNumber) {
+  private void setAvailableConnectionNumber(Integer availableConnectionNumber) {
     this.availableConnectionNumber = availableConnectionNumber;
   }
 

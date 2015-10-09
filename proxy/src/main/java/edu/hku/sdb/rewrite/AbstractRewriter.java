@@ -32,32 +32,5 @@ public abstract class AbstractRewriter {
 
   public abstract void rewrite(ParseNode parseTree) throws RewriteException;
 
-  /**
-   * Internal rewrite function. All rewriting should be involved by this
-   * function.
-   *
-   * @param parseTree
-   * @return
-   */
-  protected void rewriteInternal(ParseNode parseTree)
-          throws RewriteException {
-
-    if (parseTree instanceof SelectStmt) {
-      rewriteSelStmt((SelectStmt) parseTree);
-      // No need to get the auxiliary columns at the final step.
-      ((SelectStmt) parseTree).getSelectList().setAuxiliaryR(null);
-      ((SelectStmt) parseTree).getSelectList().setAuxiliaryS(null);
-    } else if (parseTree instanceof CreateStmt) {
-      rewriteCreateStmt((CreateStmt) parseTree);
-    } else if (parseTree instanceof LoadStmt) {
-      ;
-    } else throw new UnSupportedException(" this kind of query statement!");
-  }
-
-  protected abstract void rewriteSelStmt(SelectStmt selStmt)
-          throws RewriteException;
-
-  protected abstract void rewriteCreateStmt(CreateStmt createStmt)
-          throws RewriteException;
 
 }

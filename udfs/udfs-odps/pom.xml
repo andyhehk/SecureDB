@@ -53,6 +53,29 @@
     <build>
         <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
         <testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
+        <plugins>
+          <!-- any other plugins -->
+         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>${maven.shade.plugin.version}</version>
+          <executions>
+            <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <artifactSet>
+                <includes>
+                  <include>edu.hku.sdb</include>
+                </includes>
+              </artifactSet>
+            </configuration>
+            </execution>
+          </executions>
+          </plugin>
+        </plugins>
     </build>
 
 </project>

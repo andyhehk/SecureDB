@@ -17,6 +17,7 @@
 
 package edu.hku.sdb.plan;
 
+import edu.hku.sdb.connect.ServerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class RemoteSQLDesc extends PlanNodeDesc {
   private static final Logger LOG = LoggerFactory
           .getLogger(RemoteSQLDesc.class);
   private String query;
-  private Connection connection;
+  private ServerConnection connection;
 
   public String getQuery() {
     return query;
@@ -37,11 +38,11 @@ public class RemoteSQLDesc extends PlanNodeDesc {
     this.query = query;
   }
 
-  public Connection getConnection() {
+  public ServerConnection getConnection() {
     return connection;
   }
 
-  public void setConnection(Connection connection) {
+  public void setConnection(ServerConnection connection) {
     this.connection = connection;
   }
 

@@ -21,25 +21,27 @@ import com.aliyun.odps.io.Writable;
 import com.aliyun.odps.io.Text;
 import com.aliyun.odps.udf.Aggregator;
 import com.aliyun.odps.udf.UDFException;
+import com.aliyun.odps.udf.annotation.Resolve;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+@Resolve({"string->string"})
 public class SdbFirstUDF extends Aggregator {
 
   private static class FirstBuffer implements Writable {
 
-    private Text first;
+    private String first = "";
 
     @Override
     public void write(DataOutput out) throws IOException {
-      out.writeChars(first.toString());
+      out.writeUTF(first);
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
-      first = new Text(in.readLine());
+      first = in.readUTF();
     }
   }
 
@@ -51,19 +53,23 @@ public class SdbFirstUDF extends Aggregator {
   @Override
   public void iterate(Writable buffer, Writable[] args) throws UDFException {
     FirstBuffer buf = (FirstBuffer) buffer;
-    if(buf.first == null) {
-      Text value = (Text) args[0];
+    if(buf.first.equals("") ) {
+      String value = ((Text) args[0]).toString();
       buf.first = value;
     }
   }
 
   @Override
   public Writable terminate(Writable buffer) throws UDFException {
-    return ((FirstBuffer) buffer).first;
+    return new Text(((FirstBuffer) buffer).first);
   }
 
   @Override
   public void merge(Writable buffer, Writable partial) throws UDFException {
+    FirstBuffer buf = (FirstBuffer) buffer;
+    FirstBuffer p = (FirstBuffer) partial;
+
+    buf.first = p.first;
   }
 
 

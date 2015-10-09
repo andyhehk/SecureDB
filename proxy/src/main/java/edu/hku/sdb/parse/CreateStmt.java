@@ -18,7 +18,7 @@
 package edu.hku.sdb.parse;
 
 import com.google.common.base.Joiner;
-import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.DBMeta;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +30,7 @@ public class CreateStmt extends StatementBase {
   private static final Logger LOG = LoggerFactory.getLogger(CreateStmt.class);
 
   private List<ColumnDefinition> columnDefinitions;
-  private TableName tableName;
+  private String tableName;
   private TableRowFormat tableRowFormat;
 
   public TableRowFormat getTableRowFormat() {
@@ -49,19 +49,16 @@ public class CreateStmt extends StatementBase {
     this.columnDefinitions = columnDefinitions;
   }
 
-  public TableName getTableName() {
+  public String getTableName() {
     return tableName;
   }
 
-  public void setTableName(TableName tableName) {
+  public void setTableName(String tableName) {
     this.tableName = tableName;
   }
 
   @Override
-  public void analyze(MetaStore metaDB, ParseNode... fieldSources) throws SemanticException {
-    for (ColumnDefinition fieldLiteral : columnDefinitions) {
-      fieldLiteral.analyze(metaDB, tableName);
-    }
+  public void analyze(DBMeta dbMeta, ParseNode... fieldSources) throws SemanticException {
   }
 
   @Override
@@ -78,7 +75,7 @@ public class CreateStmt extends StatementBase {
       rowFormat = tableRowFormat.toSql();
     }
 
-    return "CREATE TABLE " + tableName.toSql() + " (" + fields + ") " + rowFormat;
+    return "CREATE TABLE " + tableName + " (" + fields + ") " + rowFormat;
   }
 
   @Override

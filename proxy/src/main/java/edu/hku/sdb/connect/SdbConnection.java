@@ -46,8 +46,8 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
   private SdbConf sdbConf;
   private Statement statement;
   private MetaStore metaStore;
-  private DBMeta dbMeta;
-  private java.sql.Connection serverConnection;
+  private String serverDB;
+  private ServerConnection serverConnection;
 
   public SdbConnection(SdbConf sdbConf, MetaStore metaStore) throws RemoteException {
     super();
@@ -60,12 +60,17 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
     if(sdbConf.getServerConf().getType() == ServerType.HIVE) {
      serverDBName = ((HiveServerConf)sdbConf.getServerConf()).getDatabaseName();
     }
+    else if (sdbConf.getServerConf().getType() == ServerType.ODPS) {
+      serverDBName = ((ODPSServerConf) sdbConf.getServerConf()).getProject();
+    }
     else {
       LOG.error("Unsupported server type: " + sdbConf.getServerConf().getType());
       System.exit(0);
     }
 
-    dbMeta = metaStore.getDB(serverDBName);
+    serverDB = serverDBName;
+
+    DBMeta dbMeta = metaStore.getDB(serverDBName);
     //create database if empty at the first place
     if (dbMeta == null) {
       String dbName = serverDBName;
@@ -84,7 +89,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
     }
 
     LOG.info("Connecting to server DB");
-    serverConnection = getServerConnection(sdbConf.getServerConf());
+    serverConnection = ServerConFactory.getServerCon(sdbConf.getServerConf());
   }
 
   public SdbConf getSdbConf() {
@@ -103,7 +108,7 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
 
         //create sdbStatement
         LOG.info("Creating sdb statement");
-        SdbStatement sdbStatement = new SdbStatement(metaStore, serverConnection, dbMeta, sdbConf.getServerConf());
+        SdbStatement sdbStatement = new SdbStatement(metaStore, serverConnection, serverDB, sdbConf.getServerConf());
         serviceUrl = connectionConf.getSdbAddress() + ":"
                 + connectionConf.getSdbPort() + "/" + SERVICE_NAME;
         Naming.rebind(serviceUrl, sdbStatement);
@@ -120,67 +125,5 @@ public class SdbConnection extends UnicastRemoteObject implements Connection,
   }
 
 
-
-
-  private java.sql.Connection getServerConnection(ServerConf serverConf) {
-    if(serverConf.getType() == ServerType.HIVE) {
-      HiveServerConf hiveServerConf = (HiveServerConf) serverConf;
-
-      String hiveDriverName = hiveServerConf.getJdbcDriverName();
-      String connectionURL = hiveServerConf.getJdbcUrl() + "/" + hiveServerConf.getDatabaseName();
-
-      LOG.info("Connecting to server: " + connectionURL);
-
-      String username = hiveServerConf.getUsername();
-      String password = hiveServerConf.getPassword();
-      try {
-        Class.forName(hiveDriverName);
-      } catch (ClassNotFoundException e) {
-        e.printStackTrace();
-        System.exit(1);
-      }
-      java.sql.Connection con = null;
-      try {
-        con = DriverManager.getConnection(connectionURL, username, password);
-        java.sql.Statement stmt = con.createStatement();
-
-        // register UDFs
-        // failed in Spark 1.1.0
-        // successful in Hive 0.12
-        final String serverUDFPATH = System.getenv("SDB_SERVER_UDF_PATH");
-
-        if (serverUDFPATH == null) {
-          LOG.error("Please specify the path that the UDF jar store on server!");
-          System.exit(1);
-        }
-
-
-        stmt.execute("add jar " + serverUDFPATH);
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_intadd AS 'edu.hku.sdb.udf.hive.SdbIntAddUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_add AS 'edu.hku.sdb.udf.hive.SdbAddUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_mul AS 'edu.hku.sdb.udf.hive.SdbMultiUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_sum AS 'edu.hku.sdb.udf.hive.SdbSumUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_first AS 'edu.hku.sdb.udf.hive.SdbFirstUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_keyUp AS 'edu.hku.sdb.udf.hive.SdbKeyUpdateUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_keyUpPlain AS 'edu.hku.sdb.udf.hive.SdbKeyUpdatePlainUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_cartesian AS 'edu.hku.sdb.udf.hive.SdbCartProdUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_lt AS 'edu.hku.sdb.udf.hive.SdbLtUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_gt AS 'edu.hku.sdb.udf.hive.SdbGtUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_le AS 'edu.hku.sdb.udf.hive.SdbLeUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_ge AS 'edu.hku.sdb.udf.hive.SdbGeUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_eq AS 'edu.hku.sdb.udf.hive.SdbEqUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_ne AS 'edu.hku.sdb.udf.hive.SdbNeUDF'");
-        stmt.execute("CREATE TEMPORARY FUNCTION sdb_search AS 'edu.hku.sdb.udf.hive.SdbSearchUDF'");
-        stmt.execute("set hive.auto.convert.join=false");
-
-      } catch (SQLException e) {
-        e.printStackTrace();
-      }
-      return con;
-    }
-    else {
-      return null;
-    }
-  }
 
 }

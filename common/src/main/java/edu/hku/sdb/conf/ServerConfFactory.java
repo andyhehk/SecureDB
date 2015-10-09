@@ -29,23 +29,31 @@ public class ServerConfFactory {
 
   // Server related
   public static String SDB_SERVER_TYPE = "sdb.server.type";
-  public static String SDB_SERVER_USERNAME = "sdb.server.username";
-  public static String SDB_SERVER_PASSWORD = "sdb.server.password";
-  public static String SDB_SERVER_DATABASE_NAME = "sdb.server.database.name";
+  public static String SDB_SERVER_JDBC_USERNAME = "sdb.server.jdbc.username";
+  public static String SDB_SERVER_JDBC_PASSWORD = "sdb.server.jdbc.password";
+  public static String SDB_SERVER_JDBC_DATABASE = "sdb.server.jdbc.database";
   public static String SDB_SERVER_JDBC_DRIVERNAME = "sdb.server.jdbc.drivername";
   public static String SDB_SERVER_JDBC_URL = "sdb.server.jdbc.url";
   public static String SDB_SERVER_HADOOP_USERNAME = "sdb.server.hadoop.username";
 
-  static public ServerConf createServerConf(Map<String, String> prop) {
+  public static String SDB_SERVER_ODPS_ACCESSID = "sdb.server.odps.accessID";
+  public static String SDB_SERVER_ODPS_ACCESSKEY = "sdb.server.odps.accessKey";
+  public static String SDB_SERVER_ODPS_END_POINT = "sdb.server.odps.end_point";
+  public static String SDB_SERVER_ODPS_TUNNEL_POINT = "sdb.server.odps.tunnel_point";
+  public static String SDB_SERVER_ODPS_PROJECT = "sdb.server.odps.project";
+
+  static public ServerConf getServerConf(Map<String, String> prop) {
+    LOG.info("Creating server config for " + prop.get(SDB_SERVER_TYPE));
 
     if(prop.get(SDB_SERVER_TYPE).equals(ServerType.HIVE.toString())) {
+
       HiveServerConf hiveServerConf = new HiveServerConf();
 
-      hiveServerConf.setDatabaseName(prop.get(SDB_SERVER_DATABASE_NAME));
+      hiveServerConf.setDatabaseName(prop.get(SDB_SERVER_JDBC_DATABASE));
       hiveServerConf.setJdbcDriverName(prop.get(SDB_SERVER_JDBC_DRIVERNAME));
       hiveServerConf.setJdbcUrl(prop.get(SDB_SERVER_JDBC_URL));
-      hiveServerConf.setPassword(prop.get(SDB_SERVER_PASSWORD));
-      hiveServerConf.setUsername(prop.get(SDB_SERVER_USERNAME));
+      hiveServerConf.setPassword(prop.get(SDB_SERVER_JDBC_PASSWORD));
+      hiveServerConf.setUsername(prop.get(SDB_SERVER_JDBC_USERNAME));
       hiveServerConf.setType(ServerType.HIVE);
       hiveServerConf.setHadoopUName(prop.get(SDB_SERVER_HADOOP_USERNAME));
       return hiveServerConf;
@@ -54,6 +62,13 @@ public class ServerConfFactory {
     else if(prop.get(SDB_SERVER_TYPE).equals(ServerType.ODPS.toString())) {
       ODPSServerConf odpsServerConf = new ODPSServerConf();
       odpsServerConf.setType(ServerType.ODPS);
+
+      odpsServerConf.setAccessID(prop.get(SDB_SERVER_ODPS_ACCESSID));
+      odpsServerConf.setAccessKey(prop.get(SDB_SERVER_ODPS_ACCESSKEY));
+      odpsServerConf.setOdpsURL(prop.get(SDB_SERVER_ODPS_END_POINT));
+      odpsServerConf.setProject(prop.get(SDB_SERVER_ODPS_PROJECT));
+      odpsServerConf.setTunnelURL(prop.get(SDB_SERVER_ODPS_TUNNEL_POINT));
+
       return odpsServerConf;
     }
 

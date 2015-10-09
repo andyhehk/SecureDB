@@ -31,6 +31,8 @@ script=`basename "$this"`
 config_bin=`cd "$config_bin"; pwd`
 this="$config_bin/$script"
 
+SDB_VERSION=0.2-SNAPSHOT
+
 export SDB_PREFIX=`dirname "$this"`/..
 export SDB_HOME=${SDB_PREFIX}
 export SDB_LIB="$SDB_HOME/lib"
@@ -38,6 +40,7 @@ export SDB_CONF_DIR="$SDB_HOME/conf"
 
 export SDB_PROXY_LIB="$SDB_HOME/proxy/lib"
 export SDB_UDFS_HIVE_DIR="$SDB_HOME/udfs/udfs-hive"
+export SDB_UDFS_ODPS_DIR="$SDB_HOME/udfs/udfs-odps"
 
 # Pull all user define parameters
 . "$SDB_CONF_DIR/sdb-env.sh" 
@@ -46,7 +49,8 @@ for jar in ${SDB_PROXY_LIB}/hive-jdbc/*.jar; do
     SDB_HIVE_JDBC_JAR+=:$jar;
 done
 
-export COMMON_JAR=`ls $SDB_LIB/sdb-common*.jar`
-export PROXY_JAR=`ls $SDB_LIB/sdb-proxy*.jar`
-export UDFS_HIVE_JAR=`ls $SDB_UDFS_HIVE_DIR/target/sdb-udfs-hive*.jar`
+export COMMON_JAR=`ls $SDB_LIB/sdb-common-${SDB_VERSION}.jar`
+export PROXY_JAR=`ls $SDB_LIB/sdb-proxy-${SDB_VERSION}.jar`
+export UDFS_HIVE_JAR=`ls $SDB_UDFS_HIVE_DIR/target/sdb-udfs-hive-${SDB_VERSION}.jar`
+export UDFS_ODPS_JAR=`ls $SDB_UDFS_ODPS_DIR/target/sdb-udfs-odps-${SDB_VERSION}.jar`
 

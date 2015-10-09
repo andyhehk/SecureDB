@@ -17,7 +17,7 @@
 
 package edu.hku.sdb.parse;
 
-import edu.hku.sdb.catalog.MetaStore;
+import edu.hku.sdb.catalog.DBMeta;
 
 import static com.google.common.base.Preconditions.*;
 
@@ -48,10 +48,10 @@ public class BaseTableRef extends TableRef {
    * edu.hku.sdb.parse.ParseNode#analyze(edu.hku.sdb.parse.BasicSemanticAnalyzer
    * )
    */
-  public void analyze(MetaStore metaDB, ParseNode... fieldParent)
+  public void analyze(DBMeta dbMeta, ParseNode... fieldParent)
           throws SemanticException {
     if (onClause != null)
-      onClause.analyze(metaDB, fieldParent);
+      onClause.analyze(dbMeta, fieldParent);
   }
 
   /*
@@ -75,11 +75,11 @@ public class BaseTableRef extends TableRef {
     } else {
       if (onClause == null) {
         if (joinOp == null)
-          sb.append(tblName + " AS " + alias + ",");
+          sb.append(tblName + as + alias + ",");
         else
-          sb.append(tblName + " AS " + alias);
+          sb.append(tblName + as + alias);
       } else
-        sb.append(joinOp + " " + tblName + " AS " + alias + " ON "
+        sb.append(joinOp + " " + tblName + as + alias + " ON "
                 + onClause.toSql());
     }
     return sb.toString();
