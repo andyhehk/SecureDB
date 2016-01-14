@@ -2,19 +2,29 @@ package models;
 
 import edu.hku.sdb.connect.*;
 
+import java.lang.System;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class QueryModel {
 
-  public String query;
+  static final String DB_URL = "//localhost:2019/ConnectionService";
+
   private Statement statement;
   private ResultSet resultSet;
   private Profiler profiler;
   private int resultSize = 0;
   private boolean hasResult = false;
   private List<Long> executionTimeList;
+
+  public QueryModel() {
+    try {
+      init();
+    } catch (RemoteException e) {
+      System.out.print(e.getStackTrace());
+    }
+  }
 
   public int getResultSize() {
     return resultSize ;
@@ -24,14 +34,26 @@ public class QueryModel {
     this.resultSize = resultSize;
   }
 
-  public boolean init() throws RemoteException{
-    if (query == null) {
-      return false;
-    }
+  private boolean init() throws RemoteException{
     try {
       Connection connection = ConnectionManager.getConnection(DB_URL, "", "");
       statement = connection.createStatement();
+
+    } catch (RemoteException e) {
+      throw  e;
+    }
+    return true;
+  }
+
+  public boolean executeQuery(String query) throws RemoteException {
+
+    if(query == null)
+      return false;
+
+    try {
+
       resultSet = statement.executeQuery(query);
+
       if(query.toLowerCase().contains("create") || query.toLowerCase().contains("drop")) {
         hasResult = false;
         Databases.setUpdated(false);
@@ -44,6 +66,7 @@ public class QueryModel {
     } catch (RemoteException e) {
       throw  e;
     }
+
     return true;
   }
 
@@ -51,7 +74,7 @@ public class QueryModel {
     return hasResult;
   }
 
-  static final String DB_URL = "//localhost:2019/ConnectionService";
+
 
   private List<String> nextRow(int columnCount) throws RemoteException{
     List<String> resultRow = new ArrayList<>();

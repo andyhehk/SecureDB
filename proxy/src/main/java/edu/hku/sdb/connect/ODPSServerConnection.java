@@ -30,6 +30,7 @@ public class ODPSServerConnection extends ServerConnection {
     String odpsUrl = odpsServerConf.getOdpsURL();
     odps.setEndpoint(odpsUrl);
     odps.setDefaultProject(odpsServerConf.getProject());
+    LOG.info("Connection established");
   }
 
   @Override
@@ -46,11 +47,16 @@ public class ODPSServerConnection extends ServerConnection {
       Instance instance = SQLTask.run(odps, query);
       instance.waitForSuccess();
 
+      LOG.info("Query execution finished!");
+
+      LOG.info("Collecting result");
       Map<String, String> results = instance.getTaskResults();
       Map<String, Instance.TaskStatus> taskStatus = instance.getTaskStatus();
 
-      ODPSResultSet odpsResultSet = new ODPSResultSet(instance.getTaskResults(),
-              instance.getTaskStatus());
+      LOG.info("Result collection finished! ");
+
+      ODPSResultSet odpsResultSet = new ODPSResultSet(results,
+              taskStatus);
 
       return odpsResultSet;
 

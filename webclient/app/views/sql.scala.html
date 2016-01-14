@@ -1,4 +1,4 @@
-@(title: String)(header: String)(databases: List[Database])(queryModel: Option[QueryModel])
+@(title: String)(header: String)(databases: List[Database])(queryModel: Option[QueryModel])(queryInfo: Option[QueryInfo])
 
 @main(title)(header){
 <!--
@@ -26,7 +26,7 @@
                 <form action="/sql/execute" method="GET">
                     <label>Query:</label>
                     <input type="text" name="query" class="form-control"
-                           placeholder="@{if (queryModel.isDefined){queryModel.get.query} else {"Sample query: SELECT id, name from employee WHERE Employee_Salary> 100000"}}"/>
+                           placeholder="@{if (queryInfo.isDefined){queryInfo.get.getQuery} else {"Sample query: SELECT id, name from employee WHERE Employee_Salary> 100000"}}"/>
                     <input type="submit" value="Execute SQL Query" class="btn btn-primary" id="querySubmitBtn"/>
                 </form>
                 @if(queryModel.get.isHasResult) {

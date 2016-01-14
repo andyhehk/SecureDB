@@ -1,0 +1,16 @@
+add jar PATH_TO_sdb-udfs-odps-0.2-SNAPSHOT.jar 
+CREATE FUNCTION sdb_intadd edu.hku.sdb.udf.odps.SdbIntAddUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_add edu.hku.sdb.udf.odps.SdbAddUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_mul edu.hku.sdb.udf.odps.SdbMultiUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_sum edu.hku.sdb.udf.odps.SdbSumUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_first edu.hku.sdb.udf.odps.SdbFirstUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_keyUp edu.hku.sdb.udf.odps.SdbKeyUpdateUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_keyUpPlain edu.hku.sdb.udf.odps.SdbKeyUpdatePlainUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_cartesian edu.hku.sdb.udf.odps.SdbCartProdUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_lt edu.hku.sdb.udf.odps.SdbLtUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_gt edu.hku.sdb.udf.odps.SdbGtUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_le edu.hku.sdb.udf.odps.SdbLeUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_ge edu.hku.sdb.udf.odps.SdbGeUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_eq edu.hku.sdb.udf.odps.SdbEqUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_ne edu.hku.sdb.udf.odps.SdbNeUDF sdb-udfs-odps-0.2-SNAPSHOT.jar
+CREATE FUNCTION sdb_search edu.hku.sdb.udf.odps.SdbSearchUDF sdb-udfs-odps-0.2-SNAPSHOT.jar

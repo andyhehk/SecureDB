@@ -78,10 +78,11 @@ public class RuleBaseOptimizer extends Optimizer {
     for (SelectionItem selectionItem : selStmt.getSelectList().getItemList()) {
       LOG.debug("Creating decryption info for column: " + selectionItem.toString());
       // default columnName is ""
-      String colName = "";
+
       String alias = selectionItem.getAlias();
       Expr expr = selectionItem.getExpr();
       Type type = expr.getType();
+      String colName = "";
       // obtain columnName in case of FieldLiteral
       if (expr instanceof FieldLiteral) {
         colName = ((FieldLiteral) expr).getName();

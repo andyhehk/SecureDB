@@ -46,7 +46,12 @@ public class ODPSResultSet implements ServerResultSet {
       return null;
     else {
       String ret =result[index].split(",")[i-1];
-      ret = ret.substring(1,ret.length()-1);
+
+      if(ret.length() > 0 && ret.charAt(0) == '\"')
+        ret = ret.substring(1,ret.length());
+
+      if(ret.length() > 0 && ret.charAt(ret.length()-1) == '\"')
+        ret = ret.substring(0, ret.length()-1);
 
       return ret;
     }

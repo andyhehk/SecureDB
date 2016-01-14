@@ -15,19 +15,17 @@ public class Databases {
 
     else {
       QueryModel queryModel = new QueryModel();
-      queryModel.query = "SHOW TABLES";
-      queryModel.init();
+      queryModel.executeQuery("SHOW TABLES");
 
       databaseList = new ArrayList<Database>();
 
       List<List<String>> tables = queryModel.getResult();
 
-      Database database = new Database("andy_securedb");
+      Database database = new Database("default");
       for(List<String> tbl : tables) {
         String tblName = tbl.get(0);
 
-        queryModel.query = "DESCRIBE " + tblName;
-        queryModel.init();
+        queryModel.executeQuery("DESCRIBE " + tblName);
 
         List<List<String>> attributes = queryModel.getResult();
 
